@@ -18,34 +18,34 @@ API with plain `fetch`.
 3. Configure the client:
 
    ```bash
-   cp .env.example .env   # then fill in EXPO_PUBLIC_PARSE_APP_ID and EXPO_PUBLIC_PARSE_JS_KEY
+   cp apps/mobile/.env.example apps/mobile/.env   # then fill in EXPO_PUBLIC_PARSE_APP_ID and EXPO_PUBLIC_PARSE_JS_KEY
    ```
 
 4. Run it:
 
    ```bash
-   npm install
-   npm start        # then press i / a / w for iOS / Android / web
+   npm install          # from the repo root
+   npm run mobile       # then press i / a / w for iOS / Android / web
    ```
 
 ## Scripts
 
 | Command             | What it does                    |
 | ------------------- | ------------------------------- |
-| `npm start`         | Start the Expo dev server       |
+| `npm run mobile`    | Start the Expo dev server       |
 | `npm test`          | Run the Jest test suite         |
 | `npm run typecheck` | `tsc --noEmit`                  |
 
 ## Project layout
 
 ```
-App.tsx                         Root screen: header, new-request form, list
-src/api/prayerRequests.ts       Typed Parse REST client (list / create / pray)
-src/hooks/usePrayerRequests.ts  Loading, refresh, optimistic "pray" updates
-src/components/                 NewRequestForm, PrayerRequestCard
-src/config.ts                   Reads EXPO_PUBLIC_* env vars
-src/theme.ts                    Colors and spacing
-scripts/setup-schema.mjs        One-time Back4App schema + CLP setup
+apps/mobile/App.tsx                         Root screen: header, new-request form, list
+apps/mobile/src/api/prayerRequests.ts       Typed Parse REST client (list / create / pray)
+apps/mobile/src/hooks/usePrayerRequests.ts  Loading, refresh, optimistic "pray" updates
+apps/mobile/src/components/                 NewRequestForm, PrayerRequestCard
+apps/mobile/src/config.ts                   Reads EXPO_PUBLIC_* env vars
+apps/mobile/src/theme.ts                    Colors and spacing
+scripts/setup-schema.mjs                    One-time Back4App schema + CLP setup
 ```
 
 ## Data model
