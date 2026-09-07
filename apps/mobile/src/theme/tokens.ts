@@ -10,6 +10,10 @@ export const colors = {
   ink: '#202521',
   muted: '#70756F',
   border: '#E6E0D5',
+  // Tinted surfaces
+  sage: '#DCE9DF',
+  blush: '#F6E2DE',
+  honey: '#F6E9CB',
 } as const;
 
 export const fonts = {

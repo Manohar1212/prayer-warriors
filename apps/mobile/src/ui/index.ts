@@ -1,3 +1,4 @@
+export { Backdrop } from './Backdrop';
 export { Button } from './Button';
 export { Card } from './Card';
 export { Input } from './Input';

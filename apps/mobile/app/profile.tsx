@@ -7,10 +7,10 @@ export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const initial = (user?.displayName ?? user?.email ?? '?').trim().charAt(0).toUpperCase();
   return (
-    <Screen className="gap-6 pt-6">
+    <Screen backdrop className="gap-6 pt-6">
       <Card className="gap-4">
-        <View className="h-14 w-14 items-center justify-center rounded-full bg-primary">
-          <Text variant="title" color="cream">
+        <View className="h-14 w-14 items-center justify-center rounded-full bg-honey">
+          <Text variant="title" color="primary">
             {initial}
           </Text>
         </View>

@@ -12,7 +12,8 @@ export type TextColor =
   | 'creamSoft'
   | 'creamFaint'
   | 'gold'
-  | 'rose';
+  | 'rose'
+  | 'roseDeep';
 
 const variantClass: Record<TextVariant, string> = {
   display: 'font-display text-[34px] leading-[40px]',
@@ -42,6 +43,7 @@ const colorValue: Record<TextColor, string> = {
   creamFaint: 'rgba(250, 247, 240, 0.55)',
   gold: colors.gold,
   rose: colors.roseDeep,
+  roseDeep: colors.roseDeep,
 };
 
 export type TextProps = RNTextProps & {

@@ -37,7 +37,7 @@ export default function WelcomeScreen() {
       <StatusBar style="light" />
       <View className="flex-1 items-center justify-center gap-8">
         <Animated.View style={{ opacity: settle, transform: [{ scale }] }}>
-          <Mark size={88} />
+          <Mark size={88} glow />
         </Animated.View>
         <View className="items-center gap-3">
           <Text variant="display" color="cream" className="text-center text-[40px] leading-[46px]">

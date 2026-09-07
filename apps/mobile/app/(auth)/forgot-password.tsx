@@ -27,7 +27,7 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <Screen scroll className="justify-center gap-10">
+    <Screen scroll backdrop className="justify-center gap-10">
       <View className="gap-2">
         <Text variant="display" color="primary">
           Reset your password
