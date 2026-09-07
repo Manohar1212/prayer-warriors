@@ -23,19 +23,23 @@ export default function AccountSetupScreen() {
   }
 
   return (
-    <Screen scroll className="justify-center gap-6">
-      <View className="gap-1">
-        <Text variant="display" className="text-primary">
-          Welcome
+    <Screen scroll className="justify-center gap-10">
+      <View className="gap-2">
+        <Text variant="display" color="primary">
+          What should we call you?
         </Text>
-        <Text variant="muted">How should the group know you?</Text>
+        <Text variant="muted" className="text-[15px] leading-[22px]">
+          This is the name the group will see on your prayers and in calls.
+        </Text>
       </View>
-      <View className="gap-4">
+      <View className="gap-5">
         <Input
-          label="Display name"
+          label="Your name"
           value={displayName}
           onChangeText={setDisplayName}
+          onSubmitEditing={submit}
           maxLength={40}
+          autoFocus
           error={error}
         />
         <Button
@@ -43,8 +47,9 @@ export default function AccountSetupScreen() {
           onPress={submit}
           loading={busy}
           disabled={displayName.trim().length === 0}
+          className="mt-1"
         />
-        <Button title="Sign out" variant="ghost" onPress={signOut} />
+        <Button title="Sign out" variant="ghost" onPress={signOut} className="self-start px-0" />
       </View>
     </Screen>
   );

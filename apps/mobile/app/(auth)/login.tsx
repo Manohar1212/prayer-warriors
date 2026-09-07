@@ -25,19 +25,22 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen scroll className="justify-center gap-6">
-      <View className="gap-1">
-        <Text variant="display" className="text-primary">
-          Welcome back
+    <Screen scroll className="justify-center gap-10">
+      <View className="gap-2">
+        <Text variant="display" color="primary">
+          Sign in
         </Text>
-        <Text variant="muted">Sign in with the email your admin invited.</Text>
+        <Text variant="muted" className="text-[15px] leading-[22px]">
+          Use the email your group admin added.
+        </Text>
       </View>
-      <View className="gap-4">
+      <View className="gap-5">
         <Input
           label="Email"
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
+          textContentType="emailAddress"
           value={email}
           onChangeText={setEmail}
         />
@@ -45,6 +48,7 @@ export default function LoginScreen() {
           label="Password"
           secureTextEntry
           autoComplete="password"
+          textContentType="password"
           value={password}
           onChangeText={setPassword}
           onSubmitEditing={submit}
@@ -55,11 +59,12 @@ export default function LoginScreen() {
           onPress={submit}
           loading={busy}
           disabled={!email.trim() || !password}
+          className="mt-1"
         />
         <Link href="/(auth)/forgot-password" asChild>
-          <Pressable accessibilityRole="link" className="self-center py-2">
-            <Text variant="label" className="text-primary">
-              Forgot password?
+          <Pressable accessibilityRole="link" className="self-start py-1">
+            <Text variant="label" color="primary">
+              Forgot your password?
             </Text>
           </Pressable>
         </Link>

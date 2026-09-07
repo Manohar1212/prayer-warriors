@@ -19,6 +19,7 @@ module.exports = {
       fontFamily: {
         display: ['PlayfairDisplay_600SemiBold'],
         'display-bold': ['PlayfairDisplay_700Bold'],
+        'display-italic': ['PlayfairDisplay_400Regular_Italic'],
         sans: ['Inter_400Regular'],
         medium: ['Inter_500Medium'],
         semibold: ['Inter_600SemiBold'],

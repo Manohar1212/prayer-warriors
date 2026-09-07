@@ -1,17 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Platform, Pressable } from 'react-native';
 
 import { colors, fonts } from '@/theme/tokens';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
-const tabs: { name: string; title: string; icon: IconName }[] = [
-  { name: 'index', title: 'Home', icon: 'home-outline' },
-  { name: 'prayer', title: 'Prayer', icon: 'heart-outline' },
-  { name: 'community', title: 'Community', icon: 'people-outline' },
-  { name: 'resources', title: 'Resources', icon: 'book-outline' },
-  { name: 'funds', title: 'Funds', icon: 'wallet-outline' },
+const tabs: { name: string; title: string; icon: IconName; active: IconName }[] = [
+  { name: 'index', title: 'Home', icon: 'home-outline', active: 'home' },
+  { name: 'prayer', title: 'Prayer', icon: 'heart-outline', active: 'heart' },
+  { name: 'community', title: 'Community', icon: 'people-outline', active: 'people' },
+  { name: 'resources', title: 'Resources', icon: 'book-outline', active: 'book' },
+  { name: 'funds', title: 'Funds', icon: 'wallet-outline', active: 'wallet' },
 ];
 
 export default function TabsLayout() {
@@ -21,22 +21,30 @@ export default function TabsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.cream },
         headerShadowVisible: false,
-        headerTitleStyle: { fontFamily: fonts.display, fontSize: 22, color: colors.primary },
+        headerTitleAlign: 'left',
+        headerTitleStyle: { fontFamily: fonts.display, fontSize: 24, color: colors.primary },
+        headerLeftContainerStyle: { paddingLeft: 8 },
         headerRight: () => (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Open profile"
             onPress={() => router.push('/profile')}
             hitSlop={8}
-            style={{ marginRight: 16 }}
+            style={{ marginRight: 20 }}
           >
             <Ionicons name="person-circle-outline" size={28} color={colors.primary} />
           </Pressable>
         ),
+        sceneStyle: { backgroundColor: colors.cream },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-        tabBarLabelStyle: { fontFamily: fonts.sansMedium, fontSize: 11 },
+        tabBarStyle: {
+          backgroundColor: colors.cream,
+          borderTopColor: colors.border,
+          height: Platform.OS === 'ios' ? 84 : 64,
+          paddingTop: 6,
+        },
+        tabBarLabelStyle: { fontFamily: fonts.sansMedium, fontSize: 11, marginTop: 2 },
       }}
     >
       {tabs.map((tab) => (
@@ -45,7 +53,10 @@ export default function TabsLayout() {
           name={tab.name}
           options={{
             title: tab.title,
-            tabBarIcon: ({ color, size }) => <Ionicons name={tab.icon} size={size} color={color} />,
+            headerShown: tab.name !== 'index',
+            tabBarIcon: ({ color, size, focused }) => (
+              <Ionicons name={focused ? tab.active : tab.icon} size={size} color={color} />
+            ),
           }}
         />
       ))}

@@ -1,6 +1,8 @@
 export { Button } from './Button';
 export { Card } from './Card';
 export { Input } from './Input';
+export { Mark } from './Mark';
+export { Placeholder } from './Placeholder';
+export { Rule } from './Rule';
 export { Screen } from './Screen';
 export { Text } from './Text';
-export { Placeholder } from './Placeholder';

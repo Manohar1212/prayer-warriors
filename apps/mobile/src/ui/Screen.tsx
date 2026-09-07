@@ -4,23 +4,31 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '../theme/tokens';
 
-type Props = PropsWithChildren<{ scroll?: boolean; className?: string }>;
+export type ScreenTone = 'cream' | 'forest';
 
-export function Screen({ children, scroll = false, className = '' }: Props) {
+type Props = PropsWithChildren<{ scroll?: boolean; tone?: ScreenTone; className?: string }>;
+
+const background: Record<ScreenTone, string> = {
+  cream: colors.cream,
+  forest: colors.primaryDark,
+};
+
+export function Screen({ children, scroll = false, tone = 'cream', className = '' }: Props) {
   const body = scroll ? (
     <ScrollView
-      contentContainerClassName={`flex-grow p-5 ${className}`}
+      contentContainerClassName={`flex-grow px-6 pb-8 pt-4 ${className}`}
       keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
     >
       {children}
     </ScrollView>
   ) : (
-    <View className={`flex-1 p-5 ${className}`}>{children}</View>
+    <View className={`flex-1 px-6 pb-8 pt-4 ${className}`}>{children}</View>
   );
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.cream }}
-      edges={['top', 'left', 'right']}
+      style={{ flex: 1, backgroundColor: background[tone] }}
+      edges={['top', 'left', 'right', 'bottom']}
     >
       <KeyboardAvoidingView
         style={{ flex: 1 }}

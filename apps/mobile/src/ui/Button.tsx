@@ -1,9 +1,9 @@
 import { ActivityIndicator, Pressable, type PressableProps } from 'react-native';
 
 import { colors } from '../theme/tokens';
-import { Text } from './Text';
+import { Text, type TextColor } from './Text';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'inverse';
 
 type Props = Omit<PressableProps, 'children' | 'style'> & {
   title: string;
@@ -14,14 +14,23 @@ type Props = Omit<PressableProps, 'children' | 'style'> & {
 
 const container: Record<ButtonVariant, string> = {
   primary: 'bg-primary',
-  secondary: 'bg-surface border border-primary',
+  secondary: 'bg-transparent border border-primary',
   ghost: 'bg-transparent',
+  inverse: 'bg-cream',
 };
 
-const label: Record<ButtonVariant, string> = {
-  primary: 'text-white',
-  secondary: 'text-primary',
-  ghost: 'text-primary',
+const label: Record<ButtonVariant, TextColor> = {
+  primary: 'cream',
+  secondary: 'primary',
+  ghost: 'primary',
+  inverse: 'primaryDark',
+};
+
+const spinner: Record<ButtonVariant, string> = {
+  primary: colors.cream,
+  secondary: colors.primary,
+  ghost: colors.primary,
+  inverse: colors.primaryDark,
 };
 
 export function Button({
@@ -38,16 +47,13 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled: blocked, busy: loading }}
       disabled={blocked}
-      className={`min-h-12 items-center justify-center rounded-xl px-5 py-3 active:opacity-80 ${container[variant]} ${blocked ? 'opacity-50' : ''} ${className}`}
+      className={`min-h-[52px] items-center justify-center rounded-[14px] px-6 active:opacity-85 ${container[variant]} ${blocked ? 'opacity-40' : ''} ${className}`}
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator
-          testID="button-spinner"
-          color={variant === 'primary' ? colors.surface : colors.primary}
-        />
+        <ActivityIndicator testID="button-spinner" color={spinner[variant]} />
       ) : (
-        <Text variant="label" className={`text-base font-semibold ${label[variant]}`}>
+        <Text color={label[variant]} className="font-semibold text-[16px]">
           {title}
         </Text>
       )}

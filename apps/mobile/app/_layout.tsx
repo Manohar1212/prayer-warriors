@@ -2,6 +2,7 @@ import '../global.css';
 
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import {
+  PlayfairDisplay_400Regular_Italic,
   PlayfairDisplay_600SemiBold,
   PlayfairDisplay_700Bold,
 } from '@expo-google-fonts/playfair-display';
@@ -15,7 +16,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, resolveGate, useAuth } from '@/features/auth';
 import { parseAuthService } from '@/lib/parse';
-import { colors } from '@/theme/tokens';
+import { colors, fonts } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -42,7 +43,15 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="profile"
-          options={{ presentation: 'modal', headerShown: true, title: 'Profile' }}
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: 'Profile',
+            headerStyle: { backgroundColor: colors.cream },
+            headerShadowVisible: false,
+            headerTitleStyle: { fontFamily: fonts.display, fontSize: 20, color: colors.primary },
+            headerTintColor: colors.primary,
+          }}
         />
       </Stack.Protected>
     </Stack>
@@ -54,6 +63,7 @@ export default function RootLayout() {
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
+    PlayfairDisplay_400Regular_Italic,
     PlayfairDisplay_600SemiBold,
     PlayfairDisplay_700Bold,
   });

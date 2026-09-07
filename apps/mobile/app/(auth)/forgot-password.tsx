@@ -27,23 +27,27 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <Screen scroll className="justify-center gap-6">
-      <View className="gap-1">
-        <Text variant="display" className="text-primary">
-          Reset password
+    <Screen scroll className="justify-center gap-10">
+      <View className="gap-2">
+        <Text variant="display" color="primary">
+          Reset your password
         </Text>
-        <Text variant="muted">We will email you a link to choose a new password.</Text>
+        <Text variant="muted" className="text-[15px] leading-[22px]">
+          {sent
+            ? `A reset link is on its way to ${email.trim()}. Open it to choose a new password.`
+            : 'Enter your email and we will send you a link to choose a new one.'}
+        </Text>
       </View>
-      {sent ? (
-        <Text>Check your inbox for the reset link.</Text>
-      ) : (
-        <View className="gap-4">
+      {sent ? null : (
+        <View className="gap-5">
           <Input
             label="Email"
             autoCapitalize="none"
             keyboardType="email-address"
+            textContentType="emailAddress"
             value={email}
             onChangeText={setEmail}
+            onSubmitEditing={submit}
             error={error}
           />
           <Button
@@ -51,10 +55,16 @@ export default function ForgotPasswordScreen() {
             onPress={submit}
             loading={busy}
             disabled={!email.trim()}
+            className="mt-1"
           />
         </View>
       )}
-      <Button title="Back to sign in" variant="ghost" onPress={() => router.back()} />
+      <Button
+        title={sent ? 'Back to sign in' : 'Cancel'}
+        variant="ghost"
+        onPress={() => router.back()}
+        className="self-start px-0"
+      />
     </Screen>
   );
 }

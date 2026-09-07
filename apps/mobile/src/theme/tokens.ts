@@ -6,6 +6,7 @@ export const colors = {
   cream: '#FAF7F0',
   surface: '#FFFFFF',
   rose: '#D99A9A',
+  roseDeep: '#A8514D',
   ink: '#202521',
   muted: '#70756F',
   border: '#E6E0D5',
@@ -14,6 +15,7 @@ export const colors = {
 export const fonts = {
   display: 'PlayfairDisplay_600SemiBold',
   displayBold: 'PlayfairDisplay_700Bold',
+  displayItalic: 'PlayfairDisplay_400Regular_Italic',
   sans: 'Inter_400Regular',
   sansMedium: 'Inter_500Medium',
   sansSemiBold: 'Inter_600SemiBold',

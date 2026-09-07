@@ -1,17 +1,62 @@
 import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
 
-export type TextVariant = 'display' | 'title' | 'body' | 'muted' | 'label';
+import { colors } from '../theme/tokens';
+
+export type TextVariant = 'display' | 'title' | 'scripture' | 'body' | 'label' | 'muted';
+export type TextColor =
+  | 'ink'
+  | 'muted'
+  | 'primary'
+  | 'primaryDark'
+  | 'cream'
+  | 'creamSoft'
+  | 'creamFaint'
+  | 'gold'
+  | 'rose';
 
 const variantClass: Record<TextVariant, string> = {
-  display: 'font-display text-3xl text-ink',
-  title: 'font-semibold text-lg text-ink',
-  body: 'font-sans text-base text-ink leading-6',
-  muted: 'font-sans text-sm text-muted',
-  label: 'font-medium text-sm text-ink',
+  display: 'font-display text-[34px] leading-[40px]',
+  title: 'font-display text-[22px] leading-[28px]',
+  scripture: 'font-display-italic text-[20px] leading-[30px]',
+  body: 'font-sans text-base leading-6',
+  label: 'font-medium text-sm leading-5',
+  muted: 'font-sans text-sm leading-5',
 };
 
-export type TextProps = RNTextProps & { variant?: TextVariant; className?: string };
+const defaultColor: Record<TextVariant, TextColor> = {
+  display: 'ink',
+  title: 'ink',
+  scripture: 'ink',
+  body: 'ink',
+  label: 'ink',
+  muted: 'muted',
+};
 
-export function Text({ variant = 'body', className = '', ...rest }: TextProps) {
-  return <RNText className={`${variantClass[variant]} ${className}`} {...rest} />;
+const colorValue: Record<TextColor, string> = {
+  ink: colors.ink,
+  muted: colors.muted,
+  primary: colors.primary,
+  primaryDark: colors.primaryDark,
+  cream: colors.cream,
+  creamSoft: 'rgba(250, 247, 240, 0.78)',
+  creamFaint: 'rgba(250, 247, 240, 0.55)',
+  gold: colors.gold,
+  rose: colors.roseDeep,
+};
+
+export type TextProps = RNTextProps & {
+  variant?: TextVariant;
+  color?: TextColor;
+  className?: string;
+};
+
+/** Color is applied as an inline style so it never loses a Tailwind ordering fight. */
+export function Text({ variant = 'body', color, className = '', style, ...rest }: TextProps) {
+  return (
+    <RNText
+      className={`${variantClass[variant]} ${className}`}
+      style={[{ color: colorValue[color ?? defaultColor[variant]] }, style]}
+      {...rest}
+    />
+  );
 }
