@@ -13,9 +13,41 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { AuthProvider, resolveGate, useAuth } from '@/features/auth';
+import { parseAuthService } from '@/lib/parse';
 import { colors } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
+
+function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
+  const { status, user } = useAuth();
+  const gate = resolveGate(status, user);
+  const ready = fontsLoaded && gate !== 'loading';
+
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) return null;
+
+  return (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream } }}>
+      <Stack.Protected guard={gate === 'auth'}>
+        <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+      <Stack.Protected guard={gate === 'setup'}>
+        <Stack.Screen name="account-setup" />
+      </Stack.Protected>
+      <Stack.Protected guard={gate === 'app'}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="profile"
+          options={{ presentation: 'modal', headerShown: true, title: 'Profile' }}
+        />
+      </Stack.Protected>
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -26,27 +58,13 @@ export default function RootLayout() {
     PlayfairDisplay_700Bold,
   });
 
-  useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync();
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) return null;
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar style="dark" />
-        <Stack
-          screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream } }}
-        >
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="account-setup" />
-          <Stack.Screen
-            name="profile"
-            options={{ presentation: 'modal', headerShown: true, title: 'Profile' }}
-          />
-        </Stack>
+        <AuthProvider service={parseAuthService}>
+          <GatedStack fontsLoaded={fontsLoaded} />
+        </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
