@@ -3,3 +3,4 @@ export { Card } from './Card';
 export { Input } from './Input';
 export { Screen } from './Screen';
 export { Text } from './Text';
+export { Placeholder } from './Placeholder';

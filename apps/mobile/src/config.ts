@@ -1,9 +1,9 @@
-import type { ParseConfig } from './api/prayerRequests';
+export type ParseConfig = { serverUrl: string; appId: string; jsKey: string };
 
 function required(name: string, value: string | undefined): string {
   if (!value) {
     throw new Error(
-      `Missing ${name}. Copy .env.example to .env and fill in your Back4App keys.`,
+      `Missing ${name}. Copy apps/mobile/.env.example to .env and fill in your Back4App keys.`,
     );
   }
   return value;

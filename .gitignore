@@ -42,3 +42,6 @@ yarn-error.*
 
 # env
 .env
+
+# playwright mcp scratch
+.playwright-mcp/
