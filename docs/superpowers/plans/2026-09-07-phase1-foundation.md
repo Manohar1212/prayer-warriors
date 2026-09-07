@@ -19,6 +19,8 @@
 - Screens never import `parse` directly; only `src/lib/parse.ts` and `src/features/auth/service.ts` may.
 - No public signup UI. No engagement metrics. Touch targets ≥ 48px.
 - Public keys go in `EXPO_PUBLIC_PARSE_APP_ID`, `EXPO_PUBLIC_PARSE_JS_KEY`, `EXPO_PUBLIC_PARSE_SERVER_URL`; the master key is only ever read by `backend/schema/setup.mjs` from `PARSE_MASTER_KEY`.
+- `@testing-library/react-native` 14 is async by default: `await render(...)`, `await fireEvent.press(...)`, `await renderHook(...)`. Test code in this plan that omits the `await` must be awaited when written.
+- `jest.config.js` keeps jest-expo's default `transformIgnorePatterns`; a custom pattern ending in `/)` breaks `expo-modules-core` in the monorepo.
 - Every task ends with `npm run typecheck` and `npm test` green from the repo root, then a commit.
 - Commit messages end with:
   ```
