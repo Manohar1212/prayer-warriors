@@ -45,3 +45,4 @@ yarn-error.*
 
 # playwright mcp scratch
 .playwright-mcp/
+backend/.env

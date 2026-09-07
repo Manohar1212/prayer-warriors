@@ -1,63 +1,43 @@
 # Prayer Warriors
 
-A small Expo (SDK 57) + TypeScript app where a community shares prayer requests
-and taps 🙏 to say "I prayed". Data lives in a single `PrayerRequest` class on
-[Back4App](https://www.back4app.com/) (Parse Server), accessed through the REST
-API with plain `fetch`.
+A private prayer-circle app for a small fellowship, built with Expo (SDK 57) +
+TypeScript on the mobile side and Back4App (Parse Server) as the backend. The full
+product plan lives in `docs/Prayer_Warriors_Product_Technical_Plan.md`; each phase
+has a design spec and implementation plan under `docs/superpowers/`.
 
 ## Setup
 
-1. Create a Back4App app (or pick an existing one) and grab **Application ID**,
-   **JavaScript key**, and **Master key** from *App Settings → Security & Keys*.
-2. Create the database class and permissions:
-
-   ```bash
-   PARSE_APP_ID=... PARSE_MASTER_KEY=... node scripts/setup-schema.mjs
-   ```
-
-3. Configure the client:
-
-   ```bash
-   cp apps/mobile/.env.example apps/mobile/.env   # then fill in EXPO_PUBLIC_PARSE_APP_ID and EXPO_PUBLIC_PARSE_JS_KEY
-   ```
-
-4. Run it:
+1. **Backend** — follow `backend/README.md` to create the schema, roles, first group,
+   and first admin in the PrayerWarriors Back4App app.
+2. **Mobile env** — copy `apps/mobile/.env.example` to `apps/mobile/.env` and fill in
+   the Application ID and JavaScript key.
+3. **Run**
 
    ```bash
    npm install          # from the repo root
    npm run mobile       # then press i / a / w for iOS / Android / web
    ```
 
-## Scripts
+## Scripts (repo root)
 
-| Command             | What it does                    |
-| ------------------- | ------------------------------- |
-| `npm run mobile`    | Start the Expo dev server       |
-| `npm test`          | Run the Jest test suite         |
-| `npm run typecheck` | `tsc --noEmit`                  |
+| Command             | What it does                       |
+| ------------------- | ---------------------------------- |
+| `npm run mobile`    | Start the Expo dev server          |
+| `npm test`          | Jest suites in every workspace     |
+| `npm run typecheck` | `tsc --noEmit` in every workspace  |
 
 ## Project layout
 
 ```
-apps/mobile/App.tsx                         Root screen: header, new-request form, list
-apps/mobile/src/api/prayerRequests.ts       Typed Parse REST client (list / create / pray)
-apps/mobile/src/hooks/usePrayerRequests.ts  Loading, refresh, optimistic "pray" updates
-apps/mobile/src/components/                 NewRequestForm, PrayerRequestCard
-apps/mobile/src/config.ts                   Reads EXPO_PUBLIC_* env vars
-apps/mobile/src/theme.ts                    Colors and spacing
-scripts/setup-schema.mjs                    One-time Back4App schema + CLP setup
+apps/mobile/                Expo app (Expo Router, NativeWind, Parse JS SDK)
+  app/                      Routes: (auth) stack, (tabs), account-setup, profile
+  src/features/auth/        AuthService, AuthProvider, route gate
+  src/ui/                   Screen, Card, Button, Input, Text primitives
+  src/theme/tokens.ts       Colors and fonts (mirrored in tailwind.config.js)
+  src/lib/parse.ts          Parse SDK initialisation
+backend/
+  schema/setup.mjs          Idempotent Back4App schema, roles, first group/admin
+  cloud/main.js             Cloud Code
+docs/                       Product plan, specs, implementation plans
+.github/workflows/ci.yml    Typecheck + tests on push / PR
 ```
-
-## Data model
-
-`PrayerRequest`
-
-| Field         | Type   | Notes                        |
-| ------------- | ------ | ---------------------------- |
-| `title`       | String | required                     |
-| `details`     | String | optional                     |
-| `author`      | String | defaults to "Anonymous"      |
-| `prayerCount` | Number | incremented atomically       |
-
-v1 has no accounts: anyone with the app can read, post, and pray. Deleting is
-master-key only.
