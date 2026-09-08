@@ -9,6 +9,8 @@ import { createMembersService } from '../features/members/service';
 import type { RawMembership } from '../features/members/types';
 import { createJournalService } from '../features/prayer/journal';
 import { createPrayerService } from '../features/prayer/service';
+import { createResourcesService } from '../features/resources/service';
+import type { RawResource } from '../features/resources/types';
 import type { JournalInput, PrayerStatus, RawJournalEntry, RawPrayerRequest } from '../features/prayer/types';
 
 const config = loadParseConfig();
@@ -139,4 +141,29 @@ export const journalService = createJournalService({
     const row = await new Parse.Query('PrayerJournalEntry').get(id);
     await row.destroy();
   },
+});
+
+export const resourcesService = createResourcesService({
+  fetchResources: async (): Promise<RawResource[]> => {
+    const rows = await new Parse.Query('Resource')
+      .include('createdBy')
+      .descending('createdAt')
+      .limit(500)
+      .find();
+    return rows.map((row) => {
+      const by = row.get('createdBy') as Parse.User | undefined;
+      return {
+        id: row.id ?? '',
+        type: String(row.get('type') ?? 'song'),
+        title: String(row.get('title') ?? ''),
+        body: String(row.get('body') ?? ''),
+        reference: String(row.get('reference') ?? ''),
+        url: String(row.get('url') ?? ''),
+        note: String(row.get('note') ?? ''),
+        createdAt: row.createdAt?.toISOString() ?? '',
+        createdBy: by ? { id: by.id ?? '', displayName: by.get('displayName') as string | undefined } : null,
+      };
+    });
+  },
+  cloud: Parse.Cloud,
 });
