@@ -166,6 +166,30 @@ const journalSchema = {
   },
 };
 
+const resourceSchema = {
+  className: 'Resource',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    createdBy: { type: 'Pointer', targetClass: '_User', required: true },
+    type: { type: 'String', required: true },
+    title: { type: 'String', required: true },
+    body: { type: 'String' },
+    reference: { type: 'String' },
+    url: { type: 'String' },
+    note: { type: 'String' },
+  },
+  classLevelPermissions: {
+    find: authenticated,
+    get: authenticated,
+    count: authenticated,
+    create: masterOnly,
+    update: masterOnly,
+    delete: masterOnly,
+    addField: masterOnly,
+    protectedFields: {},
+  },
+};
+
 async function findOne(className, where) {
   const query = encodeURIComponent(JSON.stringify(where));
   const res = await api('GET', `/classes/${className}?limit=1&where=${query}`);
@@ -253,6 +277,7 @@ await upsertSchema(groupMemberSchema);
 await upsertSchema(prayerRequestSchema);
 await upsertSchema(prayerResponseSchema);
 await upsertSchema(journalSchema);
+await upsertSchema(resourceSchema);
 
 const groupId = await ensureGroup();
 const memberRoleName = `group:${groupId}:member`;

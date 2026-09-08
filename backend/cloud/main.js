@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const { createMemberHandlers } = require('./members');
 const { createPrayerHandlers } = require('./prayer');
+const { createResourceHandlers } = require('./resources');
 
 function pointer(className, id) {
   return { __type: 'Pointer', className, objectId: id };
@@ -165,10 +166,50 @@ const responses = {
   },
 };
 
+// ---------- resources ----------
+
+function resourceDto(obj) {
+  const group = obj.get('group');
+  const createdBy = obj.get('createdBy');
+  return {
+    id: obj.id,
+    groupId: group ? group.id : null,
+    createdById: createdBy ? createdBy.id : null,
+    type: obj.get('type'),
+    title: obj.get('title'),
+    body: obj.get('body') || '',
+    reference: obj.get('reference') || '',
+    url: obj.get('url') || '',
+    note: obj.get('note') || '',
+    createdAt: obj.createdAt ? obj.createdAt.toISOString() : null,
+  };
+}
+
+const resources = {
+  async create({ groupId, createdById, ...fields }) {
+    const obj = new Parse.Object('Resource');
+    obj.set('group', pointer('Group', groupId));
+    obj.set('createdBy', pointer('_User', createdById));
+    Object.entries(fields).forEach(([key, value]) => obj.set(key, value));
+    obj.setACL(groupReadAcl(groupId));
+    await obj.save(null, { useMasterKey: true });
+    return resourceDto(obj);
+  },
+  async get(id) {
+    const obj = await new Parse.Query('Resource').get(id, { useMasterKey: true }).catch(() => null);
+    return obj ? resourceDto(obj) : null;
+  },
+  async remove(id) {
+    const obj = await new Parse.Query('Resource').get(id, { useMasterKey: true });
+    await obj.destroy({ useMasterKey: true });
+  },
+};
+
 // ---------- cloud functions ----------
 
 const memberHandlers = createMemberHandlers({ memberships, users, roles, generatePassword });
 const prayerHandlers = createPrayerHandlers({ memberships, requests, responses });
+const resourceHandlers = createResourceHandlers({ memberships, resources });
 
 Parse.Cloud.define('addMember', (request) =>
   memberHandlers.addMember(request.params, { callerId: callerId(request) }),
@@ -181,6 +222,12 @@ Parse.Cloud.define('togglePraying', (request) =>
 );
 Parse.Cloud.define('markAnswered', (request) =>
   prayerHandlers.markAnswered(request.params, { callerId: callerId(request) }),
+);
+Parse.Cloud.define('createResource', (request) =>
+  resourceHandlers.createResource(request.params, { callerId: callerId(request) }),
+);
+Parse.Cloud.define('deleteResource', (request) =>
+  resourceHandlers.deleteResource(request.params, { callerId: callerId(request) }),
 );
 Parse.Cloud.define('ping', () => 'pong');
 
