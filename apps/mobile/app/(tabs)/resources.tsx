@@ -58,6 +58,12 @@ export default function ResourcesScreen() {
           <View className="mb-2 gap-4">
             <Segments options={RESOURCE_TYPES.map((t) => ({ value: t.id, label: t.plural }))} value={type} onChange={setType} />
             <Button title="Share something" onPress={() => router.push({ pathname: '/resources/new', params: { type } })} />
+            <Pressable accessibilityRole="button" onPress={() => router.push('/bible')} className="flex-row items-center gap-2 self-start py-1">
+              <Ionicons name="book-outline" size={18} color={colors.primary} />
+              <Text variant="label" color="primary">
+                Read the Bible
+              </Text>
+            </Pressable>
             <View className="flex-row items-center gap-2 rounded-xl border border-border bg-surface px-3">
               <Ionicons name="search-outline" size={18} color={colors.muted} />
               <Input

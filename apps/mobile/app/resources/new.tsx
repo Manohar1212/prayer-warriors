@@ -36,13 +36,13 @@ function isType(value: unknown): value is ResourceType {
 
 export default function NewResourceScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ type?: string }>();
+  const params = useLocalSearchParams<{ type?: string; title?: string; body?: string }>();
   const [type, setType] = useState<ResourceType>(isType(params.type) ? params.type : 'song');
   const { create } = useResources(type);
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(params.title ?? '');
   const [reference, setReference] = useState('');
   const [url, setUrl] = useState('');
-  const [body, setBody] = useState('');
+  const [body, setBody] = useState(params.body ?? '');
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

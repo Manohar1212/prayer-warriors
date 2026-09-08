@@ -46,3 +46,6 @@ yarn-error.*
 # playwright mcp scratch
 .playwright-mcp/
 backend/.env
+
+# Bible source downloads
+scripts/bible/.cache/

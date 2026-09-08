@@ -23,7 +23,7 @@ const actions: { label: string; icon: IconName; bg: string; fg: string; href: Hr
   { label: 'Prayer', icon: 'heart', bg: 'bg-blush', fg: colors.roseDeep, href: '/(tabs)/prayer' },
   { label: 'Call', icon: 'call', bg: 'bg-sage', fg: colors.primary, href: '/(tabs)/community' },
   { label: 'Song', icon: 'musical-notes', bg: 'bg-honey', fg: colors.gold, href: '/(tabs)/resources' },
-  { label: 'Word', icon: 'book', bg: 'bg-primary', fg: colors.cream, href: '/(tabs)/resources' },
+  { label: 'Word', icon: 'book', bg: 'bg-primary', fg: colors.cream, href: '/bible' },
 ];
 
 export default function HomeScreen() {

@@ -62,6 +62,10 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
         <Stack.Screen name="funds/expense" options={{ ...modalOptions, title: 'Expense' }} />
         <Stack.Screen name="funds/report" options={{ ...modalOptions, presentation: 'card', title: 'Monthly report' }} />
         <Stack.Screen name="funds/audit" options={{ ...modalOptions, presentation: 'card', title: 'Change history' }} />
+        <Stack.Screen name="bible/index" options={{ ...modalOptions, presentation: 'card', title: 'Bible' }} />
+        <Stack.Screen name="bible/[book]/index" options={{ ...modalOptions, presentation: 'card', title: '' }} />
+        <Stack.Screen name="bible/[book]/[chapter]" options={{ ...modalOptions, presentation: 'card', title: '' }} />
+        <Stack.Screen name="bible/search" options={{ ...modalOptions, presentation: 'card', title: 'Search the Bible' }} />
       </Stack.Protected>
     </Stack>
   );
