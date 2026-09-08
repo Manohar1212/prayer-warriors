@@ -20,6 +20,15 @@ import { colors, fonts } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
 
+const modalOptions = {
+  presentation: 'modal' as const,
+  headerShown: true,
+  headerStyle: { backgroundColor: colors.cream },
+  headerShadowVisible: false,
+  headerTitleStyle: { fontFamily: fonts.display, fontSize: 20, color: colors.primary },
+  headerTintColor: colors.primary,
+};
+
 function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { status, user } = useAuth();
   const gate = resolveGate(status, user);
@@ -41,18 +50,8 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
       </Stack.Protected>
       <Stack.Protected guard={gate === 'app'}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="profile"
-          options={{
-            presentation: 'modal',
-            headerShown: true,
-            title: 'Profile',
-            headerStyle: { backgroundColor: colors.cream },
-            headerShadowVisible: false,
-            headerTitleStyle: { fontFamily: fonts.display, fontSize: 20, color: colors.primary },
-            headerTintColor: colors.primary,
-          }}
-        />
+        <Stack.Screen name="profile" options={{ ...modalOptions, title: 'Profile' }} />
+        <Stack.Screen name="add-member" options={{ ...modalOptions, title: 'Add member' }} />
       </Stack.Protected>
     </Stack>
   );

@@ -28,9 +28,22 @@ const memberships = {
     acl.setRoleReadAccess(`group:${groupId}:admin`, true);
     row.setACL(acl);
     await row.save(null, { useMasterKey: true });
+    await makeProfileVisibleToGroup(groupId, userId);
     return { id: row.id };
   },
 };
+
+/** Joining a group lets its members read your profile (name, avatar); email/phone stay protected. */
+async function makeProfileVisibleToGroup(groupId, userId) {
+  const user = await new Parse.Query(Parse.User).get(userId, { useMasterKey: true });
+  const acl = new Parse.ACL();
+  acl.setReadAccess(userId, true);
+  acl.setWriteAccess(userId, true);
+  acl.setRoleReadAccess(`group:${groupId}:member`, true);
+  acl.setRoleReadAccess(`group:${groupId}:admin`, true);
+  user.setACL(acl);
+  await user.save(null, { useMasterKey: true });
+}
 
 const users = {
   async findByEmail(email) {

@@ -170,6 +170,14 @@ async function ensureAdmin(groupId, memberRole, adminRole) {
     if (!res.ok) throw new Error(`membership: ${JSON.stringify(res.data)}`);
     console.log('✓ admin membership');
   }
+  // Group members may read the admin's profile; email/phone stay protected by CLP.
+  await api('PUT', `/users/${user.objectId}`, {
+    ACL: {
+      [user.objectId]: { read: true, write: true },
+      [`role:group:${groupId}:member`]: { read: true },
+      [`role:group:${groupId}:admin`]: { read: true },
+    },
+  });
 }
 
 await upsertSchema(userSchema);
