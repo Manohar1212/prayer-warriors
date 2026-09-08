@@ -14,6 +14,7 @@ has a design spec and implementation plan under `docs/superpowers/`.
 | Prayer: requests, "I'm praying", answered with testimony, private journal | Done |
 | Resources: songs, scripture, prayers with links and search | Done |
 | Funds: contributions, expenses, balance, monthly report, CSV export, change history | Done |
+| Bible: offline Telugu Old Version + Berean Standard Bible, reader, search, post a verse to the group | Done |
 | Group calls (LiveKit), push notifications, admin web dashboard | Not started (need a development build) |
 
 All writes go through Cloud Code in `backend/cloud/`; the app reads with the Parse SDK behind
@@ -53,6 +54,7 @@ apps/mobile/                Expo app (Expo Router, NativeWind, Parse JS SDK)
 backend/
   schema/setup.mjs          Idempotent Back4App schema, roles, first group/admin
   cloud/main.js             Cloud Code
+scripts/bible/              Builds the bundled Bible database (node scripts/bible/build.mjs)
 docs/                       Product plan, specs, implementation plans
 .github/workflows/ci.yml    Typecheck + tests on push / PR
 ```
