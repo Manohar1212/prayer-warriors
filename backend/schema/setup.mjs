@@ -190,6 +190,61 @@ const resourceSchema = {
   },
 };
 
+const contributionSchema = {
+  className: 'Contribution',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    member: { type: 'Pointer', targetClass: '_User', required: true },
+    amountPaise: { type: 'Number', required: true },
+    transactionDate: { type: 'Date', required: true },
+    paymentMethod: { type: 'String', required: true },
+    reference: { type: 'String' },
+    note: { type: 'String' },
+    createdBy: { type: 'Pointer', targetClass: '_User' },
+    updatedBy: { type: 'Pointer', targetClass: '_User' },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
+const expenseSchema = {
+  className: 'Expense',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    category: { type: 'String', required: true },
+    amountPaise: { type: 'Number', required: true },
+    paidTo: { type: 'String', required: true },
+    description: { type: 'String' },
+    transactionDate: { type: 'Date', required: true },
+    createdBy: { type: 'Pointer', targetClass: '_User' },
+    updatedBy: { type: 'Pointer', targetClass: '_User' },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
+const auditSchema = {
+  className: 'FinancialAuditLog',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    user: { type: 'Pointer', targetClass: '_User', required: true },
+    entityType: { type: 'String', required: true },
+    entityId: { type: 'String', required: true },
+    action: { type: 'String', required: true },
+    oldValues: { type: 'Object' },
+    newValues: { type: 'Object' },
+    reason: { type: 'String' },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
 async function findOne(className, where) {
   const query = encodeURIComponent(JSON.stringify(where));
   const res = await api('GET', `/classes/${className}?limit=1&where=${query}`);
@@ -278,6 +333,9 @@ await upsertSchema(prayerRequestSchema);
 await upsertSchema(prayerResponseSchema);
 await upsertSchema(journalSchema);
 await upsertSchema(resourceSchema);
+await upsertSchema(contributionSchema);
+await upsertSchema(expenseSchema);
+await upsertSchema(auditSchema);
 
 const groupId = await ensureGroup();
 const memberRoleName = `group:${groupId}:member`;

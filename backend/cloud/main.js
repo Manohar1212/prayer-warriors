@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { createMemberHandlers } = require('./members');
 const { createPrayerHandlers } = require('./prayer');
 const { createResourceHandlers } = require('./resources');
+const { createFinanceHandlers } = require('./finance');
 
 function pointer(className, id) {
   return { __type: 'Pointer', className, objectId: id };
@@ -33,6 +34,14 @@ const memberships = {
       .equalTo('status', 'active')
       .first({ useMasterKey: true });
     return row ? row.get('group').id : null;
+  },
+  async isActiveMember(userId, groupId) {
+    const row = await new Parse.Query('GroupMember')
+      .equalTo('user', pointer('_User', userId))
+      .equalTo('group', pointer('Group', groupId))
+      .equalTo('status', 'active')
+      .first({ useMasterKey: true });
+    return Boolean(row);
   },
   async findAdminGroupId(userId) {
     const row = await new Parse.Query('GroupMember')
@@ -205,11 +214,129 @@ const resources = {
   },
 };
 
+// ---------- finance ----------
+
+function iso(date) {
+  return date instanceof Date ? date.toISOString() : null;
+}
+
+function contributionDto(obj) {
+  const group = obj.get('group');
+  const member = obj.get('member');
+  const createdBy = obj.get('createdBy');
+  const updatedBy = obj.get('updatedBy');
+  return {
+    id: obj.id,
+    groupId: group ? group.id : null,
+    memberId: member ? member.id : null,
+    amountPaise: obj.get('amountPaise') || 0,
+    transactionDate: iso(obj.get('transactionDate')),
+    paymentMethod: obj.get('paymentMethod'),
+    reference: obj.get('reference') || '',
+    note: obj.get('note') || '',
+    createdById: createdBy ? createdBy.id : null,
+    updatedById: updatedBy ? updatedBy.id : null,
+    createdAt: iso(obj.createdAt),
+  };
+}
+
+function expenseDto(obj) {
+  const group = obj.get('group');
+  const createdBy = obj.get('createdBy');
+  const updatedBy = obj.get('updatedBy');
+  return {
+    id: obj.id,
+    groupId: group ? group.id : null,
+    category: obj.get('category'),
+    amountPaise: obj.get('amountPaise') || 0,
+    paidTo: obj.get('paidTo') || '',
+    description: obj.get('description') || '',
+    transactionDate: iso(obj.get('transactionDate')),
+    createdById: createdBy ? createdBy.id : null,
+    updatedById: updatedBy ? updatedBy.id : null,
+    createdAt: iso(obj.createdAt),
+  };
+}
+
+const POINTER_FIELDS = { memberId: ['member', '_User'], createdById: ['createdBy', '_User'], updatedById: ['updatedBy', '_User'] };
+
+function applyFields(obj, fields) {
+  Object.entries(fields).forEach(([key, value]) => {
+    const p = POINTER_FIELDS[key];
+    if (p) obj.set(p[0], pointer(p[1], value));
+    else obj.set(key, value);
+  });
+}
+
+async function fetchRow(className, id) {
+  return new Parse.Query(className).get(id, { useMasterKey: true }).catch(() => null);
+}
+
+function ledgerRepo(className, toDto) {
+  return {
+    async create({ groupId, ...fields }) {
+      const obj = new Parse.Object(className);
+      obj.set('group', pointer('Group', groupId));
+      applyFields(obj, fields);
+      obj.setACL(groupReadAcl(groupId));
+      await obj.save(null, { useMasterKey: true });
+      return toDto(obj);
+    },
+    async get(id) {
+      const obj = await fetchRow(className, id);
+      return obj ? toDto(obj) : null;
+    },
+    async update(id, patch) {
+      const obj = await new Parse.Query(className).get(id, { useMasterKey: true });
+      applyFields(obj, patch);
+      await obj.save(null, { useMasterKey: true });
+      return toDto(obj);
+    },
+    async remove(id) {
+      const obj = await new Parse.Query(className).get(id, { useMasterKey: true });
+      await obj.destroy({ useMasterKey: true });
+    },
+  };
+}
+
+const contributionsRepo = ledgerRepo('Contribution', contributionDto);
+const expensesRepo = ledgerRepo('Expense', expenseDto);
+
+const ledger = {
+  createContribution: (f) => contributionsRepo.create(f),
+  getContribution: (id) => contributionsRepo.get(id),
+  updateContribution: (id, p) => contributionsRepo.update(id, p),
+  deleteContribution: (id) => contributionsRepo.remove(id),
+  createExpense: (f) => expensesRepo.create(f),
+  getExpense: (id) => expensesRepo.get(id),
+  updateExpense: (id, p) => expensesRepo.update(id, p),
+  deleteExpense: (id) => expensesRepo.remove(id),
+};
+
+const audit = {
+  async record({ groupId, userId, entityType, entityId, action, oldValues, newValues, reason }) {
+    const obj = new Parse.Object('FinancialAuditLog');
+    obj.set('group', pointer('Group', groupId));
+    obj.set('user', pointer('_User', userId));
+    obj.set('entityType', entityType);
+    obj.set('entityId', entityId);
+    obj.set('action', action);
+    if (oldValues) obj.set('oldValues', oldValues);
+    if (newValues) obj.set('newValues', newValues);
+    if (reason) obj.set('reason', reason);
+    const acl = new Parse.ACL();
+    acl.setRoleReadAccess(`group:${groupId}:admin`, true);
+    obj.setACL(acl);
+    await obj.save(null, { useMasterKey: true });
+  },
+};
+
 // ---------- cloud functions ----------
 
 const memberHandlers = createMemberHandlers({ memberships, users, roles, generatePassword });
 const prayerHandlers = createPrayerHandlers({ memberships, requests, responses });
 const resourceHandlers = createResourceHandlers({ memberships, resources });
+const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
 Parse.Cloud.define('addMember', (request) =>
   memberHandlers.addMember(request.params, { callerId: callerId(request) }),
@@ -228,6 +355,9 @@ Parse.Cloud.define('createResource', (request) =>
 );
 Parse.Cloud.define('deleteResource', (request) =>
   resourceHandlers.deleteResource(request.params, { callerId: callerId(request) }),
+);
+['addContribution', 'updateContribution', 'deleteContribution', 'addExpense', 'updateExpense', 'deleteExpense'].forEach(
+  (name) => Parse.Cloud.define(name, (request) => financeHandlers[name](request.params, { callerId: callerId(request) })),
 );
 Parse.Cloud.define('ping', () => 'pong');
 
