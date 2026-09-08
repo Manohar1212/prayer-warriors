@@ -1,11 +1,16 @@
 {
   "name": "prayer-warriors",
   "private": true,
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*",
+    "backend"
+  ],
   "scripts": {
     "mobile": "npm start -w apps/mobile",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm test --workspaces --if-present -- --ci"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }
