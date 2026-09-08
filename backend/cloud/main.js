@@ -21,6 +21,12 @@ function groupReadAcl(groupId, ownerId) {
   return acl;
 }
 
+/** Id of a pointer whether it is a decoded Parse.Object or the raw pointer we just set. */
+function refId(value) {
+  if (!value) return null;
+  return value.id || value.objectId || null;
+}
+
 function callerId(request) {
   return request.user ? request.user.id : null;
 }
@@ -107,8 +113,8 @@ function requestDto(obj) {
   const answeredAt = obj.get('answeredAt');
   return {
     id: obj.id,
-    groupId: group ? group.id : null,
-    authorId: author ? author.id : null,
+    groupId: refId(group),
+    authorId: refId(author),
     title: obj.get('title'),
     description: obj.get('description') || '',
     category: obj.get('category'),
@@ -182,8 +188,8 @@ function resourceDto(obj) {
   const createdBy = obj.get('createdBy');
   return {
     id: obj.id,
-    groupId: group ? group.id : null,
-    createdById: createdBy ? createdBy.id : null,
+    groupId: refId(group),
+    createdById: refId(createdBy),
     type: obj.get('type'),
     title: obj.get('title'),
     body: obj.get('body') || '',
@@ -227,15 +233,15 @@ function contributionDto(obj) {
   const updatedBy = obj.get('updatedBy');
   return {
     id: obj.id,
-    groupId: group ? group.id : null,
-    memberId: member ? member.id : null,
+    groupId: refId(group),
+    memberId: refId(member),
     amountPaise: obj.get('amountPaise') || 0,
     transactionDate: iso(obj.get('transactionDate')),
     paymentMethod: obj.get('paymentMethod'),
     reference: obj.get('reference') || '',
     note: obj.get('note') || '',
-    createdById: createdBy ? createdBy.id : null,
-    updatedById: updatedBy ? updatedBy.id : null,
+    createdById: refId(createdBy),
+    updatedById: refId(updatedBy),
     createdAt: iso(obj.createdAt),
   };
 }
@@ -246,14 +252,14 @@ function expenseDto(obj) {
   const updatedBy = obj.get('updatedBy');
   return {
     id: obj.id,
-    groupId: group ? group.id : null,
+    groupId: refId(group),
     category: obj.get('category'),
     amountPaise: obj.get('amountPaise') || 0,
     paidTo: obj.get('paidTo') || '',
     description: obj.get('description') || '',
     transactionDate: iso(obj.get('transactionDate')),
-    createdById: createdBy ? createdBy.id : null,
-    updatedById: updatedBy ? updatedBy.id : null,
+    createdById: refId(createdBy),
+    updatedById: refId(updatedBy),
     createdAt: iso(obj.createdAt),
   };
 }

@@ -9,6 +9,8 @@ import { createMembersService } from '../features/members/service';
 import type { RawMembership } from '../features/members/types';
 import { createJournalService } from '../features/prayer/journal';
 import { createPrayerService } from '../features/prayer/service';
+import { createFundsService } from '../features/funds/service';
+import type { RawAuditEntry, RawContribution, RawExpense } from '../features/funds/types';
 import { createResourcesService } from '../features/resources/service';
 import type { RawResource } from '../features/resources/types';
 import type { JournalInput, PrayerStatus, RawJournalEntry, RawPrayerRequest } from '../features/prayer/types';
@@ -164,6 +166,57 @@ export const resourcesService = createResourcesService({
         createdBy: by ? { id: by.id ?? '', displayName: by.get('displayName') as string | undefined } : null,
       };
     });
+  },
+  cloud: Parse.Cloud,
+});
+
+function userSummary(user: Parse.User | undefined) {
+  return user ? { id: user.id ?? '', displayName: user.get('displayName') as string | undefined } : null;
+}
+
+function isoOf(value: unknown): string {
+  return value instanceof Date ? value.toISOString() : '';
+}
+
+export const fundsService = createFundsService({
+  fetchContributions: async (): Promise<RawContribution[]> => {
+    const rows = await new Parse.Query('Contribution').include('member').descending('transactionDate').limit(1000).find();
+    return rows.map((row) => ({
+      id: row.id ?? '',
+      member: userSummary(row.get('member') as Parse.User | undefined),
+      amountPaise: Number(row.get('amountPaise') ?? 0),
+      transactionDate: isoOf(row.get('transactionDate')),
+      paymentMethod: String(row.get('paymentMethod') ?? 'other'),
+      reference: String(row.get('reference') ?? ''),
+      note: String(row.get('note') ?? ''),
+      createdAt: row.createdAt?.toISOString() ?? '',
+    }));
+  },
+  fetchExpenses: async (): Promise<RawExpense[]> => {
+    const rows = await new Parse.Query('Expense').descending('transactionDate').limit(1000).find();
+    return rows.map((row) => ({
+      id: row.id ?? '',
+      category: String(row.get('category') ?? 'other'),
+      amountPaise: Number(row.get('amountPaise') ?? 0),
+      paidTo: String(row.get('paidTo') ?? ''),
+      description: String(row.get('description') ?? ''),
+      transactionDate: isoOf(row.get('transactionDate')),
+      createdAt: row.createdAt?.toISOString() ?? '',
+    }));
+  },
+  fetchAudit: async (): Promise<RawAuditEntry[]> => {
+    const rows = await new Parse.Query('FinancialAuditLog').include('user').descending('createdAt').limit(500).find();
+    return rows.map((row) => ({
+      id: row.id ?? '',
+      user: userSummary(row.get('user') as Parse.User | undefined),
+      entityType: String(row.get('entityType') ?? ''),
+      entityId: String(row.get('entityId') ?? ''),
+      action: String(row.get('action') ?? ''),
+      reason: (row.get('reason') as string | undefined) ?? null,
+      oldValues: (row.get('oldValues') as Record<string, unknown> | undefined) ?? null,
+      newValues: (row.get('newValues') as Record<string, unknown> | undefined) ?? null,
+      createdAt: row.createdAt?.toISOString() ?? '',
+    }));
   },
   cloud: Parse.Cloud,
 });
