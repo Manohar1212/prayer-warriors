@@ -7,3 +7,6 @@ export { Placeholder } from './Placeholder';
 export { Rule } from './Rule';
 export { Screen } from './Screen';
 export { Text } from './Text';
+export { Badge } from './Badge';
+export { Chip } from './Chip';
+export { Segments } from './Segments';
