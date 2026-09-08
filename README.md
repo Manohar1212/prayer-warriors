@@ -5,6 +5,21 @@ TypeScript on the mobile side and Back4App (Parse Server) as the backend. The fu
 product plan lives in `docs/Prayer_Warriors_Product_Technical_Plan.md`; each phase
 has a design spec and implementation plan under `docs/superpowers/`.
 
+## What's built
+
+| Area | Status |
+| --- | --- |
+| Sign-in (email + password, session restore) | Done |
+| Members: list, admin adds members with a one-time starting password | Done |
+| Prayer: requests, "I'm praying", answered with testimony, private journal | Done |
+| Resources: songs, scripture, prayers with links and search | Done |
+| Funds: contributions, expenses, balance, monthly report, CSV export, change history | Done |
+| Group calls (LiveKit), push notifications, admin web dashboard | Not started (need a development build) |
+
+All writes go through Cloud Code in `backend/cloud/`; the app reads with the Parse SDK behind
+small services in `apps/mobile/src/features/*`. Specs and plans for each feature are in
+`docs/superpowers/`.
+
 ## Setup
 
 1. **Backend** — follow `backend/README.md` to create the schema, roles, first group,
@@ -31,7 +46,7 @@ has a design spec and implementation plan under `docs/superpowers/`.
 ```
 apps/mobile/                Expo app (Expo Router, NativeWind, Parse JS SDK)
   app/                      Routes: (auth) stack, (tabs), account-setup, profile
-  src/features/auth/        AuthService, AuthProvider, route gate
+  src/features/              auth, members, prayer, resources, funds (services, hooks, tests)
   src/ui/                   Screen, Card, Button, Input, Text primitives
   src/theme/tokens.ts       Colors and fonts (mirrored in tailwind.config.js)
   src/lib/parse.ts          Parse SDK initialisation
