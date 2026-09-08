@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -18,7 +18,6 @@ function longDate(iso: string): string {
 }
 
 export default function PrayerRequestScreen() {
-  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const { isAdmin } = useMembers();
@@ -74,14 +73,14 @@ export default function PrayerRequestScreen() {
           {request.title}
         </Text>
         <Text variant="muted">
-          {request.authorName} · {longDate(request.createdAt)}
+          Asked by {request.authorName} on {longDate(request.createdAt)}
         </Text>
       </View>
 
       {request.description ? <Text className="text-[16px] leading-[26px]">{request.description}</Text> : null}
 
       {isAnswered ? (
-        <Card className="gap-2 bg-honey">
+        <Card tone="honey" className="gap-2">
           <Text variant="label" color="gold">
             Answered {request.answeredAt ? longDate(request.answeredAt) : ''}
           </Text>
@@ -142,7 +141,6 @@ export default function PrayerRequestScreen() {
         )
       ) : null}
 
-      <Button title="Back" variant="ghost" onPress={() => router.back()} className="self-start px-0" />
     </Screen>
   );
 }

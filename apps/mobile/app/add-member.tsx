@@ -5,6 +5,7 @@ import { Share, View } from 'react-native';
 
 import { toE164 } from '@/features/auth';
 import { useMembers, type AddedMember } from '@/features/members';
+import { goBackOr } from '@/lib/navigation';
 import { Button, Card, Input, Screen, Text } from '@/ui';
 
 function shareMessage(m: AddedMember): string {
@@ -106,7 +107,7 @@ export default function AddMemberScreen() {
   if (added) {
     return (
       <Screen scroll backdrop className="pt-6">
-        <AddedView member={added} onDone={() => router.back()} />
+        <AddedView member={added} onDone={() => goBackOr(router, '/(tabs)/community')} />
       </Screen>
     );
   }

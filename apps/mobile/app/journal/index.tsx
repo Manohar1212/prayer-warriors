@@ -13,7 +13,7 @@ function shortDate(iso: string): string {
 function EntryCard({ entry, onOpen }: { entry: JournalEntry; onOpen: () => void }) {
   return (
     <Pressable accessibilityRole="button" onPress={onOpen}>
-      <Card className={`gap-2 ${entry.answered ? 'bg-honey' : ''}`}>
+      <Card tone={entry.answered ? 'honey' : 'surface'} className="gap-2">
         <View className="flex-row items-center justify-between">
           <Badge label={categoryLabel(entry.category)} tone={entry.answered ? 'honey' : 'sage'} />
           <Text variant="muted">{shortDate(entry.answered && entry.answeredAt ? entry.answeredAt : entry.createdAt)}</Text>

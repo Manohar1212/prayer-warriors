@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { CATEGORIES, useJournal, type PrayerCategory } from '@/features/prayer';
+import { goBackOr } from '@/lib/navigation';
 import { Button, Chip, Input, Screen, Text } from '@/ui';
 
 export default function JournalEntryScreen() {
@@ -34,7 +35,7 @@ export default function JournalEntryScreen() {
     setError(null);
     try {
       await save({ id: existing?.id, title, body, category, answered: isAnswered });
-      router.back();
+      goBackOr(router, '/journal');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save the entry.');
     } finally {
@@ -47,7 +48,7 @@ export default function JournalEntryScreen() {
     setBusy(true);
     try {
       await remove(existing.id);
-      router.back();
+      goBackOr(router, '/journal');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not delete the entry.');
       setBusy(false);

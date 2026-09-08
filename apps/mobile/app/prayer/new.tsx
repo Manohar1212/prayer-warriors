@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { CATEGORIES, usePrayerRequests, type PrayerCategory } from '@/features/prayer';
+import { goBackOr } from '@/lib/navigation';
 import { Button, Chip, Input, Screen, Text } from '@/ui';
 
 export default function NewPrayerRequestScreen() {
@@ -23,7 +24,7 @@ export default function NewPrayerRequestScreen() {
     setError(null);
     try {
       await create({ title, description, category, urgency: urgent ? 'urgent' : 'normal' });
-      router.back();
+      goBackOr(router, '/(tabs)/prayer');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not post the request.');
     } finally {

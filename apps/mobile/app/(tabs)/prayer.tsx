@@ -16,8 +16,8 @@ function prayingLabel(n: number): string {
 function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPray: () => void; onOpen: () => void }) {
   const answered = request.status === 'answered';
   return (
-    <Pressable accessibilityRole="button" onPress={onOpen}>
-      <Card className="gap-3">
+    <Card className="gap-3">
+      <Pressable accessibilityRole="button" accessibilityLabel={`Open ${request.title}`} onPress={onOpen} className="gap-3">
         <View className="flex-row flex-wrap gap-2">
           <Badge label={categoryLabel(request.category)} tone="sage" />
           {request.urgency === 'urgent' && !answered ? <Badge label="Urgent" tone="blush" /> : null}
@@ -33,10 +33,16 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
             </Text>
           ) : null}
         </View>
-        <View className="flex-row items-center justify-between">
-          <Text variant="muted">
-            {request.authorName} · {prayingLabel(request.prayingCount)}
-          </Text>
+      </Pressable>
+      <View className="flex-row items-end justify-between gap-3">
+          <View className="flex-1 gap-0.5">
+            <Text variant="muted" className="text-[13px]">
+              {request.authorName}
+            </Text>
+            <Text variant="label" color="muted" className="text-[13px]">
+              {prayingLabel(request.prayingCount)}
+            </Text>
+          </View>
           {answered ? null : (
             <Pressable
               accessibilityRole="button"
@@ -57,9 +63,8 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
               </Text>
             </Pressable>
           )}
-        </View>
-      </Card>
-    </Pressable>
+      </View>
+    </Card>
   );
 }
 
@@ -85,10 +90,17 @@ export default function PrayerScreen() {
               value={status}
               onChange={setStatus}
             />
-            <View className="flex-row gap-3">
-              <Button title="New request" onPress={() => router.push('/prayer/new')} className="flex-1" />
-              <Button title="My journal" variant="secondary" onPress={() => router.push('/journal')} className="flex-1" />
-            </View>
+            <Button title="New request" onPress={() => router.push('/prayer/new')} />
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/journal')}
+              className="flex-row items-center gap-2 self-start py-1"
+            >
+              <Ionicons name="book-outline" size={18} color={colors.primary} />
+              <Text variant="label" color="primary">
+                My private journal
+              </Text>
+            </Pressable>
             {error ? (
               <Text variant="muted" color="rose">
                 {error}
