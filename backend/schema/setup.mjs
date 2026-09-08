@@ -99,6 +99,73 @@ const groupMemberSchema = {
   },
 };
 
+const prayerRequestSchema = {
+  className: 'PrayerRequest',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    author: { type: 'Pointer', targetClass: '_User', required: true },
+    title: { type: 'String', required: true },
+    description: { type: 'String' },
+    category: { type: 'String', required: true },
+    urgency: { type: 'String', required: true, defaultValue: 'normal' },
+    status: { type: 'String', required: true, defaultValue: 'active' },
+    prayingCount: { type: 'Number', defaultValue: 0 },
+    answeredAt: { type: 'Date' },
+    testimony: { type: 'String' },
+  },
+  classLevelPermissions: {
+    find: authenticated,
+    get: authenticated,
+    count: authenticated,
+    create: masterOnly,
+    update: masterOnly,
+    delete: masterOnly,
+    addField: masterOnly,
+    protectedFields: {},
+  },
+};
+
+const prayerResponseSchema = {
+  className: 'PrayerResponse',
+  fields: {
+    prayerRequest: { type: 'Pointer', targetClass: 'PrayerRequest', required: true },
+    user: { type: 'Pointer', targetClass: '_User', required: true },
+    responseType: { type: 'String', required: true, defaultValue: 'praying' },
+  },
+  classLevelPermissions: {
+    find: authenticated,
+    get: authenticated,
+    count: authenticated,
+    create: masterOnly,
+    update: masterOnly,
+    delete: masterOnly,
+    addField: masterOnly,
+    protectedFields: {},
+  },
+};
+
+const journalSchema = {
+  className: 'PrayerJournalEntry',
+  fields: {
+    user: { type: 'Pointer', targetClass: '_User', required: true },
+    title: { type: 'String', required: true },
+    body: { type: 'String' },
+    category: { type: 'String' },
+    answered: { type: 'Boolean', defaultValue: false },
+    answeredAt: { type: 'Date' },
+  },
+  classLevelPermissions: {
+    find: authenticated,
+    get: authenticated,
+    count: authenticated,
+    create: authenticated, // beforeSave pins the owner and an owner-only ACL
+    update: authenticated,
+    delete: authenticated,
+    addField: masterOnly,
+    protectedFields: {},
+  },
+};
+
 async function findOne(className, where) {
   const query = encodeURIComponent(JSON.stringify(where));
   const res = await api('GET', `/classes/${className}?limit=1&where=${query}`);
@@ -183,6 +250,9 @@ async function ensureAdmin(groupId, memberRole, adminRole) {
 await upsertSchema(userSchema);
 await upsertSchema(groupSchema);
 await upsertSchema(groupMemberSchema);
+await upsertSchema(prayerRequestSchema);
+await upsertSchema(prayerResponseSchema);
+await upsertSchema(journalSchema);
 
 const groupId = await ensureGroup();
 const memberRoleName = `group:${groupId}:member`;
