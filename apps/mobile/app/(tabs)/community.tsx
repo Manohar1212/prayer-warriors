@@ -1,4 +1,5 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
 
 import { useMembers, type Member } from '@/features/members';
@@ -30,6 +31,13 @@ export default function CommunityScreen() {
   const router = useRouter();
   const { members, loading, error, isAdmin, refresh } = useMembers();
   const count = members.length;
+
+  // Pick up members added from the modal (and elsewhere) whenever this tab regains focus.
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   return (
     <Screen backdrop className="px-0 pt-0">
