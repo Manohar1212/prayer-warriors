@@ -66,3 +66,39 @@ export type PrayerService = {
   markAnswered(requestId: string, testimony: string): Promise<PrayerRequest>;
   prayingMembers(requestId: string): Promise<string[]>;
 };
+
+// ---------- journal (private) ----------
+
+export type RawJournalEntry = {
+  id: string;
+  title: string;
+  body: string;
+  category: string;
+  answered: boolean;
+  createdAt: string;
+  answeredAt: string | null;
+};
+
+export type JournalEntry = {
+  id: string;
+  title: string;
+  body: string;
+  category: PrayerCategory;
+  answered: boolean;
+  createdAt: string;
+  answeredAt: string | null;
+};
+
+export type JournalInput = {
+  id?: string;
+  title: string;
+  body: string;
+  category: PrayerCategory;
+  answered: boolean;
+};
+
+export type JournalService = {
+  list(): Promise<{ active: JournalEntry[]; answered: JournalEntry[] }>;
+  save(input: JournalInput): Promise<JournalEntry>;
+  remove(id: string): Promise<void>;
+};

@@ -54,6 +54,8 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
         <Stack.Screen name="add-member" options={{ ...modalOptions, title: 'Add member' }} />
         <Stack.Screen name="prayer/new" options={{ ...modalOptions, title: 'New request' }} />
         <Stack.Screen name="prayer/[id]" options={{ ...modalOptions, presentation: 'card', title: 'Prayer request' }} />
+        <Stack.Screen name="journal/index" options={{ ...modalOptions, presentation: 'card', title: 'My journal' }} />
+        <Stack.Screen name="journal/entry" options={{ ...modalOptions, title: 'Journal entry' }} />
       </Stack.Protected>
     </Stack>
   );
