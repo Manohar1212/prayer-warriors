@@ -50,7 +50,7 @@ export default function FundsScreen() {
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
         ListHeaderComponent={
           <View className="mb-2 gap-5">
-            <View className="gap-4 rounded-[24px] bg-primary p-6">
+            <View className="gap-4 rounded-[24px] bg-primary p-5">
               <Text variant="label" color="creamSoft">
                 Current balance
               </Text>

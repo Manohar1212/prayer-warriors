@@ -26,6 +26,20 @@ const background: Record<ScreenTone, string> = {
   forest: colors.primaryDark,
 };
 
+/**
+ * Default paddings apply only when the caller has not set that axis. Tailwind resolves conflicts by
+ * its own utility order, not by class order, so "px-0" in `className` cannot cancel a default "px-4";
+ * dropping the default instead makes the override reliable on web and native alike.
+ */
+function withDefaultPadding(className: string, defaults: string[]): string {
+  const own = className.split(/\s+/).filter(Boolean);
+  const kept = defaults.filter((d) => {
+    const axis = d.slice(0, d.indexOf('-') + 1);
+    return !own.some((c) => c.startsWith(axis));
+  });
+  return [...kept, ...own].join(' ');
+}
+
 export function Screen({
   children,
   scroll = false,
@@ -36,14 +50,14 @@ export function Screen({
 }: Props) {
   const body = scroll ? (
     <ScrollView
-      contentContainerClassName={`flex-grow px-4 pb-8 pt-4 ${className}`}
+      contentContainerClassName={`flex-grow ${withDefaultPadding(className, ['px-4', 'pb-8', 'pt-4'])}`}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
       {children}
     </ScrollView>
   ) : (
-    <View className={`flex-1 px-4 pb-8 pt-4 ${className}`}>{children}</View>
+    <View className={`flex-1 ${withDefaultPadding(className, ['px-4', 'pb-8', 'pt-4'])}`}>{children}</View>
   );
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: background[tone] }} edges={edges}>
