@@ -2,6 +2,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 import { callsService } from '../../lib/parse';
+import { syncCallReminders } from '../notifications/reminders';
 import type { GroupCall } from './types';
 
 export type CallsState = {
@@ -25,6 +26,7 @@ export function useCalls(): CallsState {
       const result = await callsService.list();
       setUpcoming(result.upcoming);
       setPast(result.past);
+      syncCallReminders(result.upcoming);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load calls.');
     }

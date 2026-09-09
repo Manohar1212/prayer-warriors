@@ -13,6 +13,8 @@ import { createCallsService } from '../features/calls/service';
 import type { RawCall, RawParticipant } from '../features/calls/types';
 import { createFundsService } from '../features/funds/service';
 import type { RawAuditEntry, RawContribution, RawExpense } from '../features/funds/types';
+import { createNotificationsService } from '../features/notifications/service';
+import type { RawNotification } from '../features/notifications/types';
 import { createResourcesService } from '../features/resources/service';
 import type { RawResource } from '../features/resources/types';
 import type { JournalInput, PrayerStatus, RawJournalEntry, RawPrayerRequest } from '../features/prayer/types';
@@ -245,6 +247,30 @@ export const callsService = createCallsService({
       user: userSummary(row.get('user') as Parse.User | undefined),
       leftAt: row.get('leftAt') instanceof Date ? isoOf(row.get('leftAt')) : null,
     }));
+  },
+  cloud: Parse.Cloud,
+});
+
+export const notificationsService = createNotificationsService({
+  fetchNotifications: async (): Promise<RawNotification[]> => {
+    const rows = await new Parse.Query('Notification').descending('createdAt').limit(200).find();
+    return rows.map((row) => ({
+      id: row.id ?? '',
+      type: String(row.get('type') ?? ''),
+      title: String(row.get('title') ?? ''),
+      body: String(row.get('body') ?? ''),
+      route: String(row.get('route') ?? ''),
+      createdAt: isoOf(row.createdAt),
+      readAt: row.get('readAt') instanceof Date ? isoOf(row.get('readAt')) : null,
+    }));
+  },
+  countUnread: () => new Parse.Query('Notification').doesNotExist('readAt').count(),
+  fetchPrefs: async () => {
+    const user = await Parse.User.currentAsync();
+    if (!user) return null;
+    await user.fetch();
+    const prefs = user.get('notificationPrefs');
+    return prefs && typeof prefs === 'object' ? (prefs as Record<string, unknown>) : null;
   },
   cloud: Parse.Cloud,
 });

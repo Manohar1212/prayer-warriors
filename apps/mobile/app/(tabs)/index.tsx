@@ -5,6 +5,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { useBibleLanguage } from '@/features/bible';
+import { useUnreadCount } from '@/features/notifications';
 import { isJoinable, useCalls } from '@/features/calls';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
 import { categoryLabel, usePrayerRequests } from '@/features/prayer';
@@ -59,6 +60,7 @@ export default function HomeScreen() {
   const { requests, loading: loadingRequests } = usePrayerRequests('active');
   const [recent, setRecent] = useState<Resource[]>([]);
   const { next: nextCall } = useCalls();
+  const unread = useUnreadCount();
   const firstName = user?.displayName?.split(' ')[0] ?? 'friend';
   const now = new Date();
 
@@ -81,17 +83,35 @@ export default function HomeScreen() {
               {firstName}
             </Text>
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open profile"
-            onPress={() => router.push('/profile')}
-            hitSlop={8}
-            className="mt-1 h-11 w-11 items-center justify-center rounded-full bg-primary"
-          >
-            <Text variant="title" color="cream">
-              {firstName.charAt(0).toUpperCase()}
-            </Text>
-          </Pressable>
+          <View className="mt-1 flex-row items-center gap-3">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+              onPress={() => router.push('/notifications')}
+              hitSlop={8}
+              className="h-11 w-11 items-center justify-center rounded-full bg-sage"
+            >
+              <Ionicons name={unread ? 'notifications' : 'notifications-outline'} size={22} color={colors.primary} />
+              {unread ? (
+                <View className="absolute -right-1 -top-1 h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold px-1">
+                  <Text variant="label" color="cream" className="text-[11px]">
+                    {unread > 9 ? '9+' : String(unread)}
+                  </Text>
+                </View>
+              ) : null}
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open profile"
+              onPress={() => router.push('/profile')}
+              hitSlop={8}
+              className="h-11 w-11 items-center justify-center rounded-full bg-primary"
+            >
+              <Text variant="title" color="cream">
+                {firstName.charAt(0).toUpperCase()}
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         <Pressable

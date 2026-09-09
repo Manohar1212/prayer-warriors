@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, resolveGate, useAuth } from '@/features/auth';
+import { PushRegistrar } from '@/features/notifications';
 import { parseAuthService } from '@/lib/parse';
 import { colors, fonts } from '@/theme/tokens';
 
@@ -42,7 +43,9 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
   if (!ready) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream } }}>
+    <>
+      {gate === 'app' ? <PushRegistrar /> : null}
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream } }}>
       <Stack.Protected guard={gate === 'auth'}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
@@ -66,8 +69,11 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
         <Stack.Screen name="calls/schedule" options={{ ...modalOptions, title: 'Schedule a call' }} />
         <Stack.Screen name="calls/[id]" options={{ ...modalOptions, presentation: 'card', title: 'Group call', headerBackVisible: false, gestureEnabled: false }} />
         <Stack.Screen name="calls/history" options={{ ...modalOptions, presentation: 'card', title: 'Call history' }} />
+        <Stack.Screen name="notifications/index" options={{ ...modalOptions, presentation: 'card', title: 'Notifications' }} />
+        <Stack.Screen name="notifications/settings" options={{ ...modalOptions, presentation: 'card', title: 'Notification settings' }} />
       </Stack.Protected>
-    </Stack>
+      </Stack>
+    </>
   );
 }
 

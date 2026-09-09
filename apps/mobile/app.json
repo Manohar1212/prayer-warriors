@@ -36,7 +36,14 @@
       "expo-sharing",
       "expo-sqlite",
       "expo-asset",
-      "@livekit/react-native-expo-plugin"
+      "@livekit/react-native-expo-plugin",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#173E32"
+        }
+      ]
     ]
   }
 }

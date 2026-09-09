@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
-import { Platform, Pressable } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 
+import { useUnreadCount } from '@/features/notifications';
 import { colors, fonts } from '@/theme/tokens';
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -13,6 +14,29 @@ const tabs: { name: string; title: string; icon: IconName; active: IconName }[] 
   { name: 'resources', title: 'Resources', icon: 'book-outline', active: 'book' },
   { name: 'funds', title: 'Funds', icon: 'wallet-outline', active: 'wallet' },
 ];
+
+function BellButton() {
+  const router = useRouter();
+  const unread = useUnreadCount();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+      onPress={() => router.push('/notifications')}
+      hitSlop={8}
+      style={{ marginRight: 16 }}
+    >
+      <Ionicons name={unread ? 'notifications' : 'notifications-outline'} size={26} color={colors.primary} />
+      {unread ? (
+        <View
+          style={{ position: 'absolute', top: -4, right: -6, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: colors.gold, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 }}
+        >
+          <Text style={{ color: colors.cream, fontFamily: fonts.sansSemiBold, fontSize: 11 }}>{unread > 9 ? '9+' : String(unread)}</Text>
+        </View>
+      ) : null}
+    </Pressable>
+  );
+}
 
 export default function TabsLayout() {
   const router = useRouter();
@@ -26,15 +50,18 @@ export default function TabsLayout() {
         headerTitleStyle: { fontFamily: fonts.display, fontSize: 24, color: colors.primary },
         headerLeftContainerStyle: { paddingLeft: 8 },
         headerRight: () => (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open profile"
-            onPress={() => router.push('/profile')}
-            hitSlop={8}
-            style={{ marginRight: 20 }}
-          >
-            <Ionicons name="person-circle-outline" size={28} color={colors.primary} />
-          </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <BellButton />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open profile"
+              onPress={() => router.push('/profile')}
+              hitSlop={8}
+              style={{ marginRight: 20 }}
+            >
+              <Ionicons name="person-circle-outline" size={28} color={colors.primary} />
+            </Pressable>
+          </View>
         ),
         sceneStyle: { backgroundColor: colors.cream },
         tabBarActiveTintColor: colors.primary,
