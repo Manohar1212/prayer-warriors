@@ -5,7 +5,7 @@ const path = require('path');
 const config = getDefaultConfig(__dirname);
 
 // The bundled Bible database is shipped as an asset.
-config.resolver.assetExts = [...config.resolver.assetExts, 'db'];
+config.resolver.assetExts = [...config.resolver.assetExts, 'db', 'wasm'];
 
 // Parse's react-native build requires Node's `crypto` for randomUUID; alias it to expo-crypto.
 const nodeCryptoShim = path.resolve(__dirname, 'src/lib/node-crypto-shim.js');

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, View } from 'react-native';
 
 import { useBibleLanguage, useSearch, type SearchHit } from '@/features/bible';
+import { Highlight } from '@/features/bible/Highlight';
 import { LanguageToggle } from '@/features/bible/LanguageToggle';
 import { colors } from '@/theme/tokens';
 import { Input, Screen, Text } from '@/ui';
@@ -43,9 +44,7 @@ export default function BibleSearchScreen() {
             <Text variant="label" color="primary" className="text-[13px]">
               {item.bookName} {item.chapter}:{item.label}
             </Text>
-            <Text className="text-[15px] leading-[23px]" numberOfLines={3}>
-              {item.text}
-            </Text>
+            <Highlight text={item.text} query={query} className="text-[15px] leading-[23px]" numberOfLines={3} />
           </Pressable>
         )}
       />

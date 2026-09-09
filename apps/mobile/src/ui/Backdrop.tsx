@@ -7,8 +7,7 @@ import { colors } from '../theme/tokens';
 export function Backdrop() {
   return (
     <Svg
-      pointerEvents="none"
-      style={StyleSheet.absoluteFill}
+      style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]}
       viewBox="0 0 390 844"
       preserveAspectRatio="xMaxYMin slice"
     >

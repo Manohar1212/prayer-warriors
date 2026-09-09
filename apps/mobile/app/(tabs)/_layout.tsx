@@ -18,6 +18,7 @@ export default function TabsLayout() {
   const router = useRouter();
   return (
     <Tabs
+      initialRouteName="index"
       screenOptions={{
         headerStyle: { backgroundColor: colors.cream },
         headerShadowVisible: false,
@@ -47,7 +48,6 @@ export default function TabsLayout() {
         tabBarLabelStyle: { fontFamily: fonts.sansMedium, fontSize: 11, marginTop: 2 },
       }}
     >
-      <Tabs.Screen name="bible" options={{ href: null, headerShown: false }} />
       {tabs.map((tab) => (
         <Tabs.Screen
           key={tab.name}
@@ -61,6 +61,7 @@ export default function TabsLayout() {
           }}
         />
       ))}
+      <Tabs.Screen name="bible" options={{ href: null, headerShown: false }} />
     </Tabs>
   );
 }

@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { bookName, useAttribution, useBibleLanguage, useBooks, type BibleBook } from '@/features/bible';
+import { bookName, useAttribution, useBibleLanguage, useBooks, useLastRead, type BibleBook } from '@/features/bible';
 import { HeaderHome } from '@/features/bible/BibleNav';
 import { LanguageToggle } from '@/features/bible/LanguageToggle';
 import { colors } from '@/theme/tokens';
-import { Screen, Text } from '@/ui';
+import { Card, Screen, Text } from '@/ui';
 
 function BookGrid({ books, lang, onOpen }: { books: BibleBook[]; lang: 'en' | 'te'; onOpen: (b: BibleBook) => void }) {
   return (
@@ -33,6 +33,8 @@ export default function BibleScreen() {
   const [lang, setLang] = useBibleLanguage();
   const { books, error } = useBooks();
   const attribution = useAttribution(lang);
+  const lastRead = useLastRead();
+  const lastBook = lastRead ? books.find((b) => b.id === lastRead.bookId) : undefined;
   const open = (b: BibleBook) => router.push({ pathname: '/bible/[book]', params: { book: String(b.id) } });
 
   return (
@@ -52,6 +54,24 @@ export default function BibleScreen() {
           <Text variant="muted" color="rose">
             {error}
           </Text>
+        ) : null}
+        {lastRead && lastBook ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(lastRead.bookId), chapter: String(lastRead.chapter) } })}
+          >
+            <Card tone="honey" className="flex-row items-center justify-between gap-3">
+              <View className="gap-0.5">
+                <Text variant="label" color="gold" className="text-[12px]">
+                  {lang === 'te' ? 'చదవడం కొనసాగించండి' : 'Continue reading'}
+                </Text>
+                <Text variant="title" className="text-[20px]">
+                  {bookName(lastBook, lang, true)} {lastRead.chapter}
+                </Text>
+              </View>
+              <Ionicons name="arrow-forward" size={22} color={colors.primary} />
+            </Card>
+          </Pressable>
         ) : null}
         {books.length ? (
           <>

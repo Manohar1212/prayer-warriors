@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { bibleService } from './index';
+import { bibleService } from './client';
 import type { BibleBook, BibleLanguage, BibleVerse, SearchHit } from './types';
 
 function messageOf(err: unknown): string {
