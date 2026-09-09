@@ -49,3 +49,7 @@ backend/.env
 
 # Bible source downloads
 scripts/bible/.cache/
+
+# Generated native projects (npx expo prebuild)
+apps/mobile/ios/
+apps/mobile/android/
