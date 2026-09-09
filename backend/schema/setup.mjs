@@ -46,6 +46,7 @@ const userSchema = {
     displayName: { type: 'String' },
     phone: { type: 'String' },
     avatar: { type: 'File' },
+    notificationPrefs: { type: 'Object' },
   },
   classLevelPermissions: {
     find: authenticated,
@@ -277,6 +278,38 @@ const callParticipantSchema = {
   },
 };
 
+const notificationSchema = {
+  className: 'Notification',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    recipient: { type: 'Pointer', targetClass: '_User', required: true },
+    actor: { type: 'Pointer', targetClass: '_User' },
+    type: { type: 'String', required: true },
+    title: { type: 'String', required: true },
+    body: { type: 'String' },
+    route: { type: 'String' },
+    readAt: { type: 'Date' },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
+const pushTokenSchema = {
+  className: 'PushToken',
+  fields: {
+    user: { type: 'Pointer', targetClass: '_User', required: true },
+    token: { type: 'String', required: true },
+    platform: { type: 'String' },
+    deviceName: { type: 'String' },
+  },
+  classLevelPermissions: {
+    find: masterOnly, get: masterOnly, count: masterOnly,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
 async function findOne(className, where) {
   const query = encodeURIComponent(JSON.stringify(where));
   const res = await api('GET', `/classes/${className}?limit=1&where=${query}`);
@@ -367,6 +400,8 @@ await upsertSchema(journalSchema);
 await upsertSchema(resourceSchema);
 await upsertSchema(contributionSchema);
 await upsertSchema(expenseSchema);
+await upsertSchema(notificationSchema);
+await upsertSchema(pushTokenSchema);
 await upsertSchema(auditSchema);
 await upsertSchema(callSchema);
 await upsertSchema(callParticipantSchema);

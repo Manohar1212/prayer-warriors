@@ -7,6 +7,7 @@ const { createResourceHandlers } = require('./resources');
 const { createFinanceHandlers } = require('./finance');
 const { createCallHandlers } = require('./calls');
 const { createLiveKitTokens } = require('./livekit');
+const { createNotifier, createNotificationHandlers } = require('./notifications');
 
 function pointer(className, id) {
   return { __type: 'Pointer', className, objectId: id };
@@ -59,6 +60,14 @@ const memberships = {
       .first({ useMasterKey: true });
     return row ? row.get('group').id : null;
   },
+  async listActiveUserIds(groupId) {
+    const rows = await new Parse.Query('GroupMember')
+      .equalTo('group', pointer('Group', groupId))
+      .equalTo('status', 'active')
+      .limit(1000)
+      .find({ useMasterKey: true });
+    return rows.map((row) => refId(row.get('user'))).filter(Boolean);
+  },
   async create({ groupId, userId, role }) {
     const row = new Parse.Object('GroupMember');
     row.set('group', pointer('Group', groupId));
@@ -91,6 +100,21 @@ const users = {
     Object.entries(fields).forEach(([key, value]) => user.set(key, value));
     await user.save(null, { useMasterKey: true });
     return { id: user.id };
+  },
+  async findMany(ids) {
+    if (!ids.length) return [];
+    const rows = await new Parse.Query(Parse.User).containedIn('objectId', ids).limit(1000).find({ useMasterKey: true });
+    return rows.map((u) => ({ id: u.id, displayName: u.get('displayName') || null, notificationPrefs: u.get('notificationPrefs') || null }));
+  },
+  async getPrefs(userId) {
+    const user = await new Parse.Query(Parse.User).get(userId, { useMasterKey: true }).catch(() => null);
+    return user ? user.get('notificationPrefs') || null : null;
+  },
+  async setPrefs(userId, prefs) {
+    const user = await new Parse.Query(Parse.User).get(userId, { useMasterKey: true });
+    user.set('notificationPrefs', prefs);
+    await user.save(null, { useMasterKey: true });
+    return prefs;
   },
 };
 
@@ -437,6 +461,113 @@ async function callHandlers() {
   return createCallHandlers({ memberships, calls: callsRepo, participants: participantsRepo, users: usersRepo, tokens: await liveKitTokens() });
 }
 
+// ---------- notifications ----------
+
+const inbox = {
+  async createMany(rows) {
+    const objects = rows.map((row) => {
+      const obj = new Parse.Object('Notification');
+      obj.set('group', pointer('Group', row.groupId));
+      obj.set('recipient', pointer('_User', row.recipientId));
+      if (row.actorId) obj.set('actor', pointer('_User', row.actorId));
+      obj.set('type', row.type);
+      obj.set('title', row.title);
+      obj.set('body', row.body);
+      obj.set('route', row.route);
+      const acl = new Parse.ACL();
+      acl.setReadAccess(row.recipientId, true);
+      obj.setACL(acl);
+      return obj;
+    });
+    await Parse.Object.saveAll(objects, { useMasterKey: true });
+    return objects.map((obj) => ({ id: obj.id }));
+  },
+  async markRead(userId, ids) {
+    const rows = await new Parse.Query('Notification')
+      .equalTo('recipient', pointer('_User', userId))
+      .containedIn('objectId', ids)
+      .doesNotExist('readAt')
+      .limit(1000)
+      .find({ useMasterKey: true });
+    const when = new Date();
+    rows.forEach((row) => row.set('readAt', when));
+    await Parse.Object.saveAll(rows, { useMasterKey: true });
+    return rows.length;
+  },
+  async markAllRead(userId) {
+    const rows = await new Parse.Query('Notification')
+      .equalTo('recipient', pointer('_User', userId))
+      .doesNotExist('readAt')
+      .limit(1000)
+      .find({ useMasterKey: true });
+    const when = new Date();
+    rows.forEach((row) => row.set('readAt', when));
+    await Parse.Object.saveAll(rows, { useMasterKey: true });
+    return rows.length;
+  },
+};
+
+const pushTokens = {
+  async upsert({ userId, token, platform, deviceName }) {
+    let row = await new Parse.Query('PushToken').equalTo('token', token).first({ useMasterKey: true });
+    if (!row) {
+      row = new Parse.Object('PushToken');
+      row.set('token', token);
+      row.setACL(new Parse.ACL());
+    }
+    row.set('user', pointer('_User', userId));
+    row.set('platform', platform);
+    row.set('deviceName', deviceName);
+    await row.save(null, { useMasterKey: true });
+  },
+  async remove(token) {
+    const rows = await new Parse.Query('PushToken').equalTo('token', token).find({ useMasterKey: true });
+    await Parse.Object.destroyAll(rows, { useMasterKey: true });
+  },
+  async removeForUser(userId, token) {
+    const rows = await new Parse.Query('PushToken')
+      .equalTo('token', token)
+      .equalTo('user', pointer('_User', userId))
+      .find({ useMasterKey: true });
+    await Parse.Object.destroyAll(rows, { useMasterKey: true });
+  },
+  async forUsers(userIds) {
+    if (!userIds.length) return [];
+    const rows = await new Parse.Query('PushToken')
+      .containedIn('user', userIds.map((id) => pointer('_User', id)))
+      .limit(1000)
+      .find({ useMasterKey: true });
+    return rows.map((row) => ({ userId: refId(row.get('user')), token: row.get('token') }));
+  },
+};
+
+/** Expo's push service; free, no credentials needed for the request itself. */
+const push = {
+  async send(messages) {
+    const response = await Parse.Cloud.httpRequest({
+      method: 'POST',
+      url: 'https://exp.host/--/api/v2/push/send',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(messages),
+    });
+    const data = response.data || {};
+    return Array.isArray(data.data) ? data.data : [];
+  },
+};
+
+const notifier = createNotifier({ members: memberships, users, inbox, tokens: pushTokens, push });
+const notificationHandlers = createNotificationHandlers({ memberships, inbox, tokens: pushTokens, users });
+
+/** Runs a handler, then hands its result to `after` for notifications without affecting the response. */
+function withNotify(handler, after) {
+  return async (request) => {
+    const context = { callerId: callerId(request) };
+    const result = await handler(request.params, context);
+    await after(result, request.params, context).catch((err) => console.error(`notify hook failed: ${err && err.message}`));
+    return result;
+  };
+}
+
 // ---------- cloud functions ----------
 
 const memberHandlers = createMemberHandlers({ memberships, users, roles, generatePassword });
@@ -447,26 +578,80 @@ const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 Parse.Cloud.define('addMember', (request) =>
   memberHandlers.addMember(request.params, { callerId: callerId(request) }),
 );
-Parse.Cloud.define('createPrayerRequest', (request) =>
-  prayerHandlers.createPrayerRequest(request.params, { callerId: callerId(request) }),
+Parse.Cloud.define(
+  'createPrayerRequest',
+  withNotify(prayerHandlers.createPrayerRequest, (dto, _params, { callerId: actorId }) =>
+    notifier.notify({ type: 'prayerRequest', groupId: dto.groupId, actorId, requestId: dto.id, title: dto.title }),
+  ),
 );
-Parse.Cloud.define('togglePraying', (request) =>
-  prayerHandlers.togglePraying(request.params, { callerId: callerId(request) }),
+Parse.Cloud.define(
+  'togglePraying',
+  withNotify(prayerHandlers.togglePraying, async (result, params, { callerId: actorId }) => {
+    if (!result.praying) return;
+    const dto = await requests.get(params.requestId);
+    if (dto) await notifier.notify({ type: 'praying', groupId: dto.groupId, actorId, requestId: dto.id, title: dto.title, authorId: dto.authorId });
+  }),
 );
-Parse.Cloud.define('markAnswered', (request) =>
-  prayerHandlers.markAnswered(request.params, { callerId: callerId(request) }),
+Parse.Cloud.define(
+  'markAnswered',
+  withNotify(prayerHandlers.markAnswered, (dto, _params, { callerId: actorId }) =>
+    notifier.notify({ type: 'answered', groupId: dto.groupId, actorId, requestId: dto.id, title: dto.title }),
+  ),
 );
-Parse.Cloud.define('createResource', (request) =>
-  resourceHandlers.createResource(request.params, { callerId: callerId(request) }),
+Parse.Cloud.define(
+  'createResource',
+  withNotify(resourceHandlers.createResource, (dto, _params, { callerId: actorId }) =>
+    notifier.notify({ type: 'resource', groupId: dto.groupId, actorId, resourceId: dto.id, resourceType: dto.type, title: dto.title }),
+  ),
 );
 Parse.Cloud.define('deleteResource', (request) =>
   resourceHandlers.deleteResource(request.params, { callerId: callerId(request) }),
 );
-['addContribution', 'updateContribution', 'deleteContribution', 'addExpense', 'updateExpense', 'deleteExpense'].forEach(
-  (name) => Parse.Cloud.define(name, (request) => financeHandlers[name](request.params, { callerId: callerId(request) })),
+Parse.Cloud.define(
+  'addContribution',
+  withNotify(financeHandlers.addContribution, (dto, _params, { callerId: actorId }) =>
+    notifier.notify({ type: 'contribution', groupId: dto.groupId, actorId, memberId: dto.memberId, amountPaise: dto.amountPaise, transactionDate: dto.transactionDate }),
+  ),
 );
-['scheduleCall', 'cancelCall', 'endCall', 'joinCall', 'leaveCall'].forEach((name) =>
+Parse.Cloud.define(
+  'addExpense',
+  withNotify(financeHandlers.addExpense, (dto, _params, { callerId: actorId }) =>
+    notifier.notify({ type: 'expense', groupId: dto.groupId, actorId, category: dto.category, amountPaise: dto.amountPaise }),
+  ),
+);
+['updateContribution', 'deleteContribution', 'updateExpense', 'deleteExpense'].forEach((name) =>
+  Parse.Cloud.define(name, (request) => financeHandlers[name](request.params, { callerId: callerId(request) })),
+);
+Parse.Cloud.define(
+  'scheduleCall',
+  withNotify(
+    async (params, context) => (await callHandlers()).scheduleCall(params, context),
+    (dto, _params, { callerId: actorId }) =>
+      notifier.notify({ type: 'callScheduled', groupId: dto.groupId, actorId, callId: dto.id, title: dto.title, scheduledAt: dto.scheduledAt }),
+  ),
+);
+Parse.Cloud.define(
+  'cancelCall',
+  withNotify(
+    async (params, context) => (await callHandlers()).cancelCall(params, context),
+    (dto, _params, { callerId: actorId }) =>
+      notifier.notify({ type: 'callCancelled', groupId: dto.groupId, actorId, callId: dto.id, title: dto.title }),
+  ),
+);
+Parse.Cloud.define('joinCall', async (request) => {
+  const context = { callerId: callerId(request) };
+  const before = request.params && request.params.callId ? await callsRepo.get(request.params.callId) : null;
+  const result = await (await callHandlers()).joinCall(request.params, context);
+  if (before && before.status === 'scheduled') {
+    await notifier.notify({ type: 'callStarted', groupId: before.groupId, actorId: context.callerId, callId: before.id, title: before.title });
+  }
+  return result;
+});
+['endCall', 'leaveCall'].forEach((name) =>
   Parse.Cloud.define(name, async (request) => (await callHandlers())[name](request.params, { callerId: callerId(request) })),
+);
+['registerPushToken', 'unregisterPushToken', 'markNotificationsRead', 'markAllNotificationsRead', 'updateNotificationPrefs'].forEach((name) =>
+  Parse.Cloud.define(name, (request) => notificationHandlers[name](request.params, { callerId: callerId(request) })),
 );
 Parse.Cloud.define('ping', () => 'pong');
 
