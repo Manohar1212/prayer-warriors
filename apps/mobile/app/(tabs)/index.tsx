@@ -5,6 +5,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { useBibleLanguage } from '@/features/bible';
+import { isJoinable, useCalls } from '@/features/calls';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
 import { categoryLabel, usePrayerRequests } from '@/features/prayer';
 import { RESOURCE_TYPES, type Resource } from '@/features/resources';
@@ -57,6 +58,7 @@ export default function HomeScreen() {
   const verse = useVerseOfTheDay(lang);
   const { requests, loading: loadingRequests } = usePrayerRequests('active');
   const [recent, setRecent] = useState<Resource[]>([]);
+  const { next: nextCall } = useCalls();
   const firstName = user?.displayName?.split(' ')[0] ?? 'friend';
   const now = new Date();
 
@@ -193,11 +195,24 @@ export default function HomeScreen() {
             </Text>
           </View>
           <Text variant="title" color="cream">
-            No call scheduled yet
+            {nextCall ? nextCall.title : 'No call scheduled yet'}
           </Text>
           <Text variant="muted" color="creamSoft" className="text-[15px] leading-[22px]">
-            Group calls are coming soon. Your admin will schedule the first one here.
+            {nextCall
+              ? new Date(nextCall.scheduledAt).toLocaleString(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' })
+              : 'When your admin schedules the next group prayer, the time and a join button will appear here.'}
           </Text>
+          {nextCall ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push({ pathname: '/calls/[id]', params: { id: nextCall.id } })}
+              className="mt-1 items-center rounded-[14px] bg-gold-light py-3"
+            >
+              <Text variant="label" color="primaryDark">
+                {isJoinable(nextCall, now) ? 'Join call' : 'View call'}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       </ScrollView>
     </Screen>

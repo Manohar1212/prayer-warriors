@@ -1,4 +1,5 @@
 import '../global.css';
+import '@/lib/livekitGlobals';
 
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import {
@@ -62,6 +63,9 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
         <Stack.Screen name="funds/expense" options={{ ...modalOptions, title: 'Expense' }} />
         <Stack.Screen name="funds/report" options={{ ...modalOptions, presentation: 'card', title: 'Monthly report' }} />
         <Stack.Screen name="funds/audit" options={{ ...modalOptions, presentation: 'card', title: 'Change history' }} />
+        <Stack.Screen name="calls/schedule" options={{ ...modalOptions, title: 'Schedule a call' }} />
+        <Stack.Screen name="calls/[id]" options={{ ...modalOptions, presentation: 'card', title: 'Group call', headerBackVisible: false, gestureEnabled: false }} />
+        <Stack.Screen name="calls/history" options={{ ...modalOptions, presentation: 'card', title: 'Call history' }} />
       </Stack.Protected>
     </Stack>
   );

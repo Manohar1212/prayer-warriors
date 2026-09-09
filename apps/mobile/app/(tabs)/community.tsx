@@ -1,10 +1,11 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
 
+import { isJoinable, useCalls } from '@/features/calls';
 import { useMembers, type Member } from '@/features/members';
 import { colors } from '@/theme/tokens';
-import { Button, Screen, Text } from '@/ui';
+import { Badge, Button, Card, Screen, Text } from '@/ui';
 
 function MemberRow({ member }: { member: Member }) {
   const admin = member.role === 'admin';
@@ -30,6 +31,7 @@ function MemberRow({ member }: { member: Member }) {
 export default function CommunityScreen() {
   const router = useRouter();
   const { members, loading, error, isAdmin, refresh } = useMembers();
+  const { next } = useCalls();
   const count = members.length;
 
   // Pick up members added from the modal (and elsewhere) whenever this tab regains focus.
@@ -50,6 +52,39 @@ export default function CommunityScreen() {
         }
         ListHeaderComponent={
           <View className="mb-2 gap-4">
+            <View className="gap-3">
+              <View className="flex-row items-center justify-between">
+                <Text variant="title">Group calls</Text>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/calls/history')} hitSlop={8} className="py-1">
+                  <Text variant="label" color="primary" className="text-[13px]">
+                    History
+                  </Text>
+                </Pressable>
+              </View>
+              {next ? (
+                <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/calls/[id]', params: { id: next.id } })}>
+                  <Card tone={next.status === 'live' ? 'sage' : 'surface'} className="gap-2">
+                    <View className="flex-row items-center justify-between">
+                      <Badge label={next.status === 'live' ? 'Happening now' : 'Next call'} tone={next.status === 'live' ? 'sage' : 'honey'} />
+                      <Text variant="muted" className="text-[13px]">
+                        {new Date(next.scheduledAt).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}
+                      </Text>
+                    </View>
+                    <Text variant="title" className="text-[18px]">
+                      {next.title}
+                    </Text>
+                    <Text variant="label" color="primary">
+                      {isJoinable(next, new Date()) ? 'Join now' : 'View details'}
+                    </Text>
+                  </Card>
+                </Pressable>
+              ) : (
+                <Text variant="muted" className="text-[15px]">
+                  No call scheduled.
+                </Text>
+              )}
+              {isAdmin ? <Button title="Schedule a call" variant="secondary" onPress={() => router.push('/calls/schedule')} /> : null}
+            </View>
             <Text variant="muted">
               {count === 1 ? '1 member' : `${count} members`}
             </Text>

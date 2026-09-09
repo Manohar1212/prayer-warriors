@@ -9,6 +9,8 @@ import { createMembersService } from '../features/members/service';
 import type { RawMembership } from '../features/members/types';
 import { createJournalService } from '../features/prayer/journal';
 import { createPrayerService } from '../features/prayer/service';
+import { createCallsService } from '../features/calls/service';
+import type { RawCall, RawParticipant } from '../features/calls/types';
 import { createFundsService } from '../features/funds/service';
 import type { RawAuditEntry, RawContribution, RawExpense } from '../features/funds/types';
 import { createResourcesService } from '../features/resources/service';
@@ -216,6 +218,32 @@ export const fundsService = createFundsService({
       oldValues: (row.get('oldValues') as Record<string, unknown> | undefined) ?? null,
       newValues: (row.get('newValues') as Record<string, unknown> | undefined) ?? null,
       createdAt: row.createdAt?.toISOString() ?? '',
+    }));
+  },
+  cloud: Parse.Cloud,
+});
+
+export const callsService = createCallsService({
+  fetchCalls: async (): Promise<RawCall[]> => {
+    const rows = await new Parse.Query('Call').descending('scheduledAt').limit(200).find();
+    return rows.map((row) => ({
+      id: row.id ?? '',
+      title: String(row.get('title') ?? ''),
+      scheduledAt: isoOf(row.get('scheduledAt')),
+      status: String(row.get('status') ?? 'scheduled'),
+      startedAt: row.get('startedAt') instanceof Date ? isoOf(row.get('startedAt')) : null,
+      endedAt: row.get('endedAt') instanceof Date ? isoOf(row.get('endedAt')) : null,
+      createdBy: userSummary(row.get('createdBy') as Parse.User | undefined),
+    }));
+  },
+  fetchParticipants: async (callId?: string): Promise<RawParticipant[]> => {
+    const query = new Parse.Query('CallParticipant').include('user').limit(1000);
+    if (callId) query.equalTo('call', Parse.Object.extend('Call').createWithoutData(callId));
+    const rows = await query.find();
+    return rows.map((row) => ({
+      callId: (row.get('call') as Parse.Object | undefined)?.id ?? '',
+      user: userSummary(row.get('user') as Parse.User | undefined),
+      leftAt: row.get('leftAt') instanceof Date ? isoOf(row.get('leftAt')) : null,
     }));
   },
   cloud: Parse.Cloud,
