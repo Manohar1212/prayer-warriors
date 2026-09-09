@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { bookName, useAttribution, useBibleLanguage, useBooks, type BibleBook } from '@/features/bible';
+import { HeaderHome } from '@/features/bible/BibleNav';
 import { LanguageToggle } from '@/features/bible/LanguageToggle';
 import { colors } from '@/theme/tokens';
 import { Screen, Text } from '@/ui';
@@ -36,6 +37,7 @@ export default function BibleScreen() {
 
   return (
     <Screen backdrop className="px-0 pt-0">
+      <Stack.Screen options={{ headerLeft: () => <HeaderHome /> }} />
       <ScrollView contentContainerClassName="gap-6 px-6 pb-10 pt-2" showsVerticalScrollIndicator={false}>
         <LanguageToggle value={lang} onChange={setLang} />
         <Pressable

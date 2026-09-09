@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Share, View } from 'react-native';
 
 import { bookName, chapterCount, useBibleLanguage, useBooks, useChapter, type BibleVerse } from '@/features/bible';
+import { BibleNav } from '@/features/bible/BibleNav';
 import { colors } from '@/theme/tokens';
 import { Button, Card, Screen, Text } from '@/ui';
 
@@ -46,6 +47,12 @@ export default function ChapterScreen() {
     <Screen backdrop className="px-0 pt-0">
       <Stack.Screen options={{ title }} />
       <ScrollView contentContainerClassName="gap-5 px-6 pb-10 pt-2" showsVerticalScrollIndicator={false}>
+        <BibleNav
+          crumbs={[
+            { label: lang === 'te' ? 'గ్రంథాలు' : 'Books', href: '/bible' },
+            { label: current ? bookName(current, lang, true) : '…', href: { pathname: '/bible/[book]', params: { book: String(bookId) } } },
+          ]}
+        />
         <View className="flex-row items-center justify-between">
           <Pressable accessibilityRole="button" accessibilityLabel="Previous chapter" onPress={() => go(-1)} disabled={chapter <= 1} hitSlop={8} className="p-2">
             <Ionicons name="chevron-back" size={22} color={chapter <= 1 ? colors.border : colors.primary} />
