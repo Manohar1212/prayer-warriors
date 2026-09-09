@@ -75,8 +75,8 @@ export default function HomeScreen() {
   return (
     <Screen edges={['top']} backdrop className="px-0 pt-0">
       <ScrollView contentContainerClassName="gap-7 px-6 pb-8 pt-6" showsVerticalScrollIndicator={false}>
-        <View className="flex-row items-start justify-between">
-          <View className="gap-1">
+        <View className="flex-row items-start justify-between gap-3">
+          <View className="flex-1 gap-1">
             <Text variant="muted">{longDate(now)}</Text>
             <Text variant="display" color="primary">
               {greeting(now)},{'\n'}

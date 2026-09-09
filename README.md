@@ -17,7 +17,8 @@ has a design spec and implementation plan under `docs/superpowers/`.
 | Bible: offline Telugu Old Version + Berean Standard Bible, reader, search, post a verse to the group | Done |
 | Home: verse of the day, latest requests, recently shared, next call | Done |
 | Group calls: schedule, join over LiveKit, participants, history | Done (development build) |
-| Push notifications, admin web dashboard | Not started |
+| Notifications: in-app inbox, per-member preferences, Expo push fan-out, local call reminders | Done (push delivery needs the setup below) |
+| Admin web dashboard | Not started |
 
 All writes go through Cloud Code in `backend/cloud/`; the app reads with the Parse SDK behind
 small services in `apps/mobile/src/features/*`. Specs and plans for each feature are in
@@ -32,7 +33,14 @@ small services in `apps/mobile/src/features/*`. Specs and plans for each feature
 3. **LiveKit (group calls)** — create a free project at cloud.livekit.io and put its URL, API
    key, and API secret in `backend/.env` as `LIVEKIT_URL`, `LIVEKIT_API_KEY`,
    `LIVEKIT_API_SECRET`, then re-run `node backend/schema/setup.mjs`.
-4. **Run** — the app is a development build (LiveKit's native module cannot run in Expo Go):
+4. **Push notifications (optional, free)** — the in-app inbox and call reminders work without any
+   setup. To deliver pushes when the app is closed: sign in to a free Expo account and run
+   `npx eas init` in `apps/mobile` (this adds the `extra.eas.projectId` the token API needs);
+   for Android, create a free Firebase project and upload its FCM V1 service-account key with
+   `npx eas credentials`; iOS delivery additionally requires an Apple Developer Program
+   membership (paid), which is also what putting the app on members' iPhones requires.
+   Without a `projectId` the app simply skips push registration.
+5. **Run** — the app is a development build (LiveKit's native module cannot run in Expo Go):
 
    ```bash
    npm install                                  # from the repo root
