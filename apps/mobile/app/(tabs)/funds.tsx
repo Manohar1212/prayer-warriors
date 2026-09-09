@@ -42,14 +42,14 @@ export default function FundsScreen() {
   const monthName = new Date().toLocaleDateString(undefined, { month: 'long' });
 
   return (
-    <Screen backdrop className="px-0 pt-0">
+    <Screen className="px-0 pt-0">
       <FlatList
         data={transactions}
         keyExtractor={(t) => `${t.kind}-${t.id}`}
-        contentContainerClassName="flex-grow px-4 pb-8 pt-2"
+        contentContainerClassName="flex-grow px-4 pb-8 pt-1"
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
         ListHeaderComponent={
-          <View className="mb-2 gap-5">
+          <View className="mb-1 gap-4">
             <View className="gap-4 rounded-[24px] bg-primary p-5">
               <Text variant="label" color="creamSoft">
                 Current balance
@@ -76,12 +76,10 @@ export default function FundsScreen() {
                 </View>
               </View>
             </View>
-            {isAdmin ? (
-              <View className="flex-row gap-3">
-                <Button title="Contribution" onPress={() => router.push('/funds/contribution')} className="flex-1" />
-                <Button title="Expense" variant="secondary" onPress={() => router.push('/funds/expense')} className="flex-1" />
-              </View>
-            ) : null}
+            <View className="flex-row flex-wrap items-center gap-2">
+              {isAdmin ? <Button title="Record contribution" size="compact" onPress={() => router.push('/funds/contribution')} /> : null}
+              {isAdmin ? <Button title="Record expense" size="compact" variant="secondary" onPress={() => router.push('/funds/expense')} /> : null}
+            </View>
             <View className="flex-row gap-5">
               <Pressable accessibilityRole="button" onPress={() => router.push('/funds/report')} className="flex-row items-center gap-2 py-1">
                 <Ionicons name="document-text-outline" size={18} color={colors.primary} />
@@ -103,7 +101,9 @@ export default function FundsScreen() {
                 {error}
               </Text>
             ) : null}
-            <Text variant="title">Recent transactions</Text>
+            <View className="border-b border-border pb-2">
+              <Text variant="title">Recent transactions</Text>
+            </View>
           </View>
         }
         ListEmptyComponent={

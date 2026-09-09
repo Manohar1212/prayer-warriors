@@ -5,11 +5,19 @@ import { Text, type TextColor } from './Text';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'inverse';
 
+export type ButtonSize = 'regular' | 'compact';
+
 type Props = Omit<PressableProps, 'children' | 'style'> & {
   title: string;
   variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
   className?: string;
+};
+
+const sizing: Record<ButtonSize, { box: string; text: string }> = {
+  regular: { box: 'min-h-[52px] rounded-[14px] px-6', text: 'text-[16px]' },
+  compact: { box: 'min-h-[36px] rounded-full px-4', text: 'text-[13px]' },
 };
 
 const container: Record<ButtonVariant, string> = {
@@ -36,6 +44,7 @@ const spinner: Record<ButtonVariant, string> = {
 export function Button({
   title,
   variant = 'primary',
+  size = 'regular',
   loading = false,
   disabled,
   className = '',
@@ -47,13 +56,13 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled: blocked, busy: loading }}
       disabled={blocked}
-      className={`min-h-[52px] items-center justify-center rounded-[14px] px-6 active:opacity-85 ${container[variant]} ${blocked ? 'opacity-40' : ''} ${className}`}
+      className={`items-center justify-center active:opacity-85 ${sizing[size].box} ${container[variant]} ${blocked ? 'opacity-40' : ''} ${className}`}
       {...rest}
     >
       {loading ? (
         <ActivityIndicator testID="button-spinner" color={spinner[variant]} />
       ) : (
-        <Text color={label[variant]} className="font-semibold text-[16px]">
+        <Text color={label[variant]} className={`font-semibold ${sizing[size].text}`}>
           {title}
         </Text>
       )}

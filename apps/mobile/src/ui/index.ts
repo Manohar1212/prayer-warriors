@@ -10,3 +10,6 @@ export { Text } from './Text';
 export { Badge } from './Badge';
 export { Chip } from './Chip';
 export { Segments } from './Segments';
+export { Fab } from './Fab';
+export { Meta } from './Meta';
+export type { MetaPart } from './Meta';

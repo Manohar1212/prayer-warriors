@@ -12,7 +12,7 @@ import { categoryLabel, usePrayerRequests } from '@/features/prayer';
 import { RESOURCE_TYPES, type Resource } from '@/features/resources';
 import { resourcesService } from '@/lib/parse';
 import { colors } from '@/theme/tokens';
-import { Badge, Card, Screen, Text } from '@/ui';
+import { Meta, Rule, Screen, Text, type MetaPart } from '@/ui';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -74,7 +74,7 @@ export default function HomeScreen() {
 
   return (
     <Screen edges={['top']} backdrop className="px-0 pt-0">
-      <ScrollView contentContainerClassName="gap-7 px-4 pb-8 pt-6" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerClassName="gap-8 px-4 pb-8 pt-6" showsVerticalScrollIndicator={false}>
         <View className="gap-1">
           <View className="flex-row items-center justify-between">
             <Text variant="muted">{longDate(now)}</Text>
@@ -119,18 +119,21 @@ export default function HomeScreen() {
           accessibilityLabel="Open today's verse in the Bible"
           disabled={!verse}
           onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
-          className="rounded-[24px] bg-honey px-5 pb-5 pt-5"
+          className="gap-3 py-1"
         >
-          <Text variant="label" color="gold" className="mb-2 text-[12px]">
+          <Text variant="label" color="gold" className="text-[13px]">
             {lang === 'te' ? 'ఈ రోజు వాక్యం' : "Today's verse"}
           </Text>
-          <Text variant="scripture" className={lang === 'te' ? 'text-[19px] leading-[32px]' : ''}>
+          <Text variant="scripture" className={lang === 'te' ? 'text-[22px] leading-[36px]' : 'text-[24px] leading-[34px]'}>
             {verse ? verse.text : '…'}
           </Text>
           {verse ? (
-            <Text variant="label" color="gold" className="mt-3">
-              {verse.reference}
-            </Text>
+            <View className="flex-row items-center gap-3">
+              <Rule />
+              <Text variant="label" color="gold" className="text-[13px]">
+                {verse.reference}
+              </Text>
+            </View>
           ) : null}
         </Pressable>
 
@@ -156,22 +159,26 @@ export default function HomeScreen() {
         <View className="gap-3">
           <SectionHeader title="Prayer requests" actionLabel="See all" onAction={() => router.push('/(tabs)/prayer')} />
           {topRequests.length ? (
-            topRequests.map((r) => (
-              <Pressable key={r.id} accessibilityRole="button" onPress={() => router.push({ pathname: '/prayer/[id]', params: { id: r.id } })}>
-                <Card className="gap-2">
-                  <View className="flex-row flex-wrap gap-2">
-                    <Badge label={categoryLabel(r.category)} tone="sage" />
-                    {r.urgency === 'urgent' ? <Badge label="Urgent" tone="blush" /> : null}
-                  </View>
-                  <Text variant="title" className="text-[18px] leading-[24px]">
-                    {r.title}
-                  </Text>
-                  <Text variant="muted" className="text-[13px]">
-                    {r.authorName} · {prayingLabel(r.prayingCount)}
-                  </Text>
-                </Card>
-              </Pressable>
-            ))
+            <View>
+              {topRequests.map((r, i) => {
+                const meta: MetaPart[] = [{ text: categoryLabel(r.category), dot: 'sage' }];
+                if (r.urgency === 'urgent') meta.push({ text: 'Urgent', color: 'roseDeep' });
+                meta.push({ text: prayingLabel(r.prayingCount) });
+                return (
+                  <Pressable
+                    key={r.id}
+                    accessibilityRole="button"
+                    onPress={() => router.push({ pathname: '/prayer/[id]', params: { id: r.id } })}
+                    className={`gap-1.5 py-3.5 ${i > 0 ? 'border-t border-border' : ''}`}
+                  >
+                    <Text variant="title" className="text-[18px] leading-[24px]">
+                      {r.title}
+                    </Text>
+                    <Meta parts={[{ text: r.authorName, color: 'muted' }, ...meta]} />
+                  </Pressable>
+                );
+              })}
+            </View>
           ) : (
             <Text variant="muted" className="text-[15px] leading-[22px]">
               {loadingRequests ? 'Loading…' : 'No open requests right now. Share what is on your heart.'}
@@ -182,25 +189,32 @@ export default function HomeScreen() {
         <View className="gap-3">
           <SectionHeader title="Recently shared" actionLabel="See all" onAction={() => router.push('/(tabs)/resources')} />
           {recent.length ? (
-            recent.map((r) => (
-              <Pressable key={r.id} accessibilityRole="button" onPress={() => router.push({ pathname: '/resources/[id]', params: { id: r.id } })}>
-                <Card className="flex-row items-center gap-3">
-                  <Ionicons
-                    name={r.type === 'song' ? 'musical-notes-outline' : r.type === 'scripture' ? 'book-outline' : 'hand-left-outline'}
-                    size={20}
-                    color={colors.primary}
-                  />
+            <View>
+              {recent.map((r, i) => (
+                <Pressable
+                  key={r.id}
+                  accessibilityRole="button"
+                  onPress={() => router.push({ pathname: '/resources/[id]', params: { id: r.id } })}
+                  className={`flex-row items-center gap-3 py-3 ${i > 0 ? 'border-t border-border' : ''}`}
+                >
+                  <View className={`h-10 w-10 items-center justify-center rounded-full ${r.type === 'song' ? 'bg-honey' : r.type === 'scripture' ? 'bg-sage' : 'bg-blush'}`}>
+                    <Ionicons
+                      name={r.type === 'song' ? 'musical-notes' : r.type === 'scripture' ? 'book' : 'hand-left'}
+                      size={17}
+                      color={r.type === 'song' ? colors.gold : r.type === 'scripture' ? colors.primary : colors.roseDeep}
+                    />
+                  </View>
                   <View className="flex-1 gap-0.5">
-                    <Text variant="label" className="text-[15px]">
+                    <Text variant="label" className="text-[16px]">
                       {r.title}
                     </Text>
                     <Text variant="muted" className="text-[13px]">
                       {RESOURCE_TYPES.find((t) => t.id === r.type)?.label} · {r.sharedBy}
                     </Text>
                   </View>
-                </Card>
-              </Pressable>
-            ))
+                </Pressable>
+              ))}
+            </View>
           ) : (
             <Text variant="muted" className="text-[15px] leading-[22px]">
               Nothing shared yet. Songs, scripture, and prayers the group shares will appear here.
