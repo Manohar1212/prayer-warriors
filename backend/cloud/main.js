@@ -447,7 +447,11 @@ function liveKitTokens() {
       const url = config.get('LIVEKIT_URL');
       const apiKey = config.get('LIVEKIT_API_KEY');
       const apiSecret = config.get('LIVEKIT_API_SECRET');
-      if (!url || !apiKey || !apiSecret) return null;
+      if (!url || !apiKey || !apiSecret) {
+        // Not configured yet: don't cache, so keys added later are picked up without a redeploy.
+        liveKitPromise = null;
+        return null;
+      }
       return createLiveKitTokens({ url, apiKey, apiSecret });
     })().catch((err) => {
       liveKitPromise = null;
