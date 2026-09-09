@@ -46,7 +46,7 @@ export default function FundsScreen() {
       <FlatList
         data={transactions}
         keyExtractor={(t) => `${t.kind}-${t.id}`}
-        contentContainerClassName="flex-grow px-6 pb-8 pt-2"
+        contentContainerClassName="flex-grow px-4 pb-8 pt-2"
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
         ListHeaderComponent={
           <View className="mb-2 gap-5">

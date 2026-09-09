@@ -74,7 +74,7 @@ export default function HomeScreen() {
 
   return (
     <Screen edges={['top']} backdrop className="px-0 pt-0">
-      <ScrollView contentContainerClassName="gap-7 px-6 pb-8 pt-6" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerClassName="gap-7 px-4 pb-8 pt-6" showsVerticalScrollIndicator={false}>
         <View className="gap-1">
           <View className="flex-row items-center justify-between">
             <Text variant="muted">{longDate(now)}</Text>
@@ -119,7 +119,7 @@ export default function HomeScreen() {
           accessibilityLabel="Open today's verse in the Bible"
           disabled={!verse}
           onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
-          className="rounded-[24px] bg-honey px-6 pb-5 pt-5"
+          className="rounded-[24px] bg-honey px-5 pb-5 pt-5"
         >
           <Text variant="label" color="gold" className="mb-2 text-[12px]">
             {lang === 'te' ? 'ఈ రోజు వాక్యం' : "Today's verse"}

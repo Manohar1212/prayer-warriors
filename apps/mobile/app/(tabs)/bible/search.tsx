@@ -22,7 +22,7 @@ export default function BibleSearchScreen() {
       <FlatList
         data={hits}
         keyExtractor={(h) => `${h.bookId}-${h.chapter}-${h.verse}`}
-        contentContainerClassName="flex-grow gap-2 px-6 pb-10 pt-2"
+        contentContainerClassName="flex-grow gap-2 px-4 pb-10 pt-2"
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View className="mb-2 gap-4">

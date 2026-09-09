@@ -46,7 +46,7 @@ export default function CommunityScreen() {
       <FlatList
         data={members}
         keyExtractor={(m) => m.id}
-        contentContainerClassName="flex-grow px-6 pb-8 pt-2"
+        contentContainerClassName="flex-grow px-4 pb-8 pt-2"
         refreshControl={
           <RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />
         }

@@ -14,7 +14,7 @@ export default function CallHistoryScreen() {
   const { past, loading } = useCalls();
   return (
     <Screen edges={['bottom']} backdrop className="px-0 pt-0">
-      <ScrollView contentContainerClassName="gap-3 px-6 pb-8 pt-4" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerClassName="gap-3 px-4 pb-8 pt-4" showsVerticalScrollIndicator={false}>
         {past.length === 0 ? (
           <Text variant="muted">{loading ? 'Loading…' : 'No past calls yet.'}</Text>
         ) : (

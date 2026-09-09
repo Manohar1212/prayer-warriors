@@ -75,7 +75,7 @@ export default function NotificationsScreen() {
 
   return (
     <Screen edges={['bottom']} backdrop className="px-0 pt-0">
-      <ScrollView contentContainerClassName="gap-3 px-6 pb-8 pt-4" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerClassName="gap-3 px-4 pb-8 pt-4" showsVerticalScrollIndicator={false}>
         <View className="mb-1 flex-row items-center justify-between">
           <Text variant="muted">{unread === 0 ? 'Nothing new' : unread === 1 ? '1 new' : `${unread} new`}</Text>
           <View className="flex-row items-center gap-5">

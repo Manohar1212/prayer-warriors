@@ -36,14 +36,14 @@ export function Screen({
 }: Props) {
   const body = scroll ? (
     <ScrollView
-      contentContainerClassName={`flex-grow px-6 pb-8 pt-4 ${className}`}
+      contentContainerClassName={`flex-grow px-4 pb-8 pt-4 ${className}`}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
       {children}
     </ScrollView>
   ) : (
-    <View className={`flex-1 px-6 pb-8 pt-4 ${className}`}>{children}</View>
+    <View className={`flex-1 px-4 pb-8 pt-4 ${className}`}>{children}</View>
   );
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: background[tone] }} edges={edges}>

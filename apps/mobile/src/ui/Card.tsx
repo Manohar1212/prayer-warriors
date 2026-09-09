@@ -14,5 +14,5 @@ export function Card({
   className = '',
   ...rest
 }: ViewProps & { tone?: CardTone; className?: string }) {
-  return <View className={`rounded-[20px] border p-5 ${toneClass[tone]} ${className}`} {...rest} />;
+  return <View className={`rounded-[20px] border p-4 ${toneClass[tone]} ${className}`} {...rest} />;
 }

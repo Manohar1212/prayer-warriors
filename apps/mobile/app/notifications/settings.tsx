@@ -33,7 +33,7 @@ export default function NotificationSettingsScreen() {
 
   return (
     <Screen edges={['bottom']} backdrop className="px-0 pt-0">
-      <ScrollView contentContainerClassName="gap-4 px-6 pb-8 pt-4" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerClassName="gap-4 px-4 pb-8 pt-4" showsVerticalScrollIndicator={false}>
         <Text variant="muted">Choose what the group can reach you about. Changes apply on every device you use.</Text>
         {error ? (
           <Text variant="body" color="roseDeep">
