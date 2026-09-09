@@ -33,7 +33,7 @@ export default function WelcomeScreen() {
   const scale = settle.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] });
 
   return (
-    <Screen tone="forest" className="justify-between">
+    <Screen edges={['top', 'bottom']} tone="forest" className="justify-between">
       <StatusBar style="light" />
       <View className="flex-1 items-center justify-center gap-8">
         <Animated.View style={{ opacity: settle, transform: [{ scale }] }}>

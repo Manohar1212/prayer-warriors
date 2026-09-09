@@ -36,7 +36,7 @@ export default function JournalScreen() {
   const { active, answered, loading, error } = useJournal();
 
   return (
-    <Screen backdrop className="px-0 pt-0">
+    <Screen edges={['bottom']} backdrop className="px-0 pt-0">
       <ScrollView contentContainerClassName="gap-6 px-6 pb-8 pt-2" showsVerticalScrollIndicator={false}>
         <View className="gap-2">
           <Text variant="muted" className="text-[15px] leading-[22px]">

@@ -33,7 +33,7 @@ export default function NewPrayerRequestScreen() {
   }
 
   return (
-    <Screen scroll backdrop className="gap-7 pt-6">
+    <Screen edges={['bottom']} scroll backdrop className="gap-7 pt-6">
       <Text variant="muted" className="text-[15px] leading-[22px]">
         Everyone in the group will see this and can pray with you.
       </Text>

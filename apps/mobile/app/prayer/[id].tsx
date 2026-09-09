@@ -37,7 +37,7 @@ export default function PrayerRequestScreen() {
 
   if (!request) {
     return (
-      <Screen backdrop className="justify-center">
+      <Screen edges={['bottom']} backdrop className="justify-center">
         <Text variant="muted">{active.loading || answered.loading ? 'Loading…' : "That prayer request isn't available."}</Text>
       </Screen>
     );
@@ -62,7 +62,7 @@ export default function PrayerRequestScreen() {
   }
 
   return (
-    <Screen scroll backdrop className="gap-6 pt-6">
+    <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-3">
         <View className="flex-row flex-wrap gap-2">
           <Badge label={categoryLabel(request.category)} tone="sage" />

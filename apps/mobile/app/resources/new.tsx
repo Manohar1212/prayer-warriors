@@ -65,7 +65,7 @@ export default function NewResourceScreen() {
   }
 
   return (
-    <Screen scroll backdrop className="gap-6 pt-6">
+    <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="flex-row flex-wrap gap-2">
         {RESOURCE_TYPES.map((t) => (
           <Chip key={t.id} label={t.label} selected={type === t.id} onPress={() => setType(t.id)} />

@@ -62,7 +62,7 @@ export default function ReportScreen() {
   }
 
   return (
-    <Screen scroll backdrop className="gap-6 pt-6">
+    <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="flex-row items-center justify-between">
         <Pressable accessibilityRole="button" accessibilityLabel="Previous month" onPress={() => shift(-1)} hitSlop={8} className="p-2">
           <Ionicons name="chevron-back" size={22} color={colors.primary} />

@@ -45,7 +45,7 @@ export default function ContributionScreen() {
 
   if (!isAdmin && existing) {
     return (
-      <Screen scroll backdrop className="gap-6 pt-6">
+      <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
         <Text variant="display" color="primary">
           {formatRupees(existing.amountPaise)}
         </Text>
@@ -95,14 +95,14 @@ export default function ContributionScreen() {
 
   if (id && !existing && loading) {
     return (
-      <Screen backdrop className="justify-center">
+      <Screen edges={['bottom']} backdrop className="justify-center">
         <Text variant="muted">Loading…</Text>
       </Screen>
     );
   }
 
   return (
-    <Screen scroll backdrop className="gap-6 pt-6">
+    <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-2">
         <Text variant="label">Member</Text>
         <View className="flex-row flex-wrap gap-2">

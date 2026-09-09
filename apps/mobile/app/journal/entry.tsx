@@ -57,14 +57,14 @@ export default function JournalEntryScreen() {
 
   if (id && !existing && loading) {
     return (
-      <Screen backdrop className="justify-center">
+      <Screen edges={['bottom']} backdrop className="justify-center">
         <Text variant="muted">Loading…</Text>
       </Screen>
     );
   }
 
   return (
-    <Screen scroll backdrop className="gap-7 pt-6">
+    <Screen edges={['bottom']} scroll backdrop className="gap-7 pt-6">
       <View className="gap-5">
         <Input label="What are you praying for?" value={title} onChangeText={setTitle} maxLength={120} autoFocus={!existing} />
         <Input

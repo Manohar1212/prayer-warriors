@@ -25,7 +25,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen scroll backdrop className="justify-center gap-10">
+    <Screen edges={['top', 'bottom']} scroll backdrop className="justify-center gap-10">
       <View className="gap-2">
         <Text variant="display" color="primary">
           Sign in

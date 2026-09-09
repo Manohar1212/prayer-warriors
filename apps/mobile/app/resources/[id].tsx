@@ -41,7 +41,7 @@ export default function ResourceScreen() {
 
   if (!resource) {
     return (
-      <Screen backdrop className="justify-center">
+      <Screen edges={['bottom']} backdrop className="justify-center">
         <Text variant="muted">{loading ? 'Loading…' : "That resource isn't available."}</Text>
       </Screen>
     );
@@ -64,7 +64,7 @@ export default function ResourceScreen() {
   }
 
   return (
-    <Screen scroll backdrop className="gap-6 pt-6">
+    <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-3">
         <Badge label={typeLabel} tone="sage" />
         <Text variant="display" color="primary" className="text-[30px] leading-[36px]">

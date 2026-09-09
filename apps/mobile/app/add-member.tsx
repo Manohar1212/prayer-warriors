@@ -106,14 +106,14 @@ export default function AddMemberScreen() {
 
   if (added) {
     return (
-      <Screen scroll backdrop className="pt-6">
+      <Screen edges={['bottom']} scroll backdrop className="pt-6">
         <AddedView member={added} onDone={() => goBackOr(router, '/(tabs)/community')} />
       </Screen>
     );
   }
 
   return (
-    <Screen scroll backdrop className="gap-8 pt-6">
+    <Screen edges={['bottom']} scroll backdrop className="gap-8 pt-6">
       <Text variant="muted" className="text-[15px] leading-[22px]">
         They will get a starting password to sign in with, which you share with them.
       </Text>

@@ -33,7 +33,7 @@ export default function HomeScreen() {
   const now = new Date();
 
   return (
-    <Screen scroll backdrop className="gap-8 pt-6">
+    <Screen edges={['top']} scroll backdrop className="gap-8 pt-6">
       <View className="flex-row items-start justify-between">
         <View className="gap-1">
           <Text variant="muted">{longDate(now)}</Text>

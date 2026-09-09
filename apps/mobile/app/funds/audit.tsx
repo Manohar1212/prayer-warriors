@@ -44,7 +44,7 @@ export default function AuditScreen() {
   }, []);
 
   return (
-    <Screen scroll backdrop className="gap-4 pt-6">
+    <Screen edges={['bottom']} scroll backdrop className="gap-4 pt-6">
       <Text variant="muted" className="text-[15px] leading-[22px]">
         Every change to the ledger, who made it, and why.
       </Text>
