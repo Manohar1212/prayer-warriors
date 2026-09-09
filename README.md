@@ -15,7 +15,9 @@ has a design spec and implementation plan under `docs/superpowers/`.
 | Resources: songs, scripture, prayers with links and search | Done |
 | Funds: contributions, expenses, balance, monthly report, CSV export, change history | Done |
 | Bible: offline Telugu Old Version + Berean Standard Bible, reader, search, post a verse to the group | Done |
-| Group calls (LiveKit), push notifications, admin web dashboard | Not started (need a development build) |
+| Home: verse of the day, latest requests, recently shared, next call | Done |
+| Group calls: schedule, join over LiveKit, participants, history | Done (development build) |
+| Push notifications, admin web dashboard | Not started |
 
 All writes go through Cloud Code in `backend/cloud/`; the app reads with the Parse SDK behind
 small services in `apps/mobile/src/features/*`. Specs and plans for each feature are in
@@ -27,12 +29,20 @@ small services in `apps/mobile/src/features/*`. Specs and plans for each feature
    and first admin in the PrayerWarriors Back4App app.
 2. **Mobile env** — copy `apps/mobile/.env.example` to `apps/mobile/.env` and fill in
    the Application ID and JavaScript key.
-3. **Run**
+3. **LiveKit (group calls)** — create a free project at cloud.livekit.io and put its URL, API
+   key, and API secret in `backend/.env` as `LIVEKIT_URL`, `LIVEKIT_API_KEY`,
+   `LIVEKIT_API_SECRET`, then re-run `node backend/schema/setup.mjs`.
+4. **Run** — the app is a development build (LiveKit's native module cannot run in Expo Go):
 
    ```bash
-   npm install          # from the repo root
-   npm run mobile       # then press i / a / w for iOS / Android / web
+   npm install                                  # from the repo root
+   cd apps/mobile
+   npx expo prebuild --platform ios             # generates ios/ (git-ignored); re-run after native config changes
+   npx expo run:ios                             # builds, installs on the simulator, starts Metro
    ```
+
+   Afterwards `npm run mobile` from the root starts Metro and the installed build reconnects.
+   `w` opens the web preview, where calls are unavailable by design.
 
 ## Scripts (repo root)
 
