@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, Share, View } from 'react-native';
+import { Pressable, ScrollView, Share, Text as RNText, View } from 'react-native';
 
 import {
   bibleService,
@@ -78,8 +78,8 @@ export default function ChapterScreen() {
   return (
     <Screen backdrop className="px-0 pt-0">
       <Stack.Screen options={{ title }} />
-      <ScrollView ref={scrollRef} contentContainerClassName="gap-4 px-5 pb-10 pt-2" showsVerticalScrollIndicator={false}>
-        <View className="flex-row items-center justify-between gap-3">
+      <ScrollView ref={scrollRef} contentContainerClassName="gap-4 px-3 pb-10 pt-2" showsVerticalScrollIndicator={false}>
+        <View className="flex-row items-center justify-between gap-3 px-1">
           <BibleNav
             crumbs={[
               { label: lang === 'te' ? 'గ్రంథాలు' : 'Books', href: '/bible' },
@@ -112,17 +112,18 @@ export default function ChapterScreen() {
                   accessibilityLabel={`Verse ${v.label}`}
                   accessibilityState={{ selected: active }}
                   onPress={() => setSelected(active ? null : v.verse)}
-                  className={`flex-row gap-3 rounded-xl px-2 py-1.5 ${active ? 'bg-honey' : ''}`}
+                  className={`rounded-xl px-2 py-1.5 ${active ? 'bg-honey' : ''}`}
                 >
-                  <Text variant="label" color="gold" className="min-w-[26px] pt-1 text-right text-[12px]">
-                    {v.label}
-                  </Text>
-                  <Text className="flex-1" style={style}>
+                  <Text style={style}>
+                    <RNText style={{ fontFamily: 'Inter_600SemiBold', color: colors.gold, fontSize: Math.round(style.fontSize * 0.7) }}>
+                      {v.label}
+                    </RNText>
+                    {' '}
                     {v.text}
                   </Text>
                 </Pressable>
                 {active ? (
-                  <View className="mb-2 ml-2 mr-2 gap-3 rounded-b-xl border border-t-0 border-honey bg-surface px-3 pb-3 pt-2">
+                  <View className="mb-2 mx-2 gap-3 rounded-b-xl border border-t-0 border-honey bg-surface px-3 pb-3 pt-2">
                     {twin ? (
                       <Text variant="muted" className="text-[15px] leading-[24px]">
                         {twin.text}
