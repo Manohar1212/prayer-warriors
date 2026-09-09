@@ -75,43 +75,43 @@ export default function HomeScreen() {
   return (
     <Screen edges={['top']} backdrop className="px-0 pt-0">
       <ScrollView contentContainerClassName="gap-7 px-6 pb-8 pt-6" showsVerticalScrollIndicator={false}>
-        <View className="flex-row items-start justify-between gap-3">
-          <View className="flex-1 gap-1">
+        <View className="gap-1">
+          <View className="flex-row items-center justify-between">
             <Text variant="muted">{longDate(now)}</Text>
-            <Text variant="display" color="primary">
-              {greeting(now)},{'\n'}
-              {firstName}
-            </Text>
+            <View className="flex-row items-center gap-3">
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+                onPress={() => router.push('/notifications')}
+                hitSlop={8}
+                className="h-10 w-10 items-center justify-center rounded-full bg-sage"
+              >
+                <Ionicons name={unread ? 'notifications' : 'notifications-outline'} size={20} color={colors.primary} />
+                {unread ? (
+                  <View className="absolute -right-1 -top-1 h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold px-1">
+                    <Text variant="label" color="cream" className="text-[11px]">
+                      {unread > 9 ? '9+' : String(unread)}
+                    </Text>
+                  </View>
+                ) : null}
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Open profile"
+                onPress={() => router.push('/profile')}
+                hitSlop={8}
+                className="h-10 w-10 items-center justify-center rounded-full bg-primary"
+              >
+                <Text variant="title" color="cream">
+                  {firstName.charAt(0).toUpperCase()}
+                </Text>
+              </Pressable>
+            </View>
           </View>
-          <View className="mt-1 flex-row items-center gap-3">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={unread ? `Notifications, ${unread} unread` : 'Notifications'}
-              onPress={() => router.push('/notifications')}
-              hitSlop={8}
-              className="h-11 w-11 items-center justify-center rounded-full bg-sage"
-            >
-              <Ionicons name={unread ? 'notifications' : 'notifications-outline'} size={22} color={colors.primary} />
-              {unread ? (
-                <View className="absolute -right-1 -top-1 h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold px-1">
-                  <Text variant="label" color="cream" className="text-[11px]">
-                    {unread > 9 ? '9+' : String(unread)}
-                  </Text>
-                </View>
-              ) : null}
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open profile"
-              onPress={() => router.push('/profile')}
-              hitSlop={8}
-              className="h-11 w-11 items-center justify-center rounded-full bg-primary"
-            >
-              <Text variant="title" color="cream">
-                {firstName.charAt(0).toUpperCase()}
-              </Text>
-            </Pressable>
-          </View>
+          <Text variant="display" color="primary">
+            {greeting(now)},{'\n'}
+            {firstName}
+          </Text>
         </View>
 
         <Pressable
