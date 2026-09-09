@@ -32,7 +32,7 @@ export function HeaderHome() {
   const navigation = useNavigation();
   if (navigation.canGoBack()) return null;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel="Go to Home" onPress={() => router.replace('/(tabs)')} hitSlop={8} style={{ paddingHorizontal: 8 }}>
+    <Pressable accessibilityRole="button" accessibilityLabel="Go to Home" onPress={() => router.navigate('/(tabs)')} hitSlop={8} style={{ paddingHorizontal: 8 }}>
       <Ionicons name="home-outline" size={22} color={colors.primary} />
     </Pressable>
   );

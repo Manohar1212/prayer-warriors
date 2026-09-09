@@ -47,6 +47,7 @@ export default function TabsLayout() {
         tabBarLabelStyle: { fontFamily: fonts.sansMedium, fontSize: 11, marginTop: 2 },
       }}
     >
+      <Tabs.Screen name="bible" options={{ href: null, headerShown: false }} />
       {tabs.map((tab) => (
         <Tabs.Screen
           key={tab.name}
