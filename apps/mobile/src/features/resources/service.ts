@@ -56,6 +56,12 @@ export function createResourcesService({ fetchResources, cloud }: Deps): Resourc
         return rows.filter((r) => r.type === type).map(fromRaw).sort(newestFirst);
       }),
 
+    listRecent: (limit) =>
+      guarded(async () => {
+        const rows = await fetchResources();
+        return rows.map(fromRaw).sort(newestFirst).slice(0, limit);
+      }),
+
     create: (input: NewResource) =>
       guarded(async () => fromDto((await cloud.run('createResource', { ...input })) as ResourceDto)),
 

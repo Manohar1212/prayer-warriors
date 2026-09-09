@@ -29,6 +29,14 @@ describe('resourcesService.list', () => {
   });
 });
 
+describe('resourcesService.listRecent', () => {
+  it('returns the newest across all types', async () => {
+    const { service } = svc();
+    const recent = await service.listRecent(2);
+    expect(recent.map((r) => r.id)).toEqual(['c', 'b']);
+  });
+});
+
 describe('matchesQuery', () => {
   const r: Resource = { id: 'x', type: 'song', title: 'Oceans', body: 'Spirit lead me', reference: 'Hillsong', url: '', note: '', sharedBy: 'S', createdById: 'u', createdAt: '' };
   it.each([['ocean', true], ['HILLSONG', true], ['lead me', true], ['grace', false], ['', true]])('%s → %s', (q, expected) => {
