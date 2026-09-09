@@ -8,9 +8,13 @@
   "scripts": {
     "mobile": "npm start -w apps/mobile",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm test --workspaces --if-present -- --ci"
+    "test": "npm test --workspaces --if-present -- --ci",
+    "postinstall": "patch-package"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "patch-package": "^8.0.1"
   }
 }
