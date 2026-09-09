@@ -44,6 +44,13 @@ small services in `apps/mobile/src/features/*`. Specs and plans for each feature
    Afterwards `npm run mobile` from the root starts Metro and the installed build reconnects.
    `w` opens the web preview, where calls are unavailable by design.
 
+   Notes for the iOS build:
+   - Xcode 26.3 (Swift 6.2.4) needs the `patches/expo-modules-jsi+57.1.0.patch` that
+     `npm install` applies automatically via `patch-package`; it fixes three Swift 6 strict-
+     concurrency errors in the `ExpoModulesJSI` xcframework phase. Remove it once Expo ships a fix.
+   - To open the installed build straight into Metro without the iOS "Open in Prayer Warriors?"
+     prompt: `xcrun simctl launch booted com.prayerwarriors.app --initialUrl http://127.0.0.1:8081`.
+
 ## Scripts (repo root)
 
 | Command             | What it does                       |
