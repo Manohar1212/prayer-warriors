@@ -63,7 +63,7 @@ export default function NotificationSettingsScreen() {
           ))}
         </Card>
         <Text variant="muted" className="text-[13px]">
-          Reminders 10 minutes before a scheduled call are set on this phone and follow the Group calls switch.
+          This phone also reminds you 10 minutes before a scheduled call once notifications are allowed.
         </Text>
       </ScrollView>
     </Screen>
