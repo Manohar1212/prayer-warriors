@@ -5,6 +5,8 @@ const { createMemberHandlers } = require('./members');
 const { createPrayerHandlers } = require('./prayer');
 const { createResourceHandlers } = require('./resources');
 const { createFinanceHandlers } = require('./finance');
+const { createCallHandlers } = require('./calls');
+const { createLiveKitTokens } = require('./livekit');
 
 function pointer(className, id) {
   return { __type: 'Pointer', className, objectId: id };
@@ -337,6 +339,104 @@ const audit = {
   },
 };
 
+// ---------- calls ----------
+
+function callDto(obj) {
+  const group = obj.get('group');
+  const createdBy = obj.get('createdBy');
+  return {
+    id: obj.id,
+    groupId: refId(group),
+    title: obj.get('title'),
+    scheduledAt: iso(obj.get('scheduledAt')),
+    roomName: obj.get('roomName') || '',
+    status: obj.get('status'),
+    startedAt: iso(obj.get('startedAt')),
+    endedAt: iso(obj.get('endedAt')),
+    createdById: refId(createdBy),
+  };
+}
+
+const callsRepo = {
+  async create({ groupId, createdById, ...fields }) {
+    const obj = new Parse.Object('Call');
+    obj.set('group', pointer('Group', groupId));
+    obj.set('createdBy', pointer('_User', createdById));
+    Object.entries(fields).forEach(([key, value]) => obj.set(key, value));
+    obj.setACL(groupReadAcl(groupId));
+    await obj.save(null, { useMasterKey: true });
+    obj.set('roomName', `pw-${groupId}-${obj.id}`);
+    await obj.save(null, { useMasterKey: true });
+    return callDto(obj);
+  },
+  async get(id) {
+    const obj = await fetchRow('Call', id);
+    return obj ? callDto(obj) : null;
+  },
+  async update(id, patch) {
+    const obj = await new Parse.Query('Call').get(id, { useMasterKey: true });
+    Object.entries(patch).forEach(([key, value]) => obj.set(key, value));
+    await obj.save(null, { useMasterKey: true });
+    return callDto(obj);
+  },
+};
+
+const participantsRepo = {
+  async upsertJoined(callId, userId, groupId) {
+    let row = await new Parse.Query('CallParticipant')
+      .equalTo('call', pointer('Call', callId))
+      .equalTo('user', pointer('_User', userId))
+      .first({ useMasterKey: true });
+    if (!row) {
+      row = new Parse.Object('CallParticipant');
+      row.set('call', pointer('Call', callId));
+      row.set('user', pointer('_User', userId));
+      row.setACL(groupReadAcl(groupId));
+    }
+    row.set('joinedAt', new Date());
+    row.unset('leftAt');
+    await row.save(null, { useMasterKey: true });
+  },
+  async markLeft(callId, userId, when) {
+    const row = await new Parse.Query('CallParticipant')
+      .equalTo('call', pointer('Call', callId))
+      .equalTo('user', pointer('_User', userId))
+      .first({ useMasterKey: true });
+    if (!row) return;
+    row.set('leftAt', when);
+    await row.save(null, { useMasterKey: true });
+  },
+};
+
+const usersRepo = {
+  async displayName(userId) {
+    const user = await new Parse.Query(Parse.User).get(userId, { useMasterKey: true }).catch(() => null);
+    return user ? user.get('displayName') : null;
+  },
+};
+
+let liveKitPromise = null;
+function liveKitTokens() {
+  if (!liveKitPromise) {
+    liveKitPromise = (async () => {
+      const config = await Parse.Config.get({ useMasterKey: true });
+      const url = config.get('LIVEKIT_URL');
+      const apiKey = config.get('LIVEKIT_API_KEY');
+      const apiSecret = config.get('LIVEKIT_API_SECRET');
+      if (!url || !apiKey || !apiSecret) return null;
+      return createLiveKitTokens({ url, apiKey, apiSecret });
+    })().catch((err) => {
+      liveKitPromise = null;
+      throw err;
+    });
+  }
+  return liveKitPromise;
+}
+
+async function callHandlers() {
+  return createCallHandlers({ memberships, calls: callsRepo, participants: participantsRepo, users: usersRepo, tokens: await liveKitTokens() });
+}
+
 // ---------- cloud functions ----------
 
 const memberHandlers = createMemberHandlers({ memberships, users, roles, generatePassword });
@@ -364,6 +464,9 @@ Parse.Cloud.define('deleteResource', (request) =>
 );
 ['addContribution', 'updateContribution', 'deleteContribution', 'addExpense', 'updateExpense', 'deleteExpense'].forEach(
   (name) => Parse.Cloud.define(name, (request) => financeHandlers[name](request.params, { callerId: callerId(request) })),
+);
+['scheduleCall', 'cancelCall', 'endCall', 'joinCall', 'leaveCall'].forEach((name) =>
+  Parse.Cloud.define(name, async (request) => (await callHandlers())[name](request.params, { callerId: callerId(request) })),
 );
 Parse.Cloud.define('ping', () => 'pong');
 

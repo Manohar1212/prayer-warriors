@@ -245,6 +245,38 @@ const auditSchema = {
   },
 };
 
+const callSchema = {
+  className: 'Call',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    title: { type: 'String', required: true },
+    scheduledAt: { type: 'Date', required: true },
+    roomName: { type: 'String' },
+    status: { type: 'String', required: true, defaultValue: 'scheduled' },
+    startedAt: { type: 'Date' },
+    endedAt: { type: 'Date' },
+    createdBy: { type: 'Pointer', targetClass: '_User' },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
+const callParticipantSchema = {
+  className: 'CallParticipant',
+  fields: {
+    call: { type: 'Pointer', targetClass: 'Call', required: true },
+    user: { type: 'Pointer', targetClass: '_User', required: true },
+    joinedAt: { type: 'Date' },
+    leftAt: { type: 'Date' },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
 async function findOne(className, where) {
   const query = encodeURIComponent(JSON.stringify(where));
   const res = await api('GET', `/classes/${className}?limit=1&where=${query}`);
@@ -336,6 +368,8 @@ await upsertSchema(resourceSchema);
 await upsertSchema(contributionSchema);
 await upsertSchema(expenseSchema);
 await upsertSchema(auditSchema);
+await upsertSchema(callSchema);
+await upsertSchema(callParticipantSchema);
 
 const groupId = await ensureGroup();
 const memberRoleName = `group:${groupId}:member`;
@@ -354,6 +388,23 @@ await api('PUT', `/classes/Group/${groupId}`, {
   ACL: { [`role:${memberRoleName}`]: { read: true }, [`role:${adminRoleName}`]: { read: true } },
 });
 
+async function ensureLiveKitConfig() {
+  const params = {
+    LIVEKIT_URL: process.env.LIVEKIT_URL,
+    LIVEKIT_API_KEY: process.env.LIVEKIT_API_KEY,
+    LIVEKIT_API_SECRET: process.env.LIVEKIT_API_SECRET,
+  };
+  if (Object.values(params).some((v) => !v)) {
+    console.log('· skipping LiveKit config (LIVEKIT_* not set)');
+    return;
+  }
+  const masterKeyOnly = Object.fromEntries(Object.keys(params).map((k) => [k, true]));
+  const res = await api('PUT', '/config', { params, masterKeyOnly });
+  if (!res.ok) throw new Error(`config: ${JSON.stringify(res.data)}`);
+  console.log('✓ LiveKit config (master key only)');
+}
+
 await ensureAdmin(groupId, memberRole, adminRole);
+await ensureLiveKitConfig();
 
 console.log(`\nDone. groupId=${groupId}`);

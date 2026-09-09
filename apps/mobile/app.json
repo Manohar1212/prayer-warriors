@@ -35,7 +35,8 @@
       "expo-font",
       "expo-sharing",
       "expo-sqlite",
-      "expo-asset"
+      "expo-asset",
+      "@livekit/react-native-expo-plugin"
     ]
   }
 }
