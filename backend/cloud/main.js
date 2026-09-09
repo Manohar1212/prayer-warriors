@@ -541,17 +541,40 @@ const pushTokens = {
   },
 };
 
+/** POST JSON with whatever HTTP client this Parse Server exposes (global fetch on Node 18+, else https). */
+async function postJson(url, body) {
+  const payload = JSON.stringify(body);
+  const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
+  if (typeof fetch === 'function') {
+    const res = await fetch(url, { method: 'POST', headers, body: payload });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+    return JSON.parse(text);
+  }
+  const https = require('https');
+  return new Promise((resolve, reject) => {
+    const req = https.request(url, { method: 'POST', headers: { ...headers, 'Content-Length': Buffer.byteLength(payload) } }, (res) => {
+      let text = '';
+      res.on('data', (chunk) => (text += chunk));
+      res.on('end', () => {
+        if (res.statusCode < 200 || res.statusCode >= 300) return reject(new Error(`HTTP ${res.statusCode}: ${text.slice(0, 200)}`));
+        try {
+          resolve(JSON.parse(text));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+    req.on('error', reject);
+    req.end(payload);
+  });
+}
+
 /** Expo's push service; free, no credentials needed for the request itself. */
 const push = {
   async send(messages) {
-    const response = await Parse.Cloud.httpRequest({
-      method: 'POST',
-      url: 'https://exp.host/--/api/v2/push/send',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(messages),
-    });
-    const data = response.data || {};
-    return Array.isArray(data.data) ? data.data : [];
+    const data = await postJson('https://exp.host/--/api/v2/push/send', messages);
+    return data && Array.isArray(data.data) ? data.data : [];
   },
 };
 
