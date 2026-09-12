@@ -7,7 +7,8 @@ import { formatRupees, useFunds, type Transaction } from '@/features/funds';
 import { useMembers } from '@/features/members';
 import { shortDate } from '@/lib/time';
 import { colors, gradients } from '@/theme/tokens';
-import { Card, Screen, Text } from '@/ui';
+import { HeaderActions } from '@/features/notifications/HeaderActions';
+import { Card, Screen, TabHeader, Text } from '@/ui';
 
 function TransactionRow({ tx, onPress, last }: { tx: Transaction; onPress: () => void; last: boolean }) {
   const credit = tx.kind === 'contribution';
@@ -39,13 +40,16 @@ export default function FundsScreen() {
   const monthName = new Date().toLocaleDateString(undefined, { month: 'long' });
 
   return (
-    <Screen className="px-0 pt-0">
+    <Screen edges={['top']} className="px-0 pt-0">
       <ScrollView
-        contentContainerClassName="gap-4 px-4 pb-8 pt-2"
+        contentContainerClassName="gap-4 px-4 pb-36 pt-1"
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
       >
-        <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 22, padding: 20, gap: 14 }}>
+        <TabHeader title="Funds" subtitle="Group contributions and expenses" right={<HeaderActions />} />
+        <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 22, padding: 20, gap: 14, overflow: 'hidden' }}>
+          <View style={{ position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.08)' }} />
+          <View style={{ position: 'absolute', right: 40, top: 60, width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255,255,255,0.06)' }} />
           <View className="flex-row items-start justify-between">
             <View className="gap-1">
               <Text variant="caption" color="creamSoft">

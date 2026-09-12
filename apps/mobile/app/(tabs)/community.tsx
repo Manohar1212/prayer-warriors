@@ -8,7 +8,8 @@ import { isJoinable, useCalls } from '@/features/calls';
 import { useMembers, type Member } from '@/features/members';
 import { callsService } from '@/lib/parse';
 import { colors } from '@/theme/tokens';
-import { Avatar, AvatarStack, Button, Card, Screen, Segments, Text } from '@/ui';
+import { HeaderActions } from '@/features/notifications/HeaderActions';
+import { Avatar, AvatarStack, Button, Card, Screen, Segments, TabHeader, Text } from '@/ui';
 
 type Tab = 'calls' | 'members';
 
@@ -62,12 +63,13 @@ export default function CommunityScreen() {
   }, [next?.id, next?.participantCount]);
 
   return (
-    <Screen className="px-0 pt-0">
+    <Screen edges={['top']} className="px-0 pt-0">
       <ScrollView
-        contentContainerClassName="gap-4 px-4 pb-8 pt-2"
+        contentContainerClassName="gap-4 px-4 pb-36 pt-1"
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
       >
+        <TabHeader title="Community" subtitle={members.length === 1 ? '1 member' : `${members.length} members`} right={<HeaderActions />} />
         <Segments<Tab>
           options={[
             { value: 'calls', label: 'Group calls' },

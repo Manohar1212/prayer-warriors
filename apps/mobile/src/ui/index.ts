@@ -14,3 +14,5 @@ export { Fab } from './Fab';
 export { Meta } from './Meta';
 export type { MetaPart } from './Meta';
 export { Avatar, AvatarStack, avatarTone } from './Avatar';
+export { TabHeader } from './TabHeader';
+export { EmptyState } from './EmptyState';

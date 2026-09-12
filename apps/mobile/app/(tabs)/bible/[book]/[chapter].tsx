@@ -78,7 +78,7 @@ export default function ChapterScreen() {
   return (
     <Screen backdrop className="px-0 pt-0">
       <Stack.Screen options={{ title }} />
-      <ScrollView ref={scrollRef} contentContainerClassName="gap-4 px-3 pb-10 pt-2" showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} contentContainerClassName="gap-4 px-3 pb-32 pt-2" showsVerticalScrollIndicator={false}>
         <View className="flex-row items-center justify-between gap-3 px-1">
           <BibleNav
             crumbs={[

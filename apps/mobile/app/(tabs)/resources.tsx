@@ -7,7 +7,8 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View
 import { matchesQuery, RESOURCE_TYPES, useResources, type Resource, type ResourceType } from '@/features/resources';
 import { shortDate } from '@/lib/time';
 import { colors, gradients } from '@/theme/tokens';
-import { Card, Fab, Screen, Segments, Text } from '@/ui';
+import { HeaderActions } from '@/features/notifications/HeaderActions';
+import { Card, EmptyState, Fab, Screen, Segments, TabHeader, Text } from '@/ui';
 
 type Tab = ResourceType | 'bible';
 
@@ -77,15 +78,16 @@ export default function ResourcesScreen() {
   };
 
   return (
-    <Screen className="px-0 pt-0 pb-0">
+    <Screen edges={['top']} className="px-0 pt-0 pb-0">
       <FlatList
         data={visible}
         keyExtractor={(r) => r.id}
-        contentContainerClassName="flex-grow gap-3 px-4 pb-28 pt-2"
+        contentContainerClassName="flex-grow gap-3 px-4 pb-36 pt-1"
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
         ListHeaderComponent={
           <View className="gap-3 pb-1">
+            <TabHeader title="Resources" subtitle="Songs, scripture and prayers" right={<HeaderActions />} />
             <Segments<Tab> options={[...RESOURCE_TYPES.map((t) => ({ value: t.id as Tab, label: t.plural })), { value: 'bible', label: 'Bible' }]} value={type} onChange={onTab} />
             <View className="flex-row items-center gap-2 rounded-full bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
@@ -114,12 +116,7 @@ export default function ResourcesScreen() {
               Nothing matches "{query}".
             </Text>
           ) : (
-            <View className="mt-8 gap-2">
-              <Text variant="title">{emptyCopy[type].title}</Text>
-              <Text variant="muted" className="max-w-[300px] text-[15px] leading-[22px]">
-                {emptyCopy[type].body}
-              </Text>
-            </View>
+            <EmptyState icon={type === 'song' ? 'musical-notes-outline' : type === 'scripture' ? 'book-outline' : 'hand-left-outline'} tone={type === 'song' ? 'lavender' : type === 'scripture' ? 'sage' : 'honey'} title={emptyCopy[type].title} body={emptyCopy[type].body} />
           )
         }
         renderItem={({ item }) => <ResourceCard resource={item} onOpen={() => router.push({ pathname: '/resources/[id]', params: { id: item.id } })} />}

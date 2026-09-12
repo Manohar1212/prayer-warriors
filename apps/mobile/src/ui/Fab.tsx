@@ -10,7 +10,7 @@ type Props = { label: string; icon?: IconName; onPress: () => void };
 /** The one create action on a list screen: a purple disc anchored bottom right. */
 export function Fab({ label, icon = 'add', onPress }: Props) {
   return (
-    <View style={{ pointerEvents: 'box-none' }} className="absolute bottom-6 right-4">
+    <View style={{ pointerEvents: 'box-none' }} className="absolute bottom-28 right-4">
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}

@@ -3,18 +3,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/features/auth';
 import { useBibleLanguage } from '@/features/bible';
 import { isJoinable, useCalls } from '@/features/calls';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
-import { useUnreadCount } from '@/features/notifications';
+import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { usePrayerRequests } from '@/features/prayer';
 import { RESOURCE_TYPES, type Resource } from '@/features/resources';
 import { resourcesService } from '@/lib/parse';
 import { timeAgoShort } from '@/lib/time';
 import { colors, gradients } from '@/theme/tokens';
-import { Avatar, Badge, Card, Screen, Text } from '@/ui';
+import { Avatar, Badge, Card, Text } from '@/ui';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -26,7 +27,7 @@ function greeting(date: Date): string {
 }
 
 function longDate(date: Date): string {
-  return date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 const actions: { label: string; icon: IconName; bg: string; fg: string; href: Href }[] = [
@@ -44,7 +45,7 @@ const resourceIcon: Record<Resource['type'], { name: IconName; bg: string; fg: s
 
 function SectionHeader({ title, actionLabel, onAction }: { title: string; actionLabel: string; onAction: () => void }) {
   return (
-    <View className="flex-row items-center justify-between">
+    <View className="flex-row items-center justify-between px-1">
       <Text variant="title" className="text-[20px]">
         {title}
       </Text>
@@ -59,13 +60,13 @@ function SectionHeader({ title, actionLabel, onAction }: { title: string; action
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const [lang] = useBibleLanguage();
   const verse = useVerseOfTheDay(lang);
   const { requests, loading: loadingRequests } = usePrayerRequests('active');
   const [recent, setRecent] = useState<Resource[]>([]);
   const { next: nextCall } = useCalls();
-  const unread = useUnreadCount();
   const name = user?.displayName ?? 'friend';
   const firstName = name.split(' ')[0];
   const now = new Date();
@@ -79,177 +80,180 @@ export default function HomeScreen() {
   const topRequests = requests.slice(0, 3);
 
   return (
-    <Screen edges={['top']} className="px-0 pt-0">
-      <ScrollView contentContainerClassName="gap-6 px-4 pb-8 pt-4" showsVerticalScrollIndicator={false}>
-        <View className="flex-row items-center justify-between">
-          <View className="flex-1 gap-0.5 pr-3">
-            <Text variant="title" className="text-[26px] leading-[32px]">
-              {greeting(now)}, {firstName}!
-            </Text>
-            <Text variant="caption">{longDate(now)}</Text>
+    <View className="flex-1 bg-cream">
+      <ScrollView contentContainerClassName="pb-32" showsVerticalScrollIndicator={false}>
+        {/* Hero: purple header with the greeting; the verse card hangs over its bottom edge. */}
+        <LinearGradient colors={[...gradients.welcome]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: 72, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 }}>
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1 gap-1 pr-3">
+              <Text variant="caption" color="creamSoft">
+                {longDate(now)}
+              </Text>
+              <Text variant="display" color="cream" className="text-[30px] leading-[36px]">
+                {greeting(now)}, {firstName}
+              </Text>
+            </View>
+            <HeaderActions onDark />
           </View>
-          <View className="flex-row items-center gap-3">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={unread ? `Notifications, ${unread} unread` : 'Notifications'}
-              onPress={() => router.push('/notifications')}
-              hitSlop={8}
-              className="h-10 w-10 items-center justify-center rounded-full bg-surface"
-            >
-              <Ionicons name={unread ? 'notifications' : 'notifications-outline'} size={20} color={colors.primary} />
-              {unread ? (
-                <View className="absolute -right-1 -top-1 h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-deep px-1">
-                  <Text variant="label" color="cream" className="text-[11px]">
-                    {unread > 9 ? '9+' : String(unread)}
+        </LinearGradient>
+
+        <View className="-mt-14 gap-6 px-4">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open today's verse in the Bible"
+            disabled={!verse}
+            onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
+          >
+            <Card className="gap-3 overflow-hidden p-5">
+              <Text className="absolute -right-2 -top-6 font-display-bold text-[120px] leading-[120px]" color="primary" style={{ opacity: 0.08 }}>
+                ”
+              </Text>
+              <View className="flex-row items-center gap-2">
+                <View className="h-1.5 w-1.5 rounded-full bg-primary" />
+                <Text variant="caption" color="primary">
+                  {lang === 'te' ? 'ఈ రోజు వాక్యం' : 'Verse of the day'}
+                </Text>
+              </View>
+              <Text variant="scripture" className={lang === 'te' ? 'text-[19px] leading-[32px]' : 'text-[21px] leading-[32px]'}>
+                {verse ? verse.text : '…'}
+              </Text>
+              {verse ? (
+                <View className="flex-row items-center justify-between">
+                  <Text variant="label" color="primary" className="text-[13px]">
+                    {verse.reference}
                   </Text>
+                  <View className="flex-row items-center gap-1">
+                    <Text variant="caption">Read chapter</Text>
+                    <Ionicons name="chevron-forward" size={14} color={colors.muted} />
+                  </View>
                 </View>
               ) : null}
-            </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel="Open profile" onPress={() => router.push('/profile')} hitSlop={8}>
-              <Avatar name={name} size={40} />
-            </Pressable>
-          </View>
-        </View>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Open today's verse in the Bible"
-          disabled={!verse}
-          onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
-        >
-          <LinearGradient colors={[...gradients.verse]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 20, padding: 20 }}>
-            <Text variant="caption" color="primary" className="mb-2">
-              {lang === 'te' ? 'ఈ రోజు వాక్యం' : 'Verse of the day'}
-            </Text>
-            <Text variant="scripture" className={lang === 'te' ? 'text-[19px] leading-[32px]' : 'text-[20px] leading-[30px]'}>
-              {verse ? `“${verse.text}”` : '…'}
-            </Text>
-            {verse ? (
-              <Text variant="label" color="muted" className="mt-3 text-[13px]">
-                {verse.reference}
-              </Text>
-            ) : null}
-          </LinearGradient>
-        </Pressable>
-
-        <View className="flex-row justify-between px-1">
-          {actions.map((a) => (
-            <Pressable key={a.label} accessibilityRole="button" onPress={() => router.push(a.href)} className="items-center gap-2 active:opacity-80">
-              <View className={`h-14 w-14 items-center justify-center rounded-full ${a.bg}`}>
-                <Ionicons name={a.icon} size={22} color={a.fg} />
-              </View>
-              <Text variant="caption" color="ink">
-                {a.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <View className="gap-3">
-          <SectionHeader title="Prayer requests" actionLabel="See all" onAction={() => router.push('/(tabs)/prayer')} />
-          {topRequests.length ? (
-            <Card className="py-1">
-              {topRequests.map((r, i) => (
-                <Pressable
-                  key={r.id}
-                  accessibilityRole="button"
-                  onPress={() => router.push({ pathname: '/prayer/[id]', params: { id: r.id } })}
-                  className={`flex-row items-center gap-3 py-3 ${i > 0 ? 'border-t border-border' : ''}`}
-                >
-                  <Avatar name={r.authorName} size={36} />
-                  <View className="flex-1 gap-1">
-                    <Text variant="label" className="text-[15px]" numberOfLines={1}>
-                      {r.title}
-                    </Text>
-                    <View className="flex-row flex-wrap items-center gap-2">
-                      <Text variant="caption">
-                        {r.authorName} · {timeAgoShort(r.createdAt)}
-                      </Text>
-                      {r.urgency === 'urgent' ? <Badge label="Urgent" tone="blush" /> : null}
-                    </View>
-                  </View>
-                  <View className="flex-row items-center gap-1">
-                    <Ionicons name={r.praying ? 'heart' : 'heart-outline'} size={16} color={colors.roseDeep} />
-                    <Text variant="caption">{r.prayingCount}</Text>
-                  </View>
-                </Pressable>
-              ))}
             </Card>
-          ) : (
-            <Text variant="muted" className="text-[15px] leading-[22px]">
-              {loadingRequests ? 'Loading…' : 'No open requests right now. Share what is on your heart.'}
-            </Text>
-          )}
-        </View>
+          </Pressable>
 
-        <View className="gap-3">
-          <SectionHeader title="Recently shared" actionLabel="See all" onAction={() => router.push('/(tabs)/resources')} />
-          {recent.length ? (
-            <Card className="py-1">
-              {recent.map((r, i) => {
-                const icon = resourceIcon[r.type];
-                return (
+          <View className="flex-row justify-between px-2">
+            {actions.map((a) => (
+              <Pressable key={a.label} accessibilityRole="button" onPress={() => router.push(a.href)} className="items-center gap-2 active:opacity-80">
+                <View className={`h-14 w-14 items-center justify-center rounded-[20px] ${a.bg}`}>
+                  <Ionicons name={a.icon} size={22} color={a.fg} />
+                </View>
+                <Text variant="caption" color="ink">
+                  {a.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <View className="gap-3">
+            <SectionHeader title="Prayer requests" actionLabel="See all" onAction={() => router.push('/(tabs)/prayer')} />
+            {topRequests.length ? (
+              <Card className="py-1">
+                {topRequests.map((r, i) => (
                   <Pressable
                     key={r.id}
                     accessibilityRole="button"
-                    onPress={() => router.push({ pathname: '/resources/[id]', params: { id: r.id } })}
+                    onPress={() => router.push({ pathname: '/prayer/[id]', params: { id: r.id } })}
                     className={`flex-row items-center gap-3 py-3 ${i > 0 ? 'border-t border-border' : ''}`}
                   >
-                    <View className={`h-10 w-10 items-center justify-center rounded-[12px] ${icon.bg}`}>
-                      <Ionicons name={icon.name} size={18} color={icon.fg} />
-                    </View>
-                    <View className="flex-1 gap-0.5">
-                      <Text variant="label" className="text-[15px]" numberOfLines={1}>
+                    <Avatar name={r.authorName} size={38} />
+                    <View className="flex-1 gap-1">
+                      <Text variant="label" className="text-[15px]" numberOfLines={2}>
                         {r.title}
                       </Text>
-                      <Text variant="caption">
-                        {RESOURCE_TYPES.find((t) => t.id === r.type)?.label} · {r.sharedBy}
-                      </Text>
+                      <View className="flex-row flex-wrap items-center gap-2">
+                        <Text variant="caption">
+                          {r.authorName} · {timeAgoShort(r.createdAt)}
+                        </Text>
+                        {r.urgency === 'urgent' ? <Badge label="Urgent" tone="blush" /> : null}
+                      </View>
                     </View>
-                    <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+                    <View className="flex-row items-center gap-1">
+                      <Ionicons name={r.praying ? 'heart' : 'heart-outline'} size={16} color={colors.roseDeep} />
+                      <Text variant="caption">{r.prayingCount}</Text>
+                    </View>
                   </Pressable>
-                );
-              })}
-            </Card>
-          ) : (
-            <Text variant="muted" className="text-[15px] leading-[22px]">
-              Nothing shared yet. Songs, scripture, and prayers the group shares will appear here.
-            </Text>
-          )}
-        </View>
-
-        <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 20, padding: 18 }}>
-          <View className="flex-row items-center gap-4">
-            <View className="h-12 w-12 items-center justify-center rounded-full bg-surface/20">
-              <Ionicons name="people" size={22} color={colors.surface} />
-            </View>
-            <View className="flex-1 gap-0.5">
-              <Text variant="caption" color="creamSoft">
-                Next group prayer
-              </Text>
-              <Text variant="label" color="cream" className="text-[16px]">
-                {nextCall ? nextCall.title : 'No call scheduled yet'}
-              </Text>
-              <Text variant="caption" color="creamSoft">
-                {nextCall
-                  ? new Date(nextCall.scheduledAt).toLocaleString(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' })
-                  : 'Your admin will schedule the next one.'}
-              </Text>
-            </View>
-            {nextCall ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => router.push({ pathname: '/calls/[id]', params: { id: nextCall.id } })}
-                className="rounded-full bg-surface px-4 py-2"
-              >
-                <Text variant="label" color="primary" className="text-[13px]">
-                  {isJoinable(nextCall, now) ? 'Join' : 'View'}
+                ))}
+              </Card>
+            ) : (
+              <Card className="items-center gap-2 py-6">
+                <Ionicons name="heart-outline" size={22} color={colors.roseDeep} />
+                <Text variant="muted" className="text-center text-[14px] leading-[21px]">
+                  {loadingRequests ? 'Loading…' : 'No open requests right now.\nShare what is on your heart.'}
                 </Text>
-              </Pressable>
-            ) : null}
+              </Card>
+            )}
           </View>
-        </LinearGradient>
+
+          <View className="gap-3">
+            <SectionHeader title="Recently shared" actionLabel="See all" onAction={() => router.push('/(tabs)/resources')} />
+            {recent.length ? (
+              <Card className="py-1">
+                {recent.map((r, i) => {
+                  const icon = resourceIcon[r.type];
+                  return (
+                    <Pressable
+                      key={r.id}
+                      accessibilityRole="button"
+                      onPress={() => router.push({ pathname: '/resources/[id]', params: { id: r.id } })}
+                      className={`flex-row items-center gap-3 py-3 ${i > 0 ? 'border-t border-border' : ''}`}
+                    >
+                      <View className={`h-10 w-10 items-center justify-center rounded-[12px] ${icon.bg}`}>
+                        <Ionicons name={icon.name} size={18} color={icon.fg} />
+                      </View>
+                      <View className="flex-1 gap-0.5">
+                        <Text variant="label" className="text-[15px]" numberOfLines={1}>
+                          {r.title}
+                        </Text>
+                        <Text variant="caption">
+                          {RESOURCE_TYPES.find((t) => t.id === r.type)?.label} · {r.sharedBy}
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+                    </Pressable>
+                  );
+                })}
+              </Card>
+            ) : (
+              <Card className="items-center gap-2 py-6">
+                <Ionicons name="musical-notes-outline" size={22} color={colors.primary} />
+                <Text variant="muted" className="text-center text-[14px] leading-[21px]">
+                  Nothing shared yet.{'\n'}Songs, scripture and prayers will appear here.
+                </Text>
+              </Card>
+            )}
+          </View>
+
+          <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 22, padding: 18, overflow: 'hidden' }}>
+            <View style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(255,255,255,0.08)' }} />
+            <View style={{ position: 'absolute', right: 30, bottom: -50, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.06)' }} />
+            <View className="flex-row items-center gap-4">
+              <View className="h-12 w-12 items-center justify-center rounded-full bg-surface/20">
+                <Ionicons name="people" size={22} color={colors.surface} />
+              </View>
+              <View className="flex-1 gap-0.5">
+                <Text variant="caption" color="creamSoft">
+                  Next group prayer
+                </Text>
+                <Text variant="label" color="cream" className="text-[16px]">
+                  {nextCall ? nextCall.title : 'No call scheduled yet'}
+                </Text>
+                <Text variant="caption" color="creamSoft">
+                  {nextCall
+                    ? new Date(nextCall.scheduledAt).toLocaleString(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' })
+                    : 'Your admin will schedule the next one.'}
+                </Text>
+              </View>
+              {nextCall ? (
+                <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/calls/[id]', params: { id: nextCall.id } })} className="rounded-full bg-surface px-4 py-2">
+                  <Text variant="label" color="primary" className="text-[13px]">
+                    {isJoinable(nextCall, now) ? 'Join' : 'View'}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+          </LinearGradient>
+        </View>
       </ScrollView>
-    </Screen>
+    </View>
   );
 }

@@ -6,7 +6,8 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Tex
 import { CATEGORIES, usePrayerRequests, type PrayerCategory, type PrayerRequest, type PrayerStatus } from '@/features/prayer';
 import { timeAgoShort } from '@/lib/time';
 import { colors } from '@/theme/tokens';
-import { Avatar, Badge, Card, Chip, Fab, Screen, Segments, Text } from '@/ui';
+import { HeaderActions } from '@/features/notifications/HeaderActions';
+import { Avatar, Badge, Card, Chip, EmptyState, Fab, Screen, Segments, TabHeader, Text } from '@/ui';
 
 type Tab = PrayerStatus | 'journal';
 
@@ -81,15 +82,16 @@ export default function PrayerScreen() {
   };
 
   return (
-    <Screen className="px-0 pt-0 pb-0">
+    <Screen edges={['top']} className="px-0 pt-0 pb-0">
       <FlatList
         data={visible}
         keyExtractor={(r) => r.id}
-        contentContainerClassName="flex-grow gap-3 px-4 pb-28 pt-2"
+        contentContainerClassName="flex-grow gap-3 px-4 pb-36 pt-1"
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
         ListHeaderComponent={
           <View className="gap-3 pb-1">
+            <TabHeader title="Prayer" subtitle={status === 'active' ? `${requests.length} open ${requests.length === 1 ? 'request' : 'requests'}` : `${requests.length} answered`} right={<HeaderActions />} />
             <Segments<Tab>
               options={[
                 { value: 'active', label: 'Active' },
@@ -128,12 +130,12 @@ export default function PrayerScreen() {
           loading ? (
             <ActivityIndicator color={colors.primary} className="mt-10" />
           ) : (
-            <View className="mt-8 gap-2">
-              <Text variant="title">{status === 'active' ? 'No requests yet' : 'No answered prayers yet'}</Text>
-              <Text variant="muted" className="max-w-[300px] text-[15px] leading-[22px]">
-                {status === 'active' ? 'Share what is on your heart and the group will pray with you.' : 'When a request is answered, it moves here with its testimony.'}
-              </Text>
-            </View>
+            <EmptyState
+              icon={status === 'active' ? 'heart-outline' : 'sparkles-outline'}
+              tone={status === 'active' ? 'blush' : 'honey'}
+              title={status === 'active' ? 'No requests yet' : 'No answered prayers yet'}
+              body={status === 'active' ? 'Share what is on your heart and the group will pray with you.' : 'When a request is answered, it moves here with its testimony.'}
+            />
           )
         }
         renderItem={({ item }) => (
