@@ -21,8 +21,8 @@ export type TabBarProps = {
 };
 
 /**
- * A floating white pill instead of the stock bar. The active tab expands into a lavender pill
- * with its label; the rest stay as quiet icons.
+ * A floating white bar instead of the stock one: icon above label on every tab, with a lavender
+ * pill behind the active icon.
  */
 export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
   const insets = useSafeAreaInsets();
@@ -31,7 +31,7 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
   return (
     <View style={{ position: 'absolute', left: 16, right: 16, bottom: Math.max(insets.bottom, 12), pointerEvents: 'box-none' }}>
       <View
-        className="flex-row items-center rounded-full bg-surface px-2 py-2"
+        className="flex-row items-center rounded-[28px] bg-surface px-2 py-2"
         style={{ boxShadow: '0 10px 30px rgba(62, 42, 124, 0.16)' }}
       >
         {routes.map((route) => {
@@ -50,15 +50,14 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
               accessibilityState={{ selected: focused }}
               accessibilityLabel={label}
               onPress={onPress}
-              className={`h-12 flex-row items-center justify-center gap-1.5 rounded-full ${focused ? 'bg-lavender px-3' : ''}`}
-              style={{ flex: focused ? 2.3 : 1 }}
+              className="flex-1 items-center gap-1 py-1"
             >
-              <Ionicons name={focused ? icon.active : icon.icon} size={22} color={focused ? colors.primary : colors.muted} />
-              {focused ? (
-                <Text variant="label" color="primary" className="text-[13px]">
-                  {label}
-                </Text>
-              ) : null}
+              <View className={`h-8 w-14 items-center justify-center rounded-full ${focused ? 'bg-lavender' : ''}`}>
+                <Ionicons name={focused ? icon.active : icon.icon} size={22} color={focused ? colors.primary : colors.muted} />
+              </View>
+              <Text variant="label" color={focused ? 'primary' : 'muted'} className="text-[11px] leading-[14px]">
+                {label}
+              </Text>
             </Pressable>
           );
         })}
