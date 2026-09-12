@@ -50,7 +50,8 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
               accessibilityState={{ selected: focused }}
               accessibilityLabel={label}
               onPress={onPress}
-              className={`h-12 flex-1 flex-row items-center justify-center gap-1.5 rounded-full ${focused ? 'bg-lavender' : ''}`}
+              className={`h-12 flex-row items-center justify-center gap-1.5 rounded-full ${focused ? 'bg-lavender px-3' : ''}`}
+              style={{ flex: focused ? 2.3 : 1 }}
             >
               <Ionicons name={focused ? icon.active : icon.icon} size={22} color={focused ? colors.primary : colors.muted} />
               {focused ? (
