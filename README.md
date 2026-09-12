@@ -11,7 +11,7 @@ has a design spec and implementation plan under `docs/superpowers/`.
 | --- | --- |
 | Sign-in (email + password, session restore) | Done |
 | Members: list, admin adds members with a one-time starting password | Done |
-| Prayer: requests, "I'm praying", answered with testimony, private journal | Done |
+| Prayer: requests, "I'm praying", comments, answered with testimony, private journal | Done |
 | Resources: songs, scripture, prayers with links and search | Done |
 | Funds: contributions, expenses, balance, monthly report, CSV export, change history | Done |
 | Bible: offline Telugu Old Version + Berean Standard Bible, reader, search, post a verse to the group | Done |
