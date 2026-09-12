@@ -104,10 +104,7 @@ export default function HomeScreen() {
             disabled={!verse}
             onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
           >
-            <Card className="gap-3 overflow-hidden p-5">
-              <Text className="absolute -right-2 -top-6 font-display-bold text-[120px] leading-[120px]" color="primary" style={{ opacity: 0.08 }}>
-                ”
-              </Text>
+            <Card className="gap-3 p-5">
               <View className="flex-row items-center gap-2">
                 <View className="h-1.5 w-1.5 rounded-full bg-primary" />
                 <Text variant="caption" color="primary">
