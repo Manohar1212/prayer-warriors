@@ -8,7 +8,7 @@ import { isJoinable, useCalls, type CallCredentials } from '@/features/calls';
 import { useMembers } from '@/features/members';
 import { goBackOr } from '@/lib/navigation';
 import { callsService } from '@/lib/parse';
-import { Button, Card, Screen, Text } from '@/ui';
+import { Button, Screen, Text } from '@/ui';
 
 function when(iso: string): string {
   const d = new Date(iso);
@@ -84,17 +84,19 @@ export default function CallScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-1">
-        <Text variant="display" color="primary" className="text-[30px] leading-[36px]">
+        <Text variant="display" color="primary" className="text-[28px] leading-[34px]">
           {call.title}
         </Text>
         <Text variant="muted">{when(call.scheduledAt)}</Text>
       </View>
-      <Card className="gap-2">
-        <Text variant="label">{call.status === 'live' ? 'Happening now' : over ? (call.status === 'cancelled' ? 'Cancelled' : 'Ended') : 'Scheduled'}</Text>
-        <Text variant="muted">
+      <View className="gap-1.5 border-l-2 border-gold pl-4">
+        <Text variant="label" color={call.status === 'live' ? 'primary' : 'gold'} className="text-[13px]">
+          {call.status === 'live' ? 'Happening now' : over ? (call.status === 'cancelled' ? 'Cancelled' : 'Ended') : 'Scheduled'}
+        </Text>
+        <Text variant="muted" className="text-[15px] leading-[22px]">
           {names.length ? `On the call: ${names.join(', ')}` : call.status === 'live' ? 'No one has joined yet.' : over ? `${call.participantCount} joined.` : 'Nobody has joined yet.'}
         </Text>
-      </Card>
+      </View>
       {error ? (
         <Text variant="muted" color="rose">
           {error}

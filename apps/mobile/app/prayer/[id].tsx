@@ -8,7 +8,7 @@ import { useMembers } from '@/features/members';
 import { categoryLabel, usePrayerRequests } from '@/features/prayer';
 import { prayerService } from '@/lib/parse';
 import { colors } from '@/theme/tokens';
-import { Badge, Button, Card, Input, Screen, Text } from '@/ui';
+import { Button, Input, Meta, Rule, Screen, Text, type MetaPart } from '@/ui';
 
 function longDate(iso: string): string {
   const d = new Date(iso);
@@ -64,28 +64,31 @@ export default function PrayerRequestScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-3">
-        <View className="flex-row flex-wrap gap-2">
-          <Badge label={categoryLabel(request.category)} tone="sage" />
-          {request.urgency === 'urgent' && !isAnswered ? <Badge label="Urgent" tone="blush" /> : null}
-          {isAnswered ? <Badge label="Answered" tone="honey" /> : null}
-        </View>
-        <Text variant="display" color="primary" className="text-[30px] leading-[36px]">
+        <Meta
+          parts={(() => {
+            const parts: MetaPart[] = [{ text: categoryLabel(request.category), dot: isAnswered ? 'gold' : 'sage' }];
+            if (request.urgency === 'urgent' && !isAnswered) parts.push({ text: 'Urgent', color: 'roseDeep' });
+            if (isAnswered) parts.push({ text: 'Answered', color: 'gold' });
+            return parts;
+          })()}
+        />
+        <Text variant="display" color="primary" className="text-[28px] leading-[34px]">
           {request.title}
         </Text>
-        <Text variant="muted">
-          Asked by {request.authorName} on {longDate(request.createdAt)}
+        <Text variant="caption">
+          {request.authorName} · {longDate(request.createdAt)}
         </Text>
       </View>
 
-      {request.description ? <Text className="text-[16px] leading-[26px]">{request.description}</Text> : null}
+      {request.description ? <Text className="text-[17px] leading-[27px]">{request.description}</Text> : null}
 
       {isAnswered ? (
-        <Card tone="honey" className="gap-2">
-          <Text variant="label" color="gold">
+        <View className="gap-3 border-l-2 border-gold pl-4">
+          <Text variant="label" color="gold" className="text-[13px]">
             Answered {request.answeredAt ? longDate(request.answeredAt) : ''}
           </Text>
-          {request.testimony ? <Text variant="scripture">{request.testimony}</Text> : null}
-        </Card>
+          {request.testimony ? <Text variant="scripture" className="text-[19px] leading-[29px]">{request.testimony}</Text> : null}
+        </View>
       ) : (
         <Pressable
           accessibilityRole="button"
@@ -105,20 +108,21 @@ export default function PrayerRequestScreen() {
         </Pressable>
       )}
 
-      <View className="gap-2">
-        <Text variant="title">
+      <View className="gap-2 border-t border-border pt-5">
+        <Rule />
+        <Text variant="title" className="text-[20px]">
           {request.prayingCount === 0
             ? 'No one praying yet'
             : request.prayingCount === 1
               ? '1 member is praying'
               : `${request.prayingCount} members are praying`}
         </Text>
-        {names.length ? <Text variant="muted">{names.join(', ')}</Text> : null}
+        {names.length ? <Text variant="muted" className="text-[15px] leading-[22px]">{names.join(', ')}</Text> : null}
       </View>
 
       {canAnswer ? (
         answering ? (
-          <Card className="gap-4">
+          <View className="gap-4 border-t border-border pt-5">
             <Text variant="title">Mark as answered</Text>
             <Input
               label="Testimony (optional)"
@@ -135,7 +139,7 @@ export default function PrayerRequestScreen() {
             ) : null}
             <Button title="Mark as answered" onPress={submitAnswered} loading={busy} />
             <Button title="Cancel" variant="ghost" onPress={() => setAnswering(false)} />
-          </Card>
+          </View>
         ) : (
           <Button title="Mark as answered" variant="secondary" onPress={() => setAnswering(true)} />
         )

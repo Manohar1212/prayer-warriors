@@ -1,8 +1,9 @@
+import { Children, type ReactNode } from 'react';
 import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
 
-import { colors } from '../theme/tokens';
+import { colors, fonts } from '../theme/tokens';
 
-export type TextVariant = 'display' | 'title' | 'scripture' | 'body' | 'label' | 'muted';
+export type TextVariant = 'display' | 'title' | 'scripture' | 'body' | 'label' | 'caption' | 'muted';
 export type TextColor =
   | 'ink'
   | 'muted'
@@ -16,11 +17,12 @@ export type TextColor =
   | 'roseDeep';
 
 const variantClass: Record<TextVariant, string> = {
-  display: 'font-display text-[34px] leading-[40px]',
+  display: 'font-display text-[32px] leading-[38px]',
   title: 'font-display text-[22px] leading-[28px]',
   scripture: 'font-display-italic text-[20px] leading-[30px]',
   body: 'font-sans text-base leading-6',
   label: 'font-medium text-sm leading-5',
+  caption: 'font-sans text-[13px] leading-[18px]',
   muted: 'font-sans text-sm leading-5',
 };
 
@@ -30,6 +32,7 @@ const defaultColor: Record<TextVariant, TextColor> = {
   scripture: 'ink',
   body: 'ink',
   label: 'ink',
+  caption: 'muted',
   muted: 'muted',
 };
 
@@ -46,19 +49,52 @@ const colorValue: Record<TextColor, string> = {
   roseDeep: colors.roseDeep,
 };
 
+/** Telugu faces that stand in for Playfair / Inter, which have no Telugu glyphs. */
+const teluguFamily: Record<TextVariant, string> = {
+  display: fonts.teluguSerif,
+  title: fonts.teluguSerif,
+  scripture: fonts.teluguSerifRegular,
+  body: fonts.teluguSans,
+  label: fonts.teluguSansMedium,
+  caption: fonts.teluguSans,
+  muted: fonts.teluguSans,
+};
+
+const TELUGU = /[ఀ-౿]/;
+
+function containsTelugu(node: ReactNode): boolean {
+  let found = false;
+  Children.forEach(node, (child) => {
+    if (found) return;
+    if (typeof child === 'string' || typeof child === 'number') {
+      if (TELUGU.test(String(child))) found = true;
+    } else if (child && typeof child === 'object' && 'props' in child) {
+      const inner = (child as { props?: { children?: ReactNode } }).props?.children;
+      if (inner !== undefined && containsTelugu(inner)) found = true;
+    }
+  });
+  return found;
+}
+
 export type TextProps = RNTextProps & {
   variant?: TextVariant;
   color?: TextColor;
   className?: string;
 };
 
-/** Color is applied as an inline style so it never loses a Tailwind ordering fight. */
-export function Text({ variant = 'body', color, className = '', style, ...rest }: TextProps) {
+/**
+ * Colour is applied as an inline style so it never loses a Tailwind ordering fight. Telugu text
+ * switches to the matching Noto face automatically; Telugu conjuncts also need taller lines.
+ */
+export function Text({ variant = 'body', color, className = '', style, children, ...rest }: TextProps) {
+  const telugu = containsTelugu(children);
   return (
     <RNText
       className={`${variantClass[variant]} ${className}`}
-      style={[{ color: colorValue[color ?? defaultColor[variant]] }, style]}
+      style={[{ color: colorValue[color ?? defaultColor[variant]] }, telugu ? { fontFamily: teluguFamily[variant] } : null, style]}
       {...rest}
-    />
+    >
+      {children}
+    </RNText>
   );
 }

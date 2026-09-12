@@ -5,7 +5,7 @@ import { Pressable, View } from 'react-native';
 import { useAuth } from '@/features/auth';
 import { unregisterThisDevice } from '@/features/notifications/PushRegistrar';
 import { colors } from '@/theme/tokens';
-import { Button, Card, Screen, Text } from '@/ui';
+import { Button, Screen, Text } from '@/ui';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
@@ -17,19 +17,19 @@ export default function ProfileScreen() {
   const initial = (user?.displayName ?? user?.email ?? '?').trim().charAt(0).toUpperCase();
   return (
     <Screen edges={['bottom']} backdrop className="gap-6 pt-6">
-      <Card className="gap-4">
-        <View className="h-14 w-14 items-center justify-center rounded-full bg-honey">
-          <Text variant="title" color="primary">
+      <View className="flex-row items-center gap-4 border-b border-border pb-6">
+        <View className="h-16 w-16 items-center justify-center rounded-full bg-primary">
+          <Text variant="title" color="cream" className="text-[26px]">
             {initial}
           </Text>
         </View>
-        <View className="gap-1">
-          <Text variant="title">{user?.displayName ?? 'Member'}</Text>
-          <Text variant="muted">{user?.email}</Text>
+        <View className="flex-1 gap-1">
+          <Text variant="title" className="text-[24px]">{user?.displayName ?? 'Member'}</Text>
+          <Text variant="caption">{user?.email}</Text>
         </View>
-      </Card>
+      </View>
       <Pressable accessibilityRole="button" onPress={() => router.push('/notifications/settings')}>
-        <Card className="flex-row items-center gap-4">
+        <View className="flex-row items-center gap-4 border-b border-border pb-5">
           <View className="h-10 w-10 items-center justify-center rounded-full bg-sage">
             <Ionicons name="notifications-outline" size={20} color={colors.primary} />
           </View>
@@ -42,7 +42,7 @@ export default function ProfileScreen() {
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.muted} />
-        </Card>
+        </View>
       </Pressable>
       <View className="mt-auto">
         <Button title="Sign out" variant="secondary" onPress={leave} />

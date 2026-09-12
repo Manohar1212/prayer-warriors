@@ -40,7 +40,7 @@ export default function BibleSearchScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <Pressable accessibilityRole="button" onPress={() => open(item)} className="gap-1 rounded-xl border border-border bg-surface px-4 py-3">
+          <Pressable accessibilityRole="button" onPress={() => open(item)} className="gap-1 border-b border-border py-3">
             <Text variant="label" color="primary" className="text-[13px]">
               {item.bookName} {item.chapter}:{item.label}
             </Text>

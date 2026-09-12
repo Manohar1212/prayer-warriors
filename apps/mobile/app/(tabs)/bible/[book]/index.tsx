@@ -35,7 +35,7 @@ export default function BookScreen() {
               accessibilityRole="button"
               accessibilityLabel={`Chapter ${c}`}
               onPress={() => router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(current.id), chapter: String(c) } })}
-              className="h-12 w-12 items-center justify-center rounded-xl border border-border bg-surface active:bg-sage"
+              className="h-12 w-12 items-center justify-center rounded-[10px] bg-surface active:bg-sage"
             >
               <Text variant="label" className="text-[15px]">
                 {c}

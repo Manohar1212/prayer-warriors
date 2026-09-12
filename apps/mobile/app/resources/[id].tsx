@@ -8,7 +8,7 @@ import { useMembers } from '@/features/members';
 import { RESOURCE_TYPES, useResources, type Resource } from '@/features/resources';
 import { goBackOr } from '@/lib/navigation';
 import { colors } from '@/theme/tokens';
-import { Badge, Button, Card, Screen, Text } from '@/ui';
+import { Button, Meta, Screen, Text } from '@/ui';
 
 function useResourceById(id: string | undefined): { resource: Resource | null; loading: boolean; remove: (id: string) => Promise<void> } {
   const songs = useResources('song');
@@ -66,14 +66,16 @@ export default function ResourceScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-3">
-        <Badge label={typeLabel} tone="sage" />
-        <Text variant="display" color="primary" className="text-[30px] leading-[36px]">
+        <Meta parts={[{ text: typeLabel, dot: resource.type === 'song' ? 'honey' : resource.type === 'scripture' ? 'sage' : 'blush' }, { text: `Shared by ${resource.sharedBy}` }]} />
+        <Text variant="display" color="primary" className="text-[28px] leading-[34px]">
           {resource.title}
         </Text>
-        {resource.reference ? <Text variant="muted" className="text-[16px]">{resource.reference}</Text> : null}
-        <Text variant="muted" className="text-[13px]">
-          Shared by {resource.sharedBy} on {longDate(resource.createdAt)}
-        </Text>
+        {resource.reference ? (
+          <Text variant="label" color="gold" className="text-[14px]">
+            {resource.reference}
+          </Text>
+        ) : null}
+        <Text variant="caption">{longDate(resource.createdAt)}</Text>
       </View>
 
       {resource.url ? (
@@ -84,11 +86,15 @@ export default function ResourceScreen() {
       ) : null}
 
       {resource.body ? (
-        <Card tone={resource.type === 'scripture' ? 'honey' : 'surface'}>
-          <Text variant={resource.type === 'scripture' ? 'scripture' : 'body'} className="text-[16px] leading-[26px]">
-            {resource.body}
-          </Text>
-        </Card>
+        resource.type === 'scripture' ? (
+          <View className="gap-3 border-l-2 border-gold pl-4">
+            <Text variant="scripture" className="text-[21px] leading-[33px]">
+              {resource.body}
+            </Text>
+          </View>
+        ) : (
+          <Text className="text-[17px] leading-[28px]">{resource.body}</Text>
+        )
       ) : null}
 
       {resource.note ? (

@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
 import { categoryLabel, useJournal, type JournalEntry } from '@/features/prayer';
 import { colors } from '@/theme/tokens';
-import { Badge, Button, Card, Screen, Text } from '@/ui';
+import { Button, Meta, Screen, Text } from '@/ui';
 
 function shortDate(iso: string): string {
   const d = new Date(iso);
@@ -12,21 +12,19 @@ function shortDate(iso: string): string {
 
 function EntryCard({ entry, onOpen }: { entry: JournalEntry; onOpen: () => void }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onOpen}>
-      <Card tone={entry.answered ? 'honey' : 'surface'} className="gap-2">
-        <View className="flex-row items-center justify-between">
-          <Badge label={categoryLabel(entry.category)} tone={entry.answered ? 'honey' : 'sage'} />
-          <Text variant="muted">{shortDate(entry.answered && entry.answeredAt ? entry.answeredAt : entry.createdAt)}</Text>
-        </View>
-        <Text variant="title" className="text-[18px] leading-[24px]">
-          {entry.title}
+    <Pressable accessibilityRole="button" onPress={onOpen} className="gap-2 border-b border-border py-4">
+      <View className="flex-row items-center justify-between">
+        <Meta parts={entry.answered ? [{ text: categoryLabel(entry.category), dot: 'gold' }, { text: 'Answered', color: 'gold' }] : [{ text: categoryLabel(entry.category), dot: 'sage' }]} />
+        <Text variant="caption">{shortDate(entry.answered && entry.answeredAt ? entry.answeredAt : entry.createdAt)}</Text>
+      </View>
+      <Text variant="title" className="text-[19px] leading-[25px]">
+        {entry.title}
+      </Text>
+      {entry.body ? (
+        <Text variant="muted" className="text-[15px] leading-[22px]" numberOfLines={2}>
+          {entry.body}
         </Text>
-        {entry.body ? (
-          <Text variant="muted" className="text-[15px] leading-[22px]" numberOfLines={2}>
-            {entry.body}
-          </Text>
-        ) : null}
-      </Card>
+      ) : null}
     </Pressable>
   );
 }

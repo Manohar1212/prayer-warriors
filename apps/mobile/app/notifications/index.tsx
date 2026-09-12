@@ -4,7 +4,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { useNotifications, type AppNotification, type NotificationType } from '@/features/notifications';
 import { colors } from '@/theme/tokens';
-import { Card, Screen, Text } from '@/ui';
+import { Screen, Text } from '@/ui';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -37,10 +37,9 @@ function Row({ item, onPress }: { item: AppNotification; onPress: () => void }) 
   const icon = icons[item.type];
   const unread = !item.readAt;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${item.title}. ${item.body}`} onPress={onPress}>
-      <Card className={`flex-row gap-4 ${unread ? '' : 'opacity-70'}`}>
-        <View className={`h-11 w-11 items-center justify-center rounded-full ${icon.bg}`}>
-          <Ionicons name={icon.name} size={20} color={icon.fg} />
+    <Pressable accessibilityRole="button" accessibilityLabel={`${item.title}. ${item.body}`} onPress={onPress} className={`flex-row gap-4 py-4 ${unread ? '' : 'opacity-70'}`}>
+        <View className={`h-10 w-10 items-center justify-center rounded-full ${icon.bg}`}>
+          <Ionicons name={icon.name} size={18} color={icon.fg} />
         </View>
         <View className="flex-1 gap-1">
           <View className="flex-row items-start justify-between gap-3">
@@ -54,11 +53,10 @@ function Row({ item, onPress }: { item: AppNotification; onPress: () => void }) 
               {item.body}
             </Text>
           ) : null}
-          <Text variant="muted" className="text-[12px]">
+          <Text variant="caption" className="text-[12px]">
             {timeAgo(item.createdAt)}
           </Text>
         </View>
-      </Card>
     </Pressable>
   );
 }
@@ -75,8 +73,8 @@ export default function NotificationsScreen() {
 
   return (
     <Screen edges={['bottom']} backdrop className="px-0 pt-0">
-      <ScrollView contentContainerClassName="gap-3 px-4 pb-8 pt-4" showsVerticalScrollIndicator={false}>
-        <View className="mb-1 flex-row items-center justify-between">
+      <ScrollView contentContainerClassName="px-4 pb-8 pt-3" showsVerticalScrollIndicator={false}>
+        <View className="flex-row items-center justify-between border-b border-border pb-3">
           <Text variant="muted">{unread === 0 ? 'Nothing new' : unread === 1 ? '1 new' : `${unread} new`}</Text>
           <View className="flex-row items-center gap-5">
             {unread > 0 ? (
@@ -99,15 +97,16 @@ export default function NotificationsScreen() {
         ) : null}
 
         {items.length === 0 ? (
-          <Card tone="sage" className="items-center gap-2 py-8">
-            <Ionicons name="notifications-off-outline" size={28} color={colors.primary} />
-            <Text variant="title" color="primary">
-              {loading ? 'Loading…' : "You're all caught up"}
-            </Text>
-            {!loading ? <Text variant="muted" className="text-center">New requests, calls, and shares from the group will show up here.</Text> : null}
-          </Card>
+          <View className="mt-10 gap-2">
+            <Text variant="title">{loading ? 'Loading…' : "You're all caught up"}</Text>
+            {!loading ? <Text variant="muted" className="max-w-[300px] text-[15px] leading-[22px]">New requests, calls, and shares from the group will show up here.</Text> : null}
+          </View>
         ) : (
-          items.map((item) => <Row key={item.id} item={item} onPress={() => open(item)} />)
+          items.map((item, i) => (
+            <View key={item.id} className={i > 0 ? 'border-t border-border' : ''}>
+              <Row item={item} onPress={() => open(item)} />
+            </View>
+          ))
         )}
       </ScrollView>
     </Screen>

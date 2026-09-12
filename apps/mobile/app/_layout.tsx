@@ -2,6 +2,8 @@ import '../global.css';
 import '@/lib/livekitGlobals';
 
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
+import { NotoSansTelugu_400Regular, NotoSansTelugu_500Medium } from '@expo-google-fonts/noto-sans-telugu';
+import { NotoSerifTelugu_400Regular, NotoSerifTelugu_600SemiBold } from '@expo-google-fonts/noto-serif-telugu';
 import {
   PlayfairDisplay_400Regular_Italic,
   PlayfairDisplay_600SemiBold,
@@ -85,6 +87,10 @@ export default function RootLayout() {
     PlayfairDisplay_400Regular_Italic,
     PlayfairDisplay_600SemiBold,
     PlayfairDisplay_700Bold,
+    NotoSerifTelugu_400Regular,
+    NotoSerifTelugu_600SemiBold,
+    NotoSansTelugu_400Regular,
+    NotoSansTelugu_500Medium,
   });
 
   return (

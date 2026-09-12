@@ -23,4 +23,9 @@ export const fonts = {
   sans: 'Inter_400Regular',
   sansMedium: 'Inter_500Medium',
   sansSemiBold: 'Inter_600SemiBold',
+  // Telugu: Playfair and Inter have no Telugu glyphs, so Telugu text gets matching Noto faces.
+  teluguSerif: 'NotoSerifTelugu_600SemiBold',
+  teluguSerifRegular: 'NotoSerifTelugu_400Regular',
+  teluguSans: 'NotoSansTelugu_400Regular',
+  teluguSansMedium: 'NotoSansTelugu_500Medium',
 } as const;

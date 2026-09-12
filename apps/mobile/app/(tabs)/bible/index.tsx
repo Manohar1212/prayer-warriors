@@ -17,7 +17,7 @@ function BookGrid({ books, lang, onOpen }: { books: BibleBook[]; lang: 'en' | 't
           accessibilityRole="button"
           accessibilityLabel={bookName(b, lang)}
           onPress={() => onOpen(b)}
-          className="rounded-xl border border-border bg-surface px-3 py-2 active:bg-sage"
+          className="rounded-[10px] bg-surface px-3 py-2 active:bg-sage"
         >
           <Text variant="label" className="text-[14px]">
             {bookName(b, lang, true)}
@@ -45,7 +45,7 @@ export default function BibleScreen() {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push('/bible/search')}
-          className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3"
+          className="flex-row items-center gap-3 rounded-full border border-border bg-surface px-4 py-2.5"
         >
           <Ionicons name="search-outline" size={18} color={colors.muted} />
           <Text variant="muted">{lang === 'te' ? 'బైబిల్‌లో వెతకండి' : 'Search the Bible'}</Text>
