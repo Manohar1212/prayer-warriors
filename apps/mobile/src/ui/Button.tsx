@@ -56,7 +56,7 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled: blocked, busy: loading }}
       disabled={blocked}
-      className={`items-center justify-center active:opacity-85 ${sizing[size].box} ${container[variant]} ${blocked ? 'opacity-40' : ''} ${className}`}
+      className={`items-center justify-center active:opacity-85 ${/\bpx-/.test(className) ? sizing[size].box.replace(/\s?px-\d+/, '') : sizing[size].box} ${container[variant]} ${blocked ? 'opacity-40' : ''} ${className}`}
       {...rest}
     >
       {loading ? (

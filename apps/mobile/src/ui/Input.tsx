@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TextInput, View, type TextInputProps } from 'react-native';
+import { Platform, TextInput, View, type TextInputProps } from 'react-native';
 
 import { colors } from '../theme/tokens';
 import { Text } from './Text';
@@ -36,7 +36,7 @@ export function Input({ label, error, className = '', multiline, onFocus, onBlur
           onBlur?.(e);
         }}
         className={`min-h-[44px] font-sans text-ink ${field}`}
-        style={[multiline ? { minHeight: 96, textAlignVertical: 'top' } : null, style]}
+        style={[multiline ? { minHeight: 96, textAlignVertical: 'top' } : null, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null, style]}
         {...rest}
       />
       {error ? (
