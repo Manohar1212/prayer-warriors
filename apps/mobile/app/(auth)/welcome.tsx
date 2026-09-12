@@ -2,11 +2,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
-import { AccessibilityInfo, Animated, Easing, Platform, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, Image, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, gradients } from '@/theme/tokens';
-import { Button, Mark, Text } from '@/ui';
+import { gradients } from '@/theme/tokens';
+import { Button, Text } from '@/ui';
+
+const logo = require('../../assets/logo.png');
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -42,16 +44,11 @@ export default function WelcomeScreen() {
         <View className="flex-1 justify-between px-6 pb-6 pt-4">
           <View className="flex-1 items-center justify-center gap-8">
             <Animated.View style={{ opacity: settle, transform: [{ scale }] }}>
-              <Mark size={88} glow ring={colors.goldLight} cross={colors.surface} />
+              <Image source={logo} accessibilityLabel="Prayer Warriors" style={{ width: 280, height: 280 }} resizeMode="contain" />
             </Animated.View>
-            <View className="items-center gap-3">
-              <Text variant="display" color="cream" className="text-center text-[42px] leading-[48px]">
-                Prayer Warriors
-              </Text>
-              <Text variant="body" color="creamSoft" className="max-w-[260px] text-center text-[16px] leading-[24px]">
-                A sisterhood that prays together, grows together.
-              </Text>
-            </View>
+            <Text variant="body" color="creamSoft" className="max-w-[260px] text-center text-[16px] leading-[24px]">
+              A sisterhood that prays together, grows together.
+            </Text>
             <View className="items-center gap-2">
               <Text variant="scripture" color="creamSoft" className="max-w-[280px] text-center text-[18px] leading-[28px]">
                 “For where two or three gather in my name, there am I with them.”
