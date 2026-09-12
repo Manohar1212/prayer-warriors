@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { setStatusBarStyle } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -76,6 +77,13 @@ export default function HomeScreen() {
   }, []);
   useEffect(loadRecent, [loadRecent]);
   useFocusEffect(loadRecent);
+  // The hero is purple, so the clock and icons go light while Home is on screen.
+  useFocusEffect(
+    useCallback(() => {
+      setStatusBarStyle('light');
+      return () => setStatusBarStyle('dark');
+    }, []),
+  );
 
   const topRequests = requests.slice(0, 3);
 

@@ -52,6 +52,7 @@ export function Screen({
     <ScrollView
       contentContainerClassName={`flex-grow ${withDefaultPadding(className, ['px-4', 'pb-8', 'pt-4'])}`}
       keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
       showsVerticalScrollIndicator={false}
     >
       {children}
@@ -62,10 +63,8 @@ export function Screen({
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: background[tone] }} edges={edges}>
       {backdrop ? <Backdrop /> : null}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      {/* Android runs edge-to-edge on SDK 57, so the window no longer resizes for the keyboard; pad on both platforms. */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'web' ? undefined : 'padding'}>
         {body}
       </KeyboardAvoidingView>
     </SafeAreaView>
