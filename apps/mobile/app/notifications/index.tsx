@@ -3,6 +3,7 @@ import { useRouter, type Href } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { useNotifications, type AppNotification, type NotificationType } from '@/features/notifications';
+import { timeAgo } from '@/lib/time';
 import { colors } from '@/theme/tokens';
 import { Screen, Text } from '@/ui';
 
@@ -12,26 +13,13 @@ const icons: Record<NotificationType, { name: IconName; bg: string; fg: string }
   prayerRequest: { name: 'heart', bg: 'bg-blush', fg: colors.roseDeep },
   praying: { name: 'hand-left', bg: 'bg-blush', fg: colors.roseDeep },
   answered: { name: 'sparkles', bg: 'bg-honey', fg: colors.gold },
-  callScheduled: { name: 'calendar', bg: 'bg-sage', fg: colors.primary },
-  callStarted: { name: 'call', bg: 'bg-sage', fg: colors.primary },
-  callCancelled: { name: 'call-outline', bg: 'bg-sage', fg: colors.primary },
-  resource: { name: 'book', bg: 'bg-honey', fg: colors.gold },
-  contribution: { name: 'wallet', bg: 'bg-honey', fg: colors.gold },
+  callScheduled: { name: 'calendar', bg: 'bg-lavender', fg: colors.primary },
+  callStarted: { name: 'call', bg: 'bg-lavender', fg: colors.primary },
+  callCancelled: { name: 'call-outline', bg: 'bg-lavender', fg: colors.primary },
+  resource: { name: 'book', bg: 'bg-sky', fg: colors.skyDeep },
+  contribution: { name: 'wallet', bg: 'bg-sage', fg: colors.leaf },
   expense: { name: 'receipt', bg: 'bg-honey', fg: colors.gold },
 };
-
-export function timeAgo(iso: string, now: Date = new Date()): string {
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return '';
-  const minutes = Math.max(0, Math.round((now.getTime() - then) / 60000));
-  if (minutes < 1) return 'Just now';
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
-  const days = Math.round(hours / 24);
-  if (days < 7) return days === 1 ? 'Yesterday' : `${days} days ago`;
-  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-}
 
 function Row({ item, onPress }: { item: AppNotification; onPress: () => void }) {
   const icon = icons[item.type];
@@ -46,7 +34,7 @@ function Row({ item, onPress }: { item: AppNotification; onPress: () => void }) 
             <Text variant="label" color={unread ? 'ink' : 'muted'} className="flex-1 text-[15px]">
               {item.title}
             </Text>
-            {unread ? <View accessibilityLabel="Unread" className="mt-1.5 h-2.5 w-2.5 rounded-full bg-gold" /> : null}
+            {unread ? <View accessibilityLabel="Unread" className="mt-1.5 h-2.5 w-2.5 rounded-full bg-primary" /> : null}
           </View>
           {item.body ? (
             <Text variant="body" color={unread ? 'ink' : 'muted'} className="text-[15px] leading-[22px]">

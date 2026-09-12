@@ -14,6 +14,8 @@ const MESSAGES = {
   notActive: 'This request has already been answered.',
   notAllowed: 'Only the person who asked, or an admin, can mark this answered.',
   testimonyTooLong: 'Keep the testimony under 1000 characters.',
+  commentRequired: 'Write a few words first.',
+  commentTooLong: 'Keep the comment under 500 characters.',
 };
 
 function fail(message) {
@@ -24,7 +26,7 @@ function text(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function createPrayerHandlers({ memberships, requests, responses, now = () => new Date() }) {
+function createPrayerHandlers({ memberships, requests, responses, comments, now = () => new Date() }) {
   async function requireGroup(callerId) {
     const groupId = callerId ? await memberships.findGroupId(callerId) : null;
     if (!groupId) throw fail(MESSAGES.notMember);
@@ -94,6 +96,16 @@ function createPrayerHandlers({ memberships, requests, responses, now = () => ne
         answeredAt: now(),
         testimony: cleanTestimony || null,
       });
+    },
+
+    async addComment({ requestId, body } = {}, { callerId } = {}) {
+      const groupId = await requireGroup(callerId);
+      const request = await requireRequestInGroup(requestId, groupId);
+      const cleanBody = text(body);
+      if (!cleanBody) throw fail(MESSAGES.commentRequired);
+      if (cleanBody.length > 500) throw fail(MESSAGES.commentTooLong);
+      const created = await comments.create({ requestId: request.id, userId: callerId, groupId, body: cleanBody });
+      return { ...created, requestId: request.id, groupId, requestTitle: request.title, requestAuthorId: request.authorId };
     },
   };
 }

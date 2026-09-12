@@ -17,7 +17,7 @@ import { createNotificationsService } from '../features/notifications/service';
 import type { RawNotification } from '../features/notifications/types';
 import { createResourcesService } from '../features/resources/service';
 import type { RawResource } from '../features/resources/types';
-import type { JournalInput, PrayerStatus, RawJournalEntry, RawPrayerRequest } from '../features/prayer/types';
+import type { JournalInput, PrayerStatus, RawJournalEntry, RawPrayerComment, RawPrayerRequest } from '../features/prayer/types';
 
 const config = loadParseConfig();
 
@@ -100,6 +100,21 @@ export const prayerService = createPrayerService({
       return (user?.get('displayName') as string | undefined)?.trim() || 'Member';
     });
   },
+  fetchComments: async (requestId: string): Promise<RawPrayerComment[]> => {
+    const rows = await new Parse.Query('PrayerComment')
+      .equalTo('prayerRequest', Parse.Object.extend('PrayerRequest').createWithoutData(requestId))
+      .include('user')
+      .ascending('createdAt')
+      .limit(200)
+      .find();
+    return rows.map((row) => ({
+      id: row.id ?? '',
+      body: String(row.get('body') ?? ''),
+      createdAt: row.createdAt?.toISOString() ?? '',
+      user: userSummary(row.get('user') as Parse.User | undefined),
+    }));
+  },
+  currentUserName: () => (Parse.User.current()?.get('displayName') as string | undefined) || 'You',
   cloud: Parse.Cloud,
 });
 

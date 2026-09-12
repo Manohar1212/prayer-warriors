@@ -1,28 +1,29 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
+import { useAuth } from '@/features/auth';
 import { isJoinable, useCalls } from '@/features/calls';
 import { useMembers, type Member } from '@/features/members';
+import { callsService } from '@/lib/parse';
 import { colors } from '@/theme/tokens';
-import { Button, Card, Screen, Text } from '@/ui';
+import { Avatar, AvatarStack, Button, Card, Screen, Segments, Text } from '@/ui';
 
-function MemberRow({ member }: { member: Member }) {
+type Tab = 'calls' | 'members';
+
+function MemberRow({ member, isYou, last }: { member: Member; isYou: boolean; last: boolean }) {
   const admin = member.role === 'admin';
   return (
-    <View className="flex-row items-center gap-4 py-3">
-      <View className={`h-11 w-11 items-center justify-center rounded-full ${admin ? 'bg-blush' : 'bg-sage'}`}>
-        <Text variant="title" color={admin ? 'roseDeep' : 'primary'} className="text-[17px]">
-          {member.displayName.charAt(0).toUpperCase()}
-        </Text>
-      </View>
+    <View className={`flex-row items-center gap-3 py-3 ${last ? '' : 'border-b border-border'}`}>
+      <Avatar name={member.displayName} size={40} />
       <View className="flex-1 gap-0.5">
-        <Text variant="label" className="text-[16px]">
+        <Text variant="label" className="text-[15px]">
           {member.displayName}
+          {isYou ? ' (You)' : ''}
         </Text>
         {admin ? (
-          <Text variant="muted" className="text-[13px]">
+          <Text variant="caption" color="primary">
             Admin
           </Text>
         ) : null}
@@ -38,93 +39,139 @@ function callWhen(iso: string): string {
 
 export default function CommunityScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const { members, loading, error, isAdmin, refresh } = useMembers();
-  const { next } = useCalls();
-  const count = members.length;
+  const { next, past } = useCalls();
+  const [tab, setTab] = useState<Tab>('calls');
+  const [onCall, setOnCall] = useState<string[]>([]);
   const live = next?.status === 'live';
+  const joinable = next ? live || isJoinable(next, new Date()) : false;
 
-  // Pick up members added from the modal (and elsewhere) whenever this tab regains focus.
   useFocusEffect(
     useCallback(() => {
       refresh();
     }, [refresh]),
   );
 
+  useEffect(() => {
+    if (!next) return;
+    callsService
+      .participants(next.id)
+      .then(setOnCall)
+      .catch(() => setOnCall([]));
+  }, [next?.id, next?.participantCount]);
+
   return (
-    <Screen backdrop className="px-0 pt-0">
-      <FlatList
-        data={members}
-        keyExtractor={(m) => m.id}
-        contentContainerClassName="flex-grow px-4 pb-8 pt-1"
+    <Screen className="px-0 pt-0">
+      <ScrollView
+        contentContainerClassName="gap-4 px-4 pb-8 pt-2"
+        showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
-        ListHeaderComponent={
-          <View className="gap-6 pb-1">
-            <View className="gap-3">
-              <View className="flex-row items-center justify-between">
-                <Text variant="title">Group calls</Text>
-                <View className="flex-row items-center gap-4">
-                  <Pressable accessibilityRole="button" onPress={() => router.push('/calls/history')} hitSlop={8} className="py-1">
-                    <Text variant="label" color="primary" className="text-[13px]">
-                      History
-                    </Text>
-                  </Pressable>
-                  {isAdmin ? <Button title="Schedule" size="compact" variant="secondary" onPress={() => router.push('/calls/schedule')} /> : null}
-                </View>
+      >
+        <Segments<Tab>
+          options={[
+            { value: 'calls', label: 'Group calls' },
+            { value: 'members', label: 'Members' },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
+
+        {tab === 'calls' ? (
+          <View className="gap-4">
+            <View className="flex-row items-center justify-between">
+              <Text variant="title" className="text-[20px]">
+                {live ? 'Happening now' : 'Next call'}
+              </Text>
+              <View className="flex-row items-center gap-3">
+                <Pressable accessibilityRole="button" onPress={() => router.push('/calls/history')} hitSlop={8} className="flex-row items-center gap-1 py-1">
+                  <Ionicons name="time-outline" size={15} color={colors.primary} />
+                  <Text variant="label" color="primary" className="text-[13px]">
+                    History
+                  </Text>
+                </Pressable>
+                {isAdmin ? <Button title="Schedule" size="compact" variant="secondary" icon="add" onPress={() => router.push('/calls/schedule')} /> : null}
               </View>
-              {next ? (
-                <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/calls/[id]', params: { id: next.id } })}>
-                  <Card tone={live ? 'sage' : 'honey'} className="gap-3">
-                    <View className="flex-row items-center gap-2">
-                      <View className={`h-2 w-2 rounded-full ${live ? 'bg-primary' : 'bg-gold'}`} />
-                      <Text variant="label" color={live ? 'primary' : 'gold'} className="text-[13px]">
-                        {live ? 'Happening now' : callWhen(next.scheduledAt)}
-                      </Text>
-                    </View>
-                    <Text variant="title" className="text-[22px]">
+            </View>
+            {next ? (
+              <Card tone={live ? 'sage' : 'lavender'} className="gap-4">
+                <View className="flex-row items-center gap-3">
+                  <View className={`h-12 w-12 items-center justify-center rounded-full ${live ? 'bg-leaf' : 'bg-primary'}`}>
+                    <Ionicons name="call" size={20} color={colors.surface} />
+                  </View>
+                  <View className="flex-1 gap-0.5">
+                    <Text variant="label" className="text-[16px]">
                       {next.title}
                     </Text>
-                    <View className="flex-row items-center justify-between">
-                      <Text variant="muted" className="text-[13px]">
-                        {next.participantCount === 0 ? 'No one has joined yet' : next.participantCount === 1 ? '1 joined' : `${next.participantCount} joined`}
-                      </Text>
-                      <View className={`flex-row items-center gap-1.5 rounded-full px-3 py-1.5 ${live || isJoinable(next, new Date()) ? 'bg-primary' : 'bg-surface'}`}>
-                        <Ionicons name="call" size={13} color={live || isJoinable(next, new Date()) ? colors.cream : colors.primary} />
-                        <Text variant="label" color={live || isJoinable(next, new Date()) ? 'cream' : 'primary'} className="text-[13px]">
-                          {live || isJoinable(next, new Date()) ? 'Join' : 'Details'}
+                    <Text variant="caption" color={live ? 'leaf' : 'primary'}>
+                      {live ? `${onCall.length === 1 ? '1 member' : `${onCall.length} members`} on the call` : callWhen(next.scheduledAt)}
+                    </Text>
+                  </View>
+                </View>
+                {onCall.length ? <AvatarStack names={onCall} size={32} /> : null}
+                <Button title={joinable ? 'Join now' : 'View details'} icon={joinable ? 'call' : undefined} onPress={() => router.push({ pathname: '/calls/[id]', params: { id: next.id } })} />
+              </Card>
+            ) : (
+              <Card className="gap-2">
+                <Text variant="label" className="text-[15px]">
+                  No call scheduled yet
+                </Text>
+                <Text variant="caption">{isAdmin ? 'Schedule one and everyone gets a reminder.' : 'Your admin will schedule the next group prayer.'}</Text>
+              </Card>
+            )}
+            {past.length ? (
+              <View className="gap-2">
+                <Text variant="caption">Recent calls</Text>
+                <Card className="py-1">
+                  {past.slice(0, 3).map((c, i) => (
+                    <Pressable
+                      key={c.id}
+                      accessibilityRole="button"
+                      onPress={() => router.push({ pathname: '/calls/[id]', params: { id: c.id } })}
+                      className={`flex-row items-center gap-3 py-3 ${i > 0 ? 'border-t border-border' : ''}`}
+                    >
+                      <View className="h-9 w-9 items-center justify-center rounded-full bg-lavender">
+                        <Ionicons name="call-outline" size={16} color={colors.primary} />
+                      </View>
+                      <View className="flex-1 gap-0.5">
+                        <Text variant="label" className="text-[15px]">
+                          {c.title}
+                        </Text>
+                        <Text variant="caption">
+                          {new Date(c.scheduledAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} · {c.participantCount} joined
                         </Text>
                       </View>
-                    </View>
-                  </Card>
-                </Pressable>
-              ) : (
-                <Text variant="muted" className="text-[15px] leading-[22px]">
-                  No call scheduled yet.{isAdmin ? ' Schedule one and everyone gets a reminder.' : ''}
-                </Text>
-              )}
-            </View>
-            <View className="flex-row items-center justify-between border-b border-border pb-2">
-              <Text variant="title">{count === 1 ? '1 member' : `${count} members`}</Text>
-              {isAdmin ? <Button title="Add member" size="compact" onPress={() => router.push('/add-member')} /> : null}
-            </View>
-            {error ? (
-              <Text variant="muted" color="rose">
-                {error}
-              </Text>
+                    </Pressable>
+                  ))}
+                </Card>
+              </View>
             ) : null}
           </View>
-        }
-        ListEmptyComponent={
-          loading ? (
-            <ActivityIndicator color={colors.primary} className="mt-10" />
-          ) : (
-            <Text variant="muted" className="mt-6">
-              No members yet.
-            </Text>
-          )
-        }
-        renderItem={({ item }) => <MemberRow member={item} />}
-        ItemSeparatorComponent={() => <View className="h-px bg-border" />}
-      />
+        ) : (
+          <View className="gap-3">
+            <View className="flex-row items-center justify-between">
+              <Text variant="title" className="text-[20px]">
+                {members.length === 1 ? '1 member' : `${members.length} members`}
+              </Text>
+              {isAdmin ? <Button title="Add member" size="compact" icon="add" onPress={() => router.push('/add-member')} /> : null}
+            </View>
+            {loading && !members.length ? (
+              <ActivityIndicator color={colors.primary} className="mt-6" />
+            ) : (
+              <Card className="py-1">
+                {members.map((m, i) => (
+                  <MemberRow key={m.id} member={m} isYou={m.userId === user?.id} last={i === members.length - 1} />
+                ))}
+              </Card>
+            )}
+          </View>
+        )}
+        {error ? (
+          <Text variant="caption" color="roseDeep">
+            {error}
+          </Text>
+        ) : null}
+      </ScrollView>
     </Screen>
   );
 }

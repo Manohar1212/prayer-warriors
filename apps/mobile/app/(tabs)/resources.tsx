@@ -1,11 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 
 import { matchesQuery, RESOURCE_TYPES, useResources, type Resource, type ResourceType } from '@/features/resources';
-import { colors } from '@/theme/tokens';
-import { Fab, Meta, Screen, Segments, Text, type MetaPart } from '@/ui';
+import { shortDate } from '@/lib/time';
+import { colors, gradients } from '@/theme/tokens';
+import { Card, Fab, Screen, Segments, Text } from '@/ui';
+
+type Tab = ResourceType | 'bible';
 
 const emptyCopy: Record<ResourceType, { title: string; body: string }> = {
   song: { title: 'No songs yet', body: 'Share a song that lifts the group up. A link to YouTube or Spotify is enough.' },
@@ -13,32 +17,48 @@ const emptyCopy: Record<ResourceType, { title: string; body: string }> = {
   prayer: { title: 'No prayers yet', body: 'Share a written prayer the group can pray together.' },
 };
 
-function ResourceRow({ resource, onOpen }: { resource: Resource; onOpen: () => void }) {
-  const meta: MetaPart[] = [{ text: `Shared by ${resource.sharedBy}` }];
-  if (resource.url) meta.push({ text: 'Link', color: 'gold' });
+function Thumb({ type }: { type: ResourceType }) {
+  if (type === 'song') {
+    return (
+      <LinearGradient colors={[...gradients.song]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: 60, height: 60, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }}>
+        <View className="h-8 w-8 items-center justify-center rounded-full bg-surface/90">
+          <Ionicons name="play" size={16} color={colors.primary} style={{ marginLeft: 2 }} />
+        </View>
+      </LinearGradient>
+    );
+  }
+  const scripture = type === 'scripture';
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`Open ${resource.title}`} onPress={onOpen} className="gap-2 py-4">
-      <View className="gap-0.5">
-        <Text variant="title" className="text-[20px] leading-[26px]">
-          {resource.title}
-        </Text>
-        {resource.reference ? (
-          <Text variant="label" color="gold" className="text-[13px]">
-            {resource.reference}
+    <View className={`h-[60px] w-[60px] items-center justify-center rounded-[14px] ${scripture ? 'bg-sage' : 'bg-honey'}`}>
+      <Ionicons name={scripture ? 'book' : 'hand-left'} size={22} color={scripture ? colors.leaf : colors.gold} />
+    </View>
+  );
+}
+
+function ResourceCard({ resource, onOpen }: { resource: Resource; onOpen: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={`Open ${resource.title}`} onPress={onOpen}>
+      <Card className="flex-row items-center gap-3">
+        <Thumb type={resource.type} />
+        <View className="flex-1 gap-0.5">
+          <Text variant="label" className="text-[16px]" numberOfLines={1}>
+            {resource.title}
           </Text>
-        ) : null}
-      </View>
-      {resource.body ? (
-        <Text
-          variant={resource.type === 'scripture' ? 'scripture' : 'body'}
-          color={resource.type === 'scripture' ? 'ink' : 'muted'}
-          className={resource.type === 'scripture' ? 'text-[17px] leading-[26px]' : 'text-[15px] leading-[22px]'}
-          numberOfLines={3}
-        >
-          {resource.body}
-        </Text>
-      ) : null}
-      <Meta parts={meta} />
+          {resource.reference ? (
+            <Text variant="caption" numberOfLines={1}>
+              {resource.reference}
+            </Text>
+          ) : resource.body ? (
+            <Text variant="caption" numberOfLines={1}>
+              {resource.body}
+            </Text>
+          ) : null}
+          <Text variant="caption" className="text-[12px]">
+            Shared by {resource.sharedBy} · {shortDate(resource.createdAt)}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+      </Card>
     </Pressable>
   );
 }
@@ -49,36 +69,28 @@ export default function ResourcesScreen() {
   const [query, setQuery] = useState('');
   const { resources, loading, error, refresh } = useResources(type);
   const visible = useMemo(() => resources.filter((r) => matchesQuery(r, query)), [resources, query]);
+  const plural = RESOURCE_TYPES.find((t) => t.id === type)?.plural ?? '';
+
+  const onTab = (tab: Tab) => {
+    if (tab === 'bible') router.push('/bible');
+    else setType(tab);
+  };
 
   return (
     <Screen className="px-0 pt-0 pb-0">
       <FlatList
         data={visible}
         keyExtractor={(r) => r.id}
-        contentContainerClassName="flex-grow px-4 pb-28 pt-1"
+        contentContainerClassName="flex-grow gap-3 px-4 pb-28 pt-2"
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
         ListHeaderComponent={
           <View className="gap-3 pb-1">
-            <View className="flex-row items-end justify-between">
-              <Segments options={RESOURCE_TYPES.map((t) => ({ value: t.id, label: t.plural }))} value={type} onChange={setType} />
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Read the Bible"
-                onPress={() => router.push('/bible')}
-                hitSlop={8}
-                className="flex-row items-center gap-1.5 pb-2.5"
-              >
-                <Ionicons name="book-outline" size={16} color={colors.primary} />
-                <Text variant="label" color="primary" className="text-[13px]">
-                  Bible
-                </Text>
-              </Pressable>
-            </View>
-            <View className="flex-row items-center gap-2 rounded-full border border-border bg-surface px-3.5">
+            <Segments<Tab> options={[...RESOURCE_TYPES.map((t) => ({ value: t.id as Tab, label: t.plural })), { value: 'bible', label: 'Bible' }]} value={type} onChange={onTab} />
+            <View className="flex-row items-center gap-2 rounded-full bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
-                placeholder={`Search ${RESOURCE_TYPES.find((t) => t.id === type)?.plural.toLowerCase()}`}
+                placeholder={`Search ${plural.toLowerCase()}`}
                 placeholderTextColor={colors.muted}
                 selectionColor={colors.primary}
                 value={query}
@@ -88,7 +100,7 @@ export default function ResourcesScreen() {
               />
             </View>
             {error ? (
-              <Text variant="muted" color="rose">
+              <Text variant="caption" color="roseDeep">
                 {error}
               </Text>
             ) : null}
@@ -110,10 +122,7 @@ export default function ResourcesScreen() {
             </View>
           )
         }
-        renderItem={({ item }) => (
-          <ResourceRow resource={item} onOpen={() => router.push({ pathname: '/resources/[id]', params: { id: item.id } })} />
-        )}
-        ItemSeparatorComponent={() => <View className="h-px bg-border" />}
+        renderItem={({ item }) => <ResourceCard resource={item} onOpen={() => router.push({ pathname: '/resources/[id]', params: { id: item.id } })} />}
       />
       <Fab label="Share something" onPress={() => router.push({ pathname: '/resources/new', params: { type } })} />
     </Screen>

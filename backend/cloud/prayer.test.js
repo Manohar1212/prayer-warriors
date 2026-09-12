@@ -147,3 +147,29 @@ describe('markAnswered', () => {
     await expect(createPrayerHandlers(d).markAnswered({ requestId: 'r1' }, caller)).rejects.toThrow(MESSAGES.notFound);
   });
 });
+
+describe('addComment', () => {
+  function deps({ groupId = 'g1', request = { id: 'r1', groupId: 'g1', authorId: 'a1', title: 'Healing', status: 'active' } } = {}) {
+    return {
+      memberships: { findGroupId: jest.fn(async () => groupId), findAdminGroupId: jest.fn(async () => null) },
+      requests: { get: jest.fn(async () => request) },
+      responses: {},
+      comments: { create: jest.fn(async (f) => ({ id: 'c1', body: f.body, userId: f.userId, createdAt: '2026-09-12T00:00:00.000Z' })) },
+    };
+  }
+  it('stores a trimmed comment and returns request context for notifications', async () => {
+    const d = deps();
+    const result = await createPrayerHandlers(d).addComment({ requestId: 'r1', body: '  Praying with you  ' }, { callerId: 'u2' });
+    expect(d.comments.create).toHaveBeenCalledWith({ requestId: 'r1', userId: 'u2', groupId: 'g1', body: 'Praying with you' });
+    expect(result).toMatchObject({ id: 'c1', body: 'Praying with you', requestId: 'r1', requestTitle: 'Healing', requestAuthorId: 'a1' });
+  });
+  it('rejects empty and overlong comments', async () => {
+    const d = deps();
+    await expect(createPrayerHandlers(d).addComment({ requestId: 'r1', body: '   ' }, { callerId: 'u2' })).rejects.toThrow(MESSAGES.commentRequired);
+    await expect(createPrayerHandlers(d).addComment({ requestId: 'r1', body: 'x'.repeat(501) }, { callerId: 'u2' })).rejects.toThrow(MESSAGES.commentTooLong);
+  });
+  it('rejects non-members and requests outside the group', async () => {
+    await expect(createPrayerHandlers(deps({ groupId: null })).addComment({ requestId: 'r1', body: 'hi' }, { callerId: 'u2' })).rejects.toThrow(MESSAGES.notMember);
+    await expect(createPrayerHandlers(deps({ request: { id: 'r1', groupId: 'other', authorId: 'a1', title: 'x', status: 'active' } })).addComment({ requestId: 'r1', body: 'hi' }, { callerId: 'u2' })).rejects.toThrow(MESSAGES.notFound);
+  });
+});

@@ -14,7 +14,8 @@ export type TextColor =
   | 'creamFaint'
   | 'gold'
   | 'rose'
-  | 'roseDeep';
+  | 'roseDeep'
+  | 'leaf';
 
 const variantClass: Record<TextVariant, string> = {
   display: 'font-display text-[32px] leading-[38px]',
@@ -47,6 +48,7 @@ const colorValue: Record<TextColor, string> = {
   gold: colors.gold,
   rose: colors.roseDeep,
   roseDeep: colors.roseDeep,
+  leaf: colors.leaf,
 };
 
 /** Telugu faces that stand in for Playfair / Inter, which have no Telugu glyphs. */

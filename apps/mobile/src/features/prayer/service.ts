@@ -2,11 +2,13 @@ import { mapParseError } from '../auth/errors';
 import type {
   NewPrayerRequest,
   PrayerCategory,
+  PrayerComment,
   PrayerRequest,
   PrayerRequestDto,
   PrayerService,
   PrayerStatus,
   PrayerUrgency,
+  RawPrayerComment,
   RawPrayerRequest,
 } from './types';
 
@@ -14,6 +16,8 @@ type Deps = {
   fetchRequests: (status: PrayerStatus) => Promise<RawPrayerRequest[]>;
   fetchMyPrayingRequestIds: () => Promise<string[]>;
   fetchPrayingNames: (requestId: string) => Promise<string[]>;
+  fetchComments: (requestId: string) => Promise<RawPrayerComment[]>;
+  currentUserName?: () => string;
   cloud: { run(name: string, params?: Record<string, unknown>): Promise<unknown> };
 };
 
@@ -94,5 +98,23 @@ export function createPrayerService(deps: Deps): PrayerService {
       }),
 
     prayingMembers: (requestId) => guarded(() => deps.fetchPrayingNames(requestId)),
+
+    comments: (requestId) =>
+      guarded(async () =>
+        (await deps.fetchComments(requestId)).map((row) => ({
+          id: row.id,
+          body: row.body,
+          authorId: row.user?.id ?? null,
+          authorName: row.user?.displayName?.trim() || 'Member',
+          createdAt: row.createdAt,
+        })),
+      ),
+
+    addComment: (requestId, body) =>
+      guarded(async () => {
+        const dto = (await deps.cloud.run('addPrayerComment', { requestId, body })) as { id: string; body: string; userId: string; createdAt: string | null };
+        const comment: PrayerComment = { id: dto.id, body: dto.body, authorId: dto.userId, authorName: deps.currentUserName?.() || 'You', createdAt: dto.createdAt ?? new Date().toISOString() };
+        return comment;
+      }),
   };
 }

@@ -80,6 +80,8 @@ function buildMessage(event, actorName) {
       return { title: `${actor} is praying for you`, body: title, route: `/prayer/${event.requestId}`, pref: 'praying' };
     case 'answered':
       return { title: 'Prayer answered', body: title, route: `/prayer/${event.requestId}`, pref: 'answered' };
+    case 'comment':
+      return { title: `${actor} commented on your request`, body: clip(event.body, 120) || title, route: `/prayer/${event.requestId}`, pref: 'praying' };
     case 'callScheduled':
       return { title: 'Group call scheduled', body: `${title} · ${dayTime(event.scheduledAt)}`, route: `/calls/${event.callId}`, pref: 'calls' };
     case 'callStarted':
@@ -113,7 +115,7 @@ function chunk(list, size) {
  */
 function createNotifier({ members, users, inbox, tokens, push, log = (m) => console.error(m) }) {
   async function targets(event) {
-    if (event.type === 'praying') return [event.authorId];
+    if (event.type === 'praying' || event.type === 'comment') return [event.authorId];
     if (event.type === 'contribution') return [event.memberId];
     return members.listActiveUserIds(event.groupId);
   }

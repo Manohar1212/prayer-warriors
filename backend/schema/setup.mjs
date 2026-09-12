@@ -278,6 +278,19 @@ const callParticipantSchema = {
   },
 };
 
+const prayerCommentSchema = {
+  className: 'PrayerComment',
+  fields: {
+    prayerRequest: { type: 'Pointer', targetClass: 'PrayerRequest', required: true },
+    user: { type: 'Pointer', targetClass: '_User', required: true },
+    body: { type: 'String', required: true },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
 const notificationSchema = {
   className: 'Notification',
   fields: {
@@ -396,6 +409,7 @@ await upsertSchema(groupSchema);
 await upsertSchema(groupMemberSchema);
 await upsertSchema(prayerRequestSchema);
 await upsertSchema(prayerResponseSchema);
+await upsertSchema(prayerCommentSchema);
 await upsertSchema(journalSchema);
 await upsertSchema(resourceSchema);
 await upsertSchema(contributionSchema);

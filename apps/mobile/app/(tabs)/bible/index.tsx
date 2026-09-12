@@ -17,7 +17,7 @@ function BookGrid({ books, lang, onOpen }: { books: BibleBook[]; lang: 'en' | 't
           accessibilityRole="button"
           accessibilityLabel={bookName(b, lang)}
           onPress={() => onOpen(b)}
-          className="rounded-[10px] bg-surface px-3 py-2 active:bg-sage"
+          className="rounded-[12px] bg-lavender px-3.5 py-2.5 active:bg-primary-light"
         >
           <Text variant="label" className="text-[14px]">
             {bookName(b, lang, true)}

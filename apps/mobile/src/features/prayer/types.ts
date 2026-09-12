@@ -59,12 +59,29 @@ export type PrayerRequestDto = Omit<RawPrayerRequest, 'author'> & {
   authorId: string | null;
 };
 
+export type PrayerComment = {
+  id: string;
+  body: string;
+  authorId: string | null;
+  authorName: string;
+  createdAt: string;
+};
+
+export type RawPrayerComment = {
+  id: string;
+  body: string;
+  createdAt: string;
+  user: { id: string; displayName?: string } | null;
+};
+
 export type PrayerService = {
   list(status: PrayerStatus): Promise<PrayerRequest[]>;
   create(input: NewPrayerRequest): Promise<PrayerRequest>;
   togglePraying(requestId: string): Promise<{ praying: boolean; prayingCount: number }>;
   markAnswered(requestId: string, testimony: string): Promise<PrayerRequest>;
   prayingMembers(requestId: string): Promise<string[]>;
+  comments(requestId: string): Promise<PrayerComment[]>;
+  addComment(requestId: string, body: string): Promise<PrayerComment>;
 };
 
 // ---------- journal (private) ----------

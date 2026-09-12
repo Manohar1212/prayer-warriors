@@ -28,6 +28,7 @@ describe('buildMessage', () => {
     [requestEvent, 'Anna', { title: 'New prayer request', body: 'Anna: Healing for mum', route: '/prayer/r1', pref: 'prayer' }],
     [{ type: 'praying', requestId: 'r1', title: 'Healing for mum' }, 'Beth', { title: 'Beth is praying for you', body: 'Healing for mum', route: '/prayer/r1', pref: 'praying' }],
     [{ type: 'answered', requestId: 'r1', title: 'Healing for mum' }, 'Anna', { title: 'Prayer answered', body: 'Healing for mum', route: '/prayer/r1', pref: 'answered' }],
+    [{ type: 'comment', requestId: 'r1', title: 'Healing for mum', body: 'Praying with you tonight' }, 'Beth', { title: 'Beth commented on your request', body: 'Praying with you tonight', route: '/prayer/r1', pref: 'praying' }],
     [
       { type: 'callScheduled', callId: 'c1', title: 'Evening prayer', scheduledAt: '2026-09-09T14:30:00.000Z' },
       'Anna',
@@ -73,6 +74,12 @@ describe('notify', () => {
     const d = deps();
     await createNotifier(d).notify({ type: 'praying', groupId: 'g1', actorId: 'b', requestId: 'r1', title: 'Healing for mum', authorId: 'a' });
     expect(d.members.listActiveUserIds).not.toHaveBeenCalled();
+    expect(d.inbox.createMany.mock.calls[0][0].map((r) => r.recipientId)).toEqual(['a']);
+  });
+
+  it('sends "comment" only to the request author', async () => {
+    const d = deps();
+    await createNotifier(d).notify({ type: 'comment', groupId: 'g1', actorId: 'b', requestId: 'r1', title: 'Healing', body: 'Amen', authorId: 'a' });
     expect(d.inbox.createMany.mock.calls[0][0].map((r) => r.recipientId)).toEqual(['a']);
   });
 

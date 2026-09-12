@@ -1,7 +1,7 @@
 export { usePrayerRequests } from './usePrayerRequests';
 export { useJournal } from './useJournal';
 export { CATEGORIES, categoryLabel } from './types';
-export type {
+export type { PrayerComment,
   JournalEntry,
   JournalInput,
   NewPrayerRequest,

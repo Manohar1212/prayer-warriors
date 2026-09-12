@@ -207,6 +207,18 @@ const responses = {
   },
 };
 
+const prayerComments = {
+  async create({ requestId, userId, groupId, body }) {
+    const row = new Parse.Object('PrayerComment');
+    row.set('prayerRequest', pointer('PrayerRequest', requestId));
+    row.set('user', pointer('_User', userId));
+    row.set('body', body);
+    row.setACL(groupReadAcl(groupId));
+    await row.save(null, { useMasterKey: true });
+    return { id: row.id, body, userId, createdAt: row.createdAt ? row.createdAt.toISOString() : null };
+  },
+};
+
 // ---------- resources ----------
 
 function resourceDto(obj) {
@@ -598,7 +610,7 @@ function withNotify(handler, after) {
 // ---------- cloud functions ----------
 
 const memberHandlers = createMemberHandlers({ memberships, users, roles, generatePassword });
-const prayerHandlers = createPrayerHandlers({ memberships, requests, responses });
+const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, comments: prayerComments });
 const resourceHandlers = createResourceHandlers({ memberships, resources });
 const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
@@ -623,6 +635,12 @@ Parse.Cloud.define(
   'markAnswered',
   withNotify(prayerHandlers.markAnswered, (dto, _params, { callerId: actorId }) =>
     notifier.notify({ type: 'answered', groupId: dto.groupId, actorId, requestId: dto.id, title: dto.title }),
+  ),
+);
+Parse.Cloud.define(
+  'addPrayerComment',
+  withNotify(prayerHandlers.addComment, (dto, _params, { callerId: actorId }) =>
+    notifier.notify({ type: 'comment', groupId: dto.groupId, actorId, requestId: dto.requestId, title: dto.requestTitle, body: dto.body, authorId: dto.requestAuthorId }),
   ),
 );
 Parse.Cloud.define(

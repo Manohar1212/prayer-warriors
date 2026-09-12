@@ -2,13 +2,14 @@ import { View } from 'react-native';
 
 import { Text, type TextColor } from './Text';
 
-export type BadgeTone = 'sage' | 'blush' | 'honey' | 'forest';
+export type BadgeTone = 'sage' | 'blush' | 'honey' | 'forest' | 'lavender';
 
 const tone: Record<BadgeTone, { bg: string; fg: TextColor }> = {
-  sage: { bg: 'bg-sage', fg: 'primary' },
+  sage: { bg: 'bg-sage', fg: 'leaf' },
   blush: { bg: 'bg-blush', fg: 'roseDeep' },
   honey: { bg: 'bg-honey', fg: 'gold' },
   forest: { bg: 'bg-primary', fg: 'cream' },
+  lavender: { bg: 'bg-lavender', fg: 'primary' },
 };
 
 export function Badge({ label, tone: t = 'sage' }: { label: string; tone?: BadgeTone }) {

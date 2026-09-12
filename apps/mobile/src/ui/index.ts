@@ -13,3 +13,4 @@ export { Segments } from './Segments';
 export { Fab } from './Fab';
 export { Meta } from './Meta';
 export type { MetaPart } from './Meta';
+export { Avatar, AvatarStack, avatarTone } from './Avatar';

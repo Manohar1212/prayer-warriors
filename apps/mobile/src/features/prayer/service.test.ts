@@ -28,6 +28,7 @@ function svc(cloudResult: unknown = {}, myIds: string[] = ['urg']) {
     fetchRequests: jest.fn(async () => rows),
     fetchMyPrayingRequestIds: jest.fn(async () => myIds),
     fetchPrayingNames: jest.fn(async () => ['Shiny', 'Mary']),
+    fetchComments: jest.fn(async () => []),
     cloud,
   });
   return { service, cloud };

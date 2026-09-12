@@ -1,14 +1,15 @@
 import { Pressable, View } from 'react-native';
 
+import { cardShadow } from '../theme/tokens';
 import { Text } from './Text';
 
 type Option<T extends string> = { value: T; label: string };
 type Props<T extends string> = { options: Option<T>[]; value: T; onChange: (value: T) => void };
 
-/** Underline tabs: quiet text with a gold rule under the active choice. */
+/** Pill tabs: a lavender track with the active choice lifted on a white pill. */
 export function Segments<T extends string>({ options, value, onChange }: Props<T>) {
   return (
-    <View className="flex-row gap-6 border-b border-border">
+    <View className="flex-row rounded-full bg-lavender p-1">
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -17,10 +18,10 @@ export function Segments<T extends string>({ options, value, onChange }: Props<T
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             onPress={() => onChange(o.value)}
-            hitSlop={{ top: 8, bottom: 8 }}
-            className={`-mb-px border-b-2 pb-2.5 pt-1 ${active ? 'border-gold' : 'border-transparent'}`}
+            className={`flex-1 items-center rounded-full py-2 ${active ? 'bg-surface' : ''}`}
+            style={active ? cardShadow : null}
           >
-            <Text variant="label" color={active ? 'primary' : 'muted'} className="text-[15px]">
+            <Text variant="label" color={active ? 'primary' : 'muted'} className="text-[14px]">
               {o.label}
             </Text>
           </Pressable>

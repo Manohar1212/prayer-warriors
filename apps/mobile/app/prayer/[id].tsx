@@ -1,20 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Pressable, Switch, TextInput, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { useMembers } from '@/features/members';
-import { categoryLabel, usePrayerRequests } from '@/features/prayer';
+import { categoryLabel, usePrayerRequests, type PrayerComment } from '@/features/prayer';
 import { prayerService } from '@/lib/parse';
+import { timeAgo } from '@/lib/time';
 import { colors } from '@/theme/tokens';
-import { Button, Input, Meta, Rule, Screen, Text, type MetaPart } from '@/ui';
+import { Avatar, AvatarStack, Badge, Button, Card, Input, Screen, Text } from '@/ui';
 
 function longDate(iso: string): string {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? ''
-    : d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function PrayerRequestScreen() {
@@ -25,19 +24,28 @@ export default function PrayerRequestScreen() {
   const answered = usePrayerRequests('answered');
   const request = [...active.requests, ...answered.requests].find((r) => r.id === id) ?? null;
   const [names, setNames] = useState<string[]>([]);
+  const [comments, setComments] = useState<PrayerComment[]>([]);
+  const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
   const [testimony, setTestimony] = useState('');
   const [answering, setAnswering] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const loadComments = useCallback(() => {
+    if (!id) return;
+    prayerService.comments(id).then(setComments).catch(() => setComments([]));
+  }, [id]);
+
   useEffect(() => {
     if (!id) return;
     prayerService.prayingMembers(id).then(setNames).catch(() => setNames([]));
   }, [id, request?.prayingCount]);
+  useEffect(loadComments, [loadComments]);
 
   if (!request) {
     return (
-      <Screen edges={['bottom']} backdrop className="justify-center">
+      <Screen edges={['bottom']} className="justify-center">
         <Text variant="muted">{active.loading || answered.loading ? 'Loading…' : "That prayer request isn't available."}</Text>
       </Screen>
     );
@@ -61,90 +69,144 @@ export default function PrayerRequestScreen() {
     }
   }
 
+  async function sendComment() {
+    if (!request || !draft.trim()) return;
+    setSending(true);
+    setError(null);
+    try {
+      const created = await prayerService.addComment(request.id, draft);
+      setComments((c) => [...c, created]);
+      setDraft('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not post the comment.');
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
-    <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
+    <Screen edges={['bottom']} scroll className="gap-5 pt-5">
       <View className="gap-3">
-        <Meta
-          parts={(() => {
-            const parts: MetaPart[] = [{ text: categoryLabel(request.category), dot: isAnswered ? 'gold' : 'sage' }];
-            if (request.urgency === 'urgent' && !isAnswered) parts.push({ text: 'Urgent', color: 'roseDeep' });
-            if (isAnswered) parts.push({ text: 'Answered', color: 'gold' });
-            return parts;
-          })()}
-        />
-        <Text variant="display" color="primary" className="text-[28px] leading-[34px]">
+        <View className="flex-row flex-wrap gap-2">
+          <Badge label={categoryLabel(request.category)} tone="honey" />
+          {request.urgency === 'urgent' && !isAnswered ? <Badge label="Urgent" tone="blush" /> : null}
+          {isAnswered ? <Badge label="Answered" tone="sage" /> : null}
+        </View>
+        <Text variant="display" color="primaryDark" className="text-[28px] leading-[34px]">
           {request.title}
         </Text>
-        <Text variant="caption">
-          {request.authorName} · {longDate(request.createdAt)}
-        </Text>
+        <View className="flex-row items-center gap-2">
+          <Avatar name={request.authorName} size={24} />
+          <Text variant="caption">
+            {request.authorName} · {longDate(request.createdAt)}
+          </Text>
+        </View>
       </View>
 
-      {request.description ? <Text className="text-[17px] leading-[27px]">{request.description}</Text> : null}
+      {request.description ? <Text className="text-[16px] leading-[26px]">{request.description}</Text> : null}
 
       {isAnswered ? (
-        <View className="gap-3 border-l-2 border-gold pl-4">
+        <Card tone="honey" className="gap-2">
           <Text variant="label" color="gold" className="text-[13px]">
             Answered {request.answeredAt ? longDate(request.answeredAt) : ''}
           </Text>
-          {request.testimony ? <Text variant="scripture" className="text-[19px] leading-[29px]">{request.testimony}</Text> : null}
-        </View>
+          {request.testimony ? <Text variant="scripture" className="text-[18px] leading-[28px]">{request.testimony}</Text> : null}
+        </Card>
       ) : (
-        <Pressable
-          accessibilityRole="button"
+        <Button
+          title={request.praying ? "You're praying" : "I'm praying"}
+          icon={request.praying ? 'checkmark' : 'hand-left'}
+          variant={request.praying ? 'secondary' : 'primary'}
           onPress={() => active.togglePraying(request.id)}
-          className={`flex-row items-center justify-center gap-2 rounded-[14px] py-3.5 ${
-            request.praying ? 'bg-primary' : 'bg-blush'
-          }`}
-        >
-          <Ionicons
-            name={request.praying ? 'heart' : 'heart-outline'}
-            size={18}
-            color={request.praying ? colors.cream : colors.roseDeep}
-          />
-          <Text variant="label" color={request.praying ? 'cream' : 'roseDeep'} className="text-[16px]">
-            {request.praying ? "You're praying" : "I'm praying"}
-          </Text>
-        </Pressable>
+        />
       )}
 
-      <View className="gap-2 border-t border-border pt-5">
-        <Rule />
+      <View className="gap-3">
         <Text variant="title" className="text-[20px]">
-          {request.prayingCount === 0
-            ? 'No one praying yet'
-            : request.prayingCount === 1
-              ? '1 member is praying'
-              : `${request.prayingCount} members are praying`}
+          {request.prayingCount === 0 ? 'No one praying yet' : request.prayingCount === 1 ? '1 member is praying' : `${request.prayingCount} members are praying`}
         </Text>
-        {names.length ? <Text variant="muted" className="text-[15px] leading-[22px]">{names.join(', ')}</Text> : null}
+        {names.length ? <AvatarStack names={names} size={36} max={5} /> : null}
       </View>
 
       {canAnswer ? (
-        answering ? (
-          <View className="gap-4 border-t border-border pt-5">
-            <Text variant="title">Mark as answered</Text>
-            <Input
-              label="Testimony (optional)"
-              value={testimony}
-              onChangeText={setTestimony}
-              maxLength={1000}
-              multiline
-              style={{ minHeight: 96, textAlignVertical: 'top' }}
-            />
-            {error ? (
-              <Text variant="muted" color="rose">
-                {error}
+        <Card className="gap-3">
+          <View className="flex-row items-center justify-between gap-3">
+            <View className="flex-1 gap-0.5">
+              <Text variant="label" className="text-[15px]">
+                Mark as answered
               </Text>
-            ) : null}
-            <Button title="Mark as answered" onPress={submitAnswered} loading={busy} />
-            <Button title="Cancel" variant="ghost" onPress={() => setAnswering(false)} />
+              <Text variant="caption">Moves it to Answered with your testimony.</Text>
+            </View>
+            <Switch
+              accessibilityLabel="Mark as answered"
+              value={answering}
+              onValueChange={setAnswering}
+              trackColor={{ true: colors.primary, false: colors.border }}
+              thumbColor={colors.surface}
+            />
           </View>
-        ) : (
-          <Button title="Mark as answered" variant="secondary" onPress={() => setAnswering(true)} />
-        )
+          {answering ? (
+            <View className="gap-3">
+              <Input label="Testimony (optional)" value={testimony} onChangeText={setTestimony} maxLength={1000} multiline />
+              <Button title="Mark as answered" onPress={submitAnswered} loading={busy} />
+            </View>
+          ) : null}
+        </Card>
       ) : null}
 
+      <View className="gap-3">
+        <Text variant="title" className="text-[20px]">
+          Comments
+        </Text>
+        {comments.length ? (
+          <Card className="py-1">
+            {comments.map((c, i) => (
+              <View key={c.id} className={`flex-row gap-3 py-3 ${i > 0 ? 'border-t border-border' : ''}`}>
+                <Avatar name={c.authorName} size={32} />
+                <View className="flex-1 gap-0.5">
+                  <View className="flex-row items-center gap-2">
+                    <Text variant="label" className="text-[14px]">
+                      {c.authorName}
+                    </Text>
+                    <Text variant="caption" className="text-[12px]">
+                      {timeAgo(c.createdAt)}
+                    </Text>
+                  </View>
+                  <Text className="text-[15px] leading-[22px]">{c.body}</Text>
+                </View>
+              </View>
+            ))}
+          </Card>
+        ) : (
+          <Text variant="caption">Be the first to leave a word of encouragement.</Text>
+        )}
+        <View className="flex-row items-center gap-2 rounded-full bg-surface py-1 pl-4 pr-1">
+          <TextInput
+            placeholder="Add a comment…"
+            placeholderTextColor={colors.muted}
+            selectionColor={colors.primary}
+            value={draft}
+            onChangeText={setDraft}
+            maxLength={500}
+            className="min-h-[40px] flex-1 font-sans text-[15px] text-ink"
+            onSubmitEditing={sendComment}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Send comment"
+            onPress={sendComment}
+            disabled={sending || !draft.trim()}
+            className={`h-10 w-10 items-center justify-center rounded-full ${draft.trim() ? 'bg-primary' : 'bg-lavender'}`}
+          >
+            <Ionicons name="arrow-forward" size={18} color={draft.trim() ? colors.surface : colors.primary} />
+          </Pressable>
+        </View>
+        {error ? (
+          <Text variant="caption" color="roseDeep">
+            {error}
+          </Text>
+        ) : null}
+      </View>
     </Screen>
   );
 }
