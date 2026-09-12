@@ -31,7 +31,7 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
   return (
     <View style={{ position: 'absolute', left: 16, right: 16, bottom: Math.max(insets.bottom, 12), pointerEvents: 'box-none' }}>
       <View
-        className="flex-row items-center rounded-[28px] bg-surface px-2 py-2"
+        className="flex-row items-center rounded-[28px] bg-surface px-1 py-2"
         style={{ boxShadow: '0 10px 30px rgba(62, 42, 124, 0.16)' }}
       >
         {routes.map((route) => {
@@ -50,12 +50,12 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
               accessibilityState={{ selected: focused }}
               accessibilityLabel={label}
               onPress={onPress}
-              className="flex-1 items-center gap-1 py-1"
+              className="flex-1 items-center gap-1 px-0.5 py-1"
             >
               <View className={`h-8 w-14 items-center justify-center rounded-full ${focused ? 'bg-lavender' : ''}`}>
                 <Ionicons name={focused ? icon.active : icon.icon} size={22} color={focused ? colors.primary : colors.muted} />
               </View>
-              <Text variant="label" color={focused ? 'primary' : 'muted'} className="text-[11px] leading-[14px]">
+              <Text variant="label" color={focused ? 'primary' : 'muted'} className="text-[10px] leading-[13px]" numberOfLines={1}>
                 {label}
               </Text>
             </Pressable>
