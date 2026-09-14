@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { useAuth } from '@/features/auth';
-import { Button, Input, Screen, Text } from '@/ui';
+import { Button, Input, Text } from '@/ui';
+import { AuthShell } from '@/ui/AuthShell';
 
 export default function AccountSetupScreen() {
   const { updateProfile, signOut } = useAuth();
@@ -23,34 +24,19 @@ export default function AccountSetupScreen() {
   }
 
   return (
-    <Screen edges={['top', 'bottom']} scroll backdrop className="justify-center gap-10">
-      <View className="gap-2">
-        <Text variant="display" color="primary">
-          What should we call you?
-        </Text>
-        <Text variant="muted" className="text-[15px] leading-[22px]">
-          This is the name the group will see on your prayers and in calls.
-        </Text>
-      </View>
-      <View className="gap-5">
-        <Input
-          label="Your name"
-          value={displayName}
-          onChangeText={setDisplayName}
-          onSubmitEditing={submit}
-          maxLength={40}
-          autoFocus
-          error={error}
-        />
-        <Button
-          title="Continue"
-          onPress={submit}
-          loading={busy}
-          disabled={displayName.trim().length === 0}
-          className="mt-1"
-        />
-        <Button title="Sign out" variant="ghost" onPress={signOut} className="self-start px-0" />
-      </View>
-    </Screen>
+    <AuthShell
+      title="What should we call you?"
+      subtitle="This is the name the group will see on your prayers and in calls."
+      footer={
+        <Pressable accessibilityRole="button" onPress={signOut} hitSlop={8} className="py-1">
+          <Text variant="label" color="creamSoft" className="text-[14px]">
+            Sign out
+          </Text>
+        </Pressable>
+      }
+    >
+      <Input label="Your name" variant="filled" placeholder="e.g. Mary Joseph" value={displayName} onChangeText={setDisplayName} onSubmitEditing={submit} maxLength={40} autoFocus error={error} />
+      <Button title="Continue" onPress={submit} loading={busy} disabled={displayName.trim().length === 0} className="mt-1" />
+    </AuthShell>
   );
 }

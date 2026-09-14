@@ -1,14 +1,18 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { useAuth } from '@/features/auth';
-import { Button, Input, Screen, Text } from '@/ui';
+import { colors } from '@/theme/tokens';
+import { Button, Input, Text } from '@/ui';
+import { AuthShell } from '@/ui/AuthShell';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [show, setShow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -25,50 +29,53 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen edges={['top', 'bottom']} scroll backdrop className="justify-center gap-10">
-      <View className="gap-2">
-        <Text variant="display" color="primary">
-          Sign in
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in with the email your group admin added."
+      footer={
+        <Text variant="caption" color="creamFaint" className="text-center">
+          Membership is by invitation from your group admin.
         </Text>
-        <Text variant="muted" className="text-[15px] leading-[22px]">
-          Use the email your group admin added.
-        </Text>
-      </View>
-      <View className="gap-5">
-        <Input
-          label="Email"
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <Input
-          label="Password"
-          secureTextEntry
-          autoComplete="password"
-          textContentType="password"
-          value={password}
-          onChangeText={setPassword}
-          onSubmitEditing={submit}
-          error={error}
-        />
-        <Button
-          title="Sign in"
-          onPress={submit}
-          loading={busy}
-          disabled={!email.trim() || !password}
-          className="mt-1"
-        />
-        <Link href="/(auth)/forgot-password" asChild>
-          <Pressable accessibilityRole="link" className="self-start py-1">
-            <Text variant="label" color="primary">
-              Forgot your password?
-            </Text>
+      }
+    >
+      <Input
+        label="Email"
+        variant="filled"
+        placeholder="you@example.com"
+        autoCapitalize="none"
+        autoComplete="email"
+        keyboardType="email-address"
+        textContentType="emailAddress"
+        returnKeyType="next"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <Input
+        label="Password"
+        variant="filled"
+        placeholder="Your password"
+        secureTextEntry={!show}
+        autoComplete="password"
+        textContentType="password"
+        returnKeyType="go"
+        value={password}
+        onChangeText={setPassword}
+        onSubmitEditing={submit}
+        error={error}
+        right={
+          <Pressable accessibilityRole="button" accessibilityLabel={show ? 'Hide password' : 'Show password'} onPress={() => setShow((s) => !s)} hitSlop={8}>
+            <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.muted} />
           </Pressable>
-        </Link>
-      </View>
-    </Screen>
+        }
+      />
+      <Button title="Sign in" onPress={submit} loading={busy} disabled={!email.trim() || !password} className="mt-1" />
+      <Link href="/(auth)/forgot-password" asChild>
+        <Pressable accessibilityRole="link" className="self-center py-1">
+          <Text variant="label" color="primary" className="text-[14px]">
+            Forgot your password?
+          </Text>
+        </Pressable>
+      </Link>
+    </AuthShell>
   );
 }
