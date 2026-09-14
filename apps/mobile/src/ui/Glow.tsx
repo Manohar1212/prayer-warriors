@@ -5,8 +5,8 @@ import { colors } from '../theme/tokens';
 
 type Props = { size: number; color?: string; strength?: number };
 
-/** A soft radial halo to sit behind the logo on dark backgrounds. Purely decorative. */
-export function Glow({ size, color = colors.goldLight, strength = 0.5 }: Props) {
+/** A soft white radial halo to sit behind the logo on dark backgrounds. Purely decorative. */
+export function Glow({ size, color = colors.surface, strength = 0.5 }: Props) {
   const c = size / 2;
   return (
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
