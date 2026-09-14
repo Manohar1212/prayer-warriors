@@ -5,6 +5,7 @@ import { Share, View } from 'react-native';
 
 import { toE164 } from '@/features/auth';
 import { useMembers, type AddedMember } from '@/features/members';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { Button, Card, Input, Screen, Text } from '@/ui';
 
@@ -21,6 +22,7 @@ function shareMessage(m: AddedMember): string {
 }
 
 function AddedView({ member, onDone }: { member: AddedMember; onDone: () => void }) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -32,25 +34,25 @@ function AddedView({ member, onDone }: { member: AddedMember; onDone: () => void
     <View className="flex-1 gap-6">
       <View className="gap-2">
         <Text variant="display" color="primary">
-          {member.displayName} is in
+          {t('members.added.title', { name: member.displayName })}
         </Text>
         <Text variant="muted" className="text-[15px] leading-[22px]">
-          Share these sign-in details with them. The password is shown only once here.
+          {t('members.added.intro')}
         </Text>
       </View>
       <Card className="gap-3">
         <View className="gap-0.5">
-          <Text variant="muted">Email</Text>
+          <Text variant="muted">{t('common.email')}</Text>
           <Text>{member.email}</Text>
         </View>
         {member.phone ? (
           <View className="gap-0.5">
-            <Text variant="muted">Mobile</Text>
+            <Text variant="muted">{t('common.mobile')}</Text>
             <Text>{member.phone}</Text>
           </View>
         ) : null}
         <View className="gap-0.5">
-          <Text variant="muted">Starting password</Text>
+          <Text variant="muted">{t('members.added.password')}</Text>
           <Text className="font-semibold text-[22px] leading-[30px] tracking-[2px]" selectable>
             {member.startingPassword}
           </Text>
@@ -58,26 +60,27 @@ function AddedView({ member, onDone }: { member: AddedMember; onDone: () => void
       </Card>
       <View className="gap-3">
         <Button
-          title="Share details"
+          title={t('members.added.share')}
           onPress={() => Share.share({ message: shareMessage(member) })}
         />
         <Button
-          title={copied ? 'Password copied' : 'Copy password'}
+          title={copied ? t('members.added.copied') : t('members.added.copy')}
           variant="secondary"
           onPress={copy}
         />
       </View>
       <Text variant="muted" className="text-[13px]">
-        They can change it any time with "Forgot password" on the sign-in screen.
+        {t('members.added.note')}
       </Text>
       <View className="mt-auto">
-        <Button title="Done" variant="ghost" onPress={onDone} />
+        <Button title={t('common.done')} variant="ghost" onPress={onDone} />
       </View>
     </View>
   );
 }
 
 export default function AddMemberScreen() {
+  const { t } = useLanguage();
   const router = useRouter();
   const { add } = useMembers();
   const [displayName, setDisplayName] = useState('');
@@ -98,7 +101,7 @@ export default function AddMemberScreen() {
     try {
       setAdded(await add({ displayName, email, phone: phone ?? undefined }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not add the member.');
+      setError(err instanceof Error ? err.message : t('members.add.failed'));
     } finally {
       setBusy(false);
     }
@@ -115,12 +118,12 @@ export default function AddMemberScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-8 pt-6">
       <Text variant="muted" className="text-[15px] leading-[22px]">
-        They will get a starting password to sign in with, which you share with them.
+        {t('members.add.intro')}
       </Text>
       <View className="gap-5">
-        <Input label="Name" value={displayName} onChangeText={setDisplayName} maxLength={40} autoFocus />
+        <Input label={t('members.add.name')} value={displayName} onChangeText={setDisplayName} maxLength={40} autoFocus />
         <Input
-          label="Email"
+          label={t('common.email')}
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -128,20 +131,20 @@ export default function AddMemberScreen() {
           onChangeText={setEmail}
         />
         <Input
-          label="Mobile number (optional)"
+          label={t('members.add.mobile')}
           keyboardType="phone-pad"
           value={national}
           onChangeText={setNational}
-          error={phoneInvalid ? "That doesn't look like a valid mobile number." : null}
+          error={phoneInvalid ? t('members.add.invalidMobile') : null}
         />
-        {phone ? <Text variant="muted">Will be saved as {phone}</Text> : null}
+        {phone ? <Text variant="muted">{t('members.add.savedAs', { phone })}</Text> : null}
         {error ? (
           <Text variant="muted" color="rose">
             {error}
           </Text>
         ) : null}
         <Button
-          title="Add member"
+          title={t('members.add.submit')}
           onPress={submit}
           loading={busy}
           disabled={!canSubmit}

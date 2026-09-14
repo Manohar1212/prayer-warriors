@@ -7,16 +7,18 @@ import { CallRoom } from '@/features/calls/CallRoom';
 import { isJoinable, useCalls, type CallCredentials } from '@/features/calls';
 import { useMembers } from '@/features/members';
 import { goBackOr } from '@/lib/navigation';
+import { useLanguage } from '@/i18n';
 import { callsService } from '@/lib/parse';
 import { Button, Screen, Text } from '@/ui';
 
-function when(iso: string): string {
+function when(iso: string, locale: string): string {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(locale, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 }
 
 export default function CallScreen() {
   const router = useRouter();
+  const { t, locale } = useLanguage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const { isAdmin } = useMembers();
@@ -39,7 +41,7 @@ export default function CallScreen() {
     try {
       setCredentials(await callsService.join(call.id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not join the call.');
+      setError(err instanceof Error ? err.message : t('calls.joinFailed'));
     } finally {
       setBusy(false);
     }
@@ -53,7 +55,7 @@ export default function CallScreen() {
 
   async function end() {
     if (!call) return;
-    await callsService.end(call.id).catch((err) => setError(err instanceof Error ? err.message : 'Could not end the call.'));
+    await callsService.end(call.id).catch((err) => setError(err instanceof Error ? err.message : t('calls.endFailed')));
     setCredentials(null);
     await refresh();
   }
@@ -61,8 +63,8 @@ export default function CallScreen() {
   if (!call) {
     return (
       <Screen edges={['bottom']} backdrop className="justify-center gap-4">
-        <Text variant="muted">{loading ? 'Loading…' : "That call isn't available."}</Text>
-        <Button title="Back" variant="ghost" onPress={() => goBackOr(router, '/(tabs)/community')} className="self-start px-0" />
+        <Text variant="muted">{loading ? t('common.loading') : t('calls.notAvailable')}</Text>
+        <Button title={t('common.back')} variant="ghost" onPress={() => goBackOr(router, '/(tabs)/community')} className="self-start px-0" />
       </Screen>
     );
   }
@@ -73,7 +75,7 @@ export default function CallScreen() {
         <Text variant="title" className="mb-3">
           {call.title}
         </Text>
-        <CallRoom credentials={credentials} displayName={user?.displayName ?? 'Member'} canEnd={isAdmin} onLeave={leave} onEnd={end} />
+        <CallRoom credentials={credentials} displayName={user?.displayName ?? t('common.member')} canEnd={isAdmin} onLeave={leave} onEnd={end} />
       </Screen>
     );
   }
@@ -87,14 +89,14 @@ export default function CallScreen() {
         <Text variant="display" color="primary" className="text-[28px] leading-[34px]">
           {call.title}
         </Text>
-        <Text variant="muted">{when(call.scheduledAt)}</Text>
+        <Text variant="muted">{when(call.scheduledAt, locale)}</Text>
       </View>
       <View className="gap-1.5 border-l-2 border-gold pl-4">
         <Text variant="label" color={call.status === 'live' ? 'primary' : 'gold'} className="text-[13px]">
-          {call.status === 'live' ? 'Happening now' : over ? (call.status === 'cancelled' ? 'Cancelled' : 'Ended') : 'Scheduled'}
+          {call.status === 'live' ? t('community.happeningNow') : over ? (call.status === 'cancelled' ? t('calls.cancelled') : t('calls.ended')) : t('calls.scheduled')}
         </Text>
         <Text variant="muted" className="text-[15px] leading-[22px]">
-          {names.length ? `On the call: ${names.join(', ')}` : call.status === 'live' ? 'No one has joined yet.' : over ? `${call.participantCount} joined.` : 'Nobody has joined yet.'}
+          {names.length ? t('calls.onTheCall', { names: names.join(', ') }) : over ? t('calls.countJoined', { count: call.participantCount }) : t('calls.noOneJoined')}
         </Text>
       </View>
       {error ? (
@@ -103,12 +105,12 @@ export default function CallScreen() {
         </Text>
       ) : null}
       {!over ? (
-        <Button title={joinable ? 'Join call' : `Opens 15 minutes before ${when(call.scheduledAt)}`} onPress={join} loading={busy} disabled={!joinable} />
+        <Button title={joinable ? t('calls.join') : t('calls.opensBefore', { when: when(call.scheduledAt, locale) })} onPress={join} loading={busy} disabled={!joinable} />
       ) : null}
       {isAdmin && !over ? (
-        <Button title={call.status === 'live' ? 'End call for everyone' : 'Cancel this call'} variant="secondary" onPress={call.status === 'live' ? end : () => callsService.cancel(call.id).then(refresh).catch((err) => setError(err instanceof Error ? err.message : 'Could not cancel.'))} />
+        <Button title={call.status === 'live' ? t('calls.endForEveryone') : t('calls.cancelThis')} variant="secondary" onPress={call.status === 'live' ? end : () => callsService.cancel(call.id).then(refresh).catch((err) => setError(err instanceof Error ? err.message : t('calls.cancelFailed')))} />
       ) : null}
-      <Button title="Back" variant="ghost" onPress={() => goBackOr(router, '/(tabs)/community')} className="self-start px-0" />
+      <Button title={t('common.back')} variant="ghost" onPress={() => goBackOr(router, '/(tabs)/community')} className="self-start px-0" />
     </Screen>
   );
 }

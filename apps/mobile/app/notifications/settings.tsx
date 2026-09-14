@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { ScrollView, Switch, View } from 'react-native';
 
-import { DEFAULT_PREFS, PREF_KEYS, PREF_LABELS, type NotificationPrefs, type PrefKey } from '@/features/notifications';
+import { DEFAULT_PREFS, PREF_KEYS, type NotificationPrefs, type PrefKey } from '@/features/notifications';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { notificationsService } from '@/lib/parse';
 import { colors } from '@/theme/tokens';
 import { Card, Screen, Text } from '@/ui';
 
 export default function NotificationSettingsScreen() {
+  const { t } = useLanguage();
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +17,7 @@ export default function NotificationSettingsScreen() {
     notificationsService
       .getPrefs()
       .then(setPrefs)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Could not load your settings.'))
+      .catch((err) => setError(err instanceof Error ? err.message : t('notifications.settingsLoadFailed')))
       .finally(() => setLoaded(true));
   }, []);
 
@@ -27,14 +29,14 @@ export default function NotificationSettingsScreen() {
       setPrefs(await notificationsService.updatePrefs({ [key]: value }));
     } catch (err) {
       setPrefs(previous);
-      setError(err instanceof Error ? err.message : 'Could not save that change.');
+      setError(err instanceof Error ? err.message : t('notifications.saveFailed'));
     }
   };
 
   return (
     <Screen edges={['bottom']} backdrop className="px-0 pt-0">
       <ScrollView contentContainerClassName="gap-4 px-4 pb-8 pt-4" showsVerticalScrollIndicator={false}>
-        <Text variant="muted">Choose what the group can reach you about. Changes apply on every device you use.</Text>
+        <Text variant="muted">{t('notifications.settingsIntro')}</Text>
         {error ? (
           <Text variant="body" color="roseDeep">
             {error}
@@ -45,14 +47,14 @@ export default function NotificationSettingsScreen() {
             <View key={key} className={`flex-row items-center gap-4 py-4 ${index < PREF_KEYS.length - 1 ? 'border-b border-border' : ''}`}>
               <View className="flex-1 gap-1">
                 <Text variant="label" className="text-[15px]">
-                  {PREF_LABELS[key].title}
+                  {t(`notifications.pref.${key}` as TranslationKey)}
                 </Text>
                 <Text variant="muted" className="text-[13px] leading-[18px]">
-                  {PREF_LABELS[key].description}
+                  {t(`notifications.pref.${key}Hint` as TranslationKey)}
                 </Text>
               </View>
               <Switch
-                accessibilityLabel={PREF_LABELS[key].title}
+                accessibilityLabel={t(`notifications.pref.${key}` as TranslationKey)}
                 value={prefs[key]}
                 disabled={!loaded}
                 onValueChange={(value) => toggle(key, value)}
@@ -63,7 +65,7 @@ export default function NotificationSettingsScreen() {
           ))}
         </Card>
         <Text variant="muted" className="text-[13px]">
-          This phone also reminds you 10 minutes before a scheduled call once notifications are allowed.
+          {t('notifications.reminderNote')}
         </Text>
       </ScrollView>
     </Screen>

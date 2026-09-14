@@ -5,19 +5,21 @@ import { Pressable, Switch, TextInput, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { useMembers } from '@/features/members';
-import { categoryLabel, usePrayerRequests, type PrayerComment } from '@/features/prayer';
+import { usePrayerRequests, type PrayerComment } from '@/features/prayer';
 import { prayerService } from '@/lib/parse';
 import { timeAgo } from '@/lib/time';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Avatar, AvatarStack, Badge, Button, Card, Input, Screen, Text } from '@/ui';
 
-function longDate(iso: string): string {
+function longDate(iso: string, locale: string): string {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function PrayerRequestScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t, locale } = useLanguage();
   const { user } = useAuth();
   const { isAdmin } = useMembers();
   const active = usePrayerRequests('active');
@@ -46,7 +48,7 @@ export default function PrayerRequestScreen() {
   if (!request) {
     return (
       <Screen edges={['bottom']} className="justify-center">
-        <Text variant="muted">{active.loading || answered.loading ? 'Loading…' : "That prayer request isn't available."}</Text>
+        <Text variant="muted">{active.loading || answered.loading ? t('common.loading') : t('prayer.detail.notAvailable')}</Text>
       </Screen>
     );
   }
@@ -63,7 +65,7 @@ export default function PrayerRequestScreen() {
       await answered.refresh();
       setAnswering(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update the request.');
+      setError(err instanceof Error ? err.message : t('prayer.detail.updateFailed'));
     } finally {
       setBusy(false);
     }
@@ -78,7 +80,7 @@ export default function PrayerRequestScreen() {
       setComments((c) => [...c, created]);
       setDraft('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not post the comment.');
+      setError(err instanceof Error ? err.message : t('prayer.detail.commentFailed'));
     } finally {
       setSending(false);
     }
@@ -88,9 +90,9 @@ export default function PrayerRequestScreen() {
     <Screen edges={['bottom']} scroll className="gap-5 pt-5">
       <View className="gap-3">
         <View className="flex-row flex-wrap gap-2">
-          <Badge label={categoryLabel(request.category)} tone="honey" />
-          {request.urgency === 'urgent' && !isAnswered ? <Badge label="Urgent" tone="blush" /> : null}
-          {isAnswered ? <Badge label="Answered" tone="sage" /> : null}
+          <Badge label={t(`prayer.category.${request.category}` as TranslationKey)} tone="honey" />
+          {request.urgency === 'urgent' && !isAnswered ? <Badge label={t('prayer.urgent')} tone="blush" /> : null}
+          {isAnswered ? <Badge label={t('prayer.answered')} tone="sage" /> : null}
         </View>
         <Text variant="display" color="primaryDark" className="text-[28px] leading-[34px]">
           {request.title}
@@ -98,7 +100,7 @@ export default function PrayerRequestScreen() {
         <View className="flex-row items-center gap-2">
           <Avatar name={request.authorName} size={24} />
           <Text variant="caption">
-            {request.authorName} · {longDate(request.createdAt)}
+            {request.authorName} · {longDate(request.createdAt, locale)}
           </Text>
         </View>
       </View>
@@ -108,13 +110,13 @@ export default function PrayerRequestScreen() {
       {isAnswered ? (
         <Card tone="honey" className="gap-2">
           <Text variant="label" color="gold" className="text-[13px]">
-            Answered {request.answeredAt ? longDate(request.answeredAt) : ''}
+            {t('prayer.detail.answeredOn', { date: request.answeredAt ? longDate(request.answeredAt, locale) : '' })}
           </Text>
           {request.testimony ? <Text variant="scripture" className="text-[18px] leading-[28px]">{request.testimony}</Text> : null}
         </Card>
       ) : (
         <Button
-          title={request.praying ? "You're praying" : "I'm praying"}
+          title={request.praying ? t('prayer.detail.youArePraying') : t('prayer.imPraying')}
           icon={request.praying ? 'checkmark' : 'hand-left'}
           variant={request.praying ? 'secondary' : 'primary'}
           onPress={() => active.togglePraying(request.id)}
@@ -123,7 +125,7 @@ export default function PrayerRequestScreen() {
 
       <View className="gap-3">
         <Text variant="title" className="text-[20px]">
-          {request.prayingCount === 0 ? 'No one praying yet' : request.prayingCount === 1 ? '1 member is praying' : `${request.prayingCount} members are praying`}
+          {request.prayingCount === 0 ? t('prayer.detail.noOnePraying') : request.prayingCount === 1 ? t('prayer.detail.onePraying') : t('prayer.detail.manyPraying', { count: request.prayingCount })}
         </Text>
         {names.length ? <AvatarStack names={names} size={36} max={5} /> : null}
       </View>
@@ -133,12 +135,12 @@ export default function PrayerRequestScreen() {
           <View className="flex-row items-center justify-between gap-3">
             <View className="flex-1 gap-0.5">
               <Text variant="label" className="text-[15px]">
-                Mark as answered
+                {t('prayer.detail.markAnswered')}
               </Text>
-              <Text variant="caption">Moves it to Answered with your testimony.</Text>
+              <Text variant="caption">{t('prayer.detail.markAnsweredHint')}</Text>
             </View>
             <Switch
-              accessibilityLabel="Mark as answered"
+              accessibilityLabel={t('prayer.detail.markAnswered')}
               value={answering}
               onValueChange={setAnswering}
               trackColor={{ true: colors.primary, false: colors.border }}
@@ -147,8 +149,8 @@ export default function PrayerRequestScreen() {
           </View>
           {answering ? (
             <View className="gap-3">
-              <Input label="Testimony (optional)" value={testimony} onChangeText={setTestimony} maxLength={1000} multiline />
-              <Button title="Mark as answered" onPress={submitAnswered} loading={busy} />
+              <Input label={t('prayer.detail.testimony')} value={testimony} onChangeText={setTestimony} maxLength={1000} multiline />
+              <Button title={t('prayer.detail.markAnswered')} onPress={submitAnswered} loading={busy} />
             </View>
           ) : null}
         </Card>
@@ -156,7 +158,7 @@ export default function PrayerRequestScreen() {
 
       <View className="gap-3">
         <Text variant="title" className="text-[20px]">
-          Comments
+          {t('prayer.detail.comments')}
         </Text>
         {comments.length ? (
           <Card className="py-1">
@@ -169,7 +171,7 @@ export default function PrayerRequestScreen() {
                       {c.authorName}
                     </Text>
                     <Text variant="caption" className="text-[12px]">
-                      {timeAgo(c.createdAt)}
+                      {timeAgo(c.createdAt, undefined, t)}
                     </Text>
                   </View>
                   <Text className="text-[15px] leading-[22px]">{c.body}</Text>
@@ -178,11 +180,11 @@ export default function PrayerRequestScreen() {
             ))}
           </Card>
         ) : (
-          <Text variant="caption">Be the first to leave a word of encouragement.</Text>
+          <Text variant="caption">{t('prayer.detail.firstComment')}</Text>
         )}
         <View className="flex-row items-center gap-2 rounded-full bg-surface py-1 pl-4 pr-1">
           <TextInput
-            placeholder="Add a comment…"
+            placeholder={t('prayer.detail.addComment')}
             placeholderTextColor={colors.muted}
             selectionColor={colors.primary}
             value={draft}
@@ -193,7 +195,7 @@ export default function PrayerRequestScreen() {
           />
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Send comment"
+            accessibilityLabel={t('prayer.detail.sendComment')}
             onPress={sendComment}
             disabled={sending || !draft.trim()}
             className={`h-10 w-10 items-center justify-center rounded-full ${draft.trim() ? 'bg-primary' : 'bg-lavender'}`}

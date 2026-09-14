@@ -5,6 +5,7 @@ import { Pressable, View } from 'react-native';
 import { colors } from '../../theme/tokens';
 import { Avatar } from '../../ui/Avatar';
 import { Text } from '../../ui/Text';
+import { useT } from '../../i18n';
 import { useAuth } from '../auth';
 import { useUnreadCount } from './useNotifications';
 
@@ -13,12 +14,13 @@ export function HeaderActions({ onDark = false }: { onDark?: boolean }) {
   const router = useRouter();
   const { user } = useAuth();
   const unread = useUnreadCount();
+  const t = useT();
   const name = user?.displayName ?? user?.email ?? '?';
   return (
     <View className="flex-row items-center gap-3">
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+        accessibilityLabel={unread ? t('home.notificationsUnread', { count: unread }) : t('home.notifications')}
         onPress={() => router.push('/notifications')}
         hitSlop={8}
         className={`h-10 w-10 items-center justify-center rounded-full ${onDark ? 'bg-surface/20' : 'bg-surface'}`}
@@ -32,7 +34,7 @@ export function HeaderActions({ onDark = false }: { onDark?: boolean }) {
           </View>
         ) : null}
       </Pressable>
-      <Pressable accessibilityRole="button" accessibilityLabel="Open profile" onPress={() => router.push('/profile')} hitSlop={8}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t('home.openProfile')} onPress={() => router.push('/profile')} hitSlop={8}>
         <View style={onDark ? { borderRadius: 999, borderWidth: 2, borderColor: 'rgba(255,255,255,0.7)' } : null}>
           <Avatar name={name} size={40} />
         </View>

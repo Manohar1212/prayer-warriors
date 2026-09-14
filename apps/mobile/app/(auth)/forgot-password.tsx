@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
+import { useT } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Button, Input, Text } from '@/ui';
 import { AuthShell } from '@/ui/AuthShell';
@@ -11,6 +12,7 @@ import { AuthShell } from '@/ui/AuthShell';
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const { requestPasswordReset } = useAuth();
+  const t = useT();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -23,7 +25,7 @@ export default function ForgotPasswordScreen() {
       await requestPasswordReset(email);
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send the reset email.');
+      setError(err instanceof Error ? err.message : t('forgot.failed'));
     } finally {
       setBusy(false);
     }
@@ -32,12 +34,12 @@ export default function ForgotPasswordScreen() {
   return (
     <AuthShell
       backTo="/(auth)/login"
-      title="Reset your password"
-      subtitle={sent ? undefined : 'Enter your email and we will send you a link to choose a new one.'}
+      title={t('forgot.title')}
+      subtitle={sent ? undefined : t('forgot.subtitle')}
       footer={
         <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8} className="py-1">
           <Text variant="label" color="creamSoft" className="text-[14px]">
-            {sent ? 'Back to sign in' : 'Cancel'}
+            {sent ? t('forgot.backToSignIn') : t('common.cancel')}
           </Text>
         </Pressable>
       }
@@ -48,18 +50,18 @@ export default function ForgotPasswordScreen() {
             <Ionicons name="mail-open-outline" size={24} color={colors.goldLight} />
           </View>
           <Text variant="title" color="cream" className="text-center text-[20px]">
-            Check your email
+            {t('forgot.sentTitle')}
           </Text>
           <Text variant="body" color="creamSoft" className="text-center text-[15px] leading-[22px]">
-            A reset link is on its way to {email.trim()}. Open it to choose a new password.
+            {t('forgot.sentBody', { email: email.trim() })}
           </Text>
         </View>
       ) : (
         <>
           <Input
-            label="Email"
+            label={t('common.email')}
             variant="glass"
-            placeholder="you@example.com"
+            placeholder={t('login.emailPlaceholder')}
             autoCapitalize="none"
             keyboardType="email-address"
             textContentType="emailAddress"
@@ -69,7 +71,7 @@ export default function ForgotPasswordScreen() {
             onSubmitEditing={submit}
             error={error}
           />
-          <Button title="Send reset link" variant="inverse" onPress={submit} loading={busy} disabled={!email.trim()} className="mt-1" />
+          <Button title={t('forgot.send')} variant="inverse" onPress={submit} loading={busy} disabled={!email.trim()} className="mt-1" />
         </>
       )}
     </AuthShell>

@@ -19,6 +19,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, resolveGate, useAuth } from '@/features/auth';
+import { LanguageProvider, useT } from '@/i18n';
 import { PushRegistrar } from '@/features/notifications';
 import { parseAuthService } from '@/lib/parse';
 import { colors, fonts } from '@/theme/tokens';
@@ -46,6 +47,7 @@ const cardOptions = {
 
 function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { status, user } = useAuth();
+  const t = useT();
   const gate = resolveGate(status, user);
   const ready = fontsLoaded && gate !== 'loading';
 
@@ -67,23 +69,23 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
       </Stack.Protected>
       <Stack.Protected guard={gate === 'app'}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="profile" options={{ ...modalOptions, title: 'Profile' }} />
-        <Stack.Screen name="add-member" options={{ ...modalOptions, title: 'Add member' }} />
-        <Stack.Screen name="prayer/new" options={{ ...modalOptions, title: 'New request' }} />
-        <Stack.Screen name="prayer/[id]" options={{ ...cardOptions, title: 'Prayer request' }} />
-        <Stack.Screen name="journal/index" options={{ ...cardOptions, title: 'My journal' }} />
-        <Stack.Screen name="journal/entry" options={{ ...modalOptions, title: 'Journal entry' }} />
-        <Stack.Screen name="resources/new" options={{ ...modalOptions, title: 'Share with the group' }} />
-        <Stack.Screen name="resources/[id]" options={{ ...cardOptions, title: 'Resource' }} />
-        <Stack.Screen name="funds/contribution" options={{ ...modalOptions, title: 'Contribution' }} />
-        <Stack.Screen name="funds/expense" options={{ ...modalOptions, title: 'Expense' }} />
-        <Stack.Screen name="funds/report" options={{ ...cardOptions, title: 'Monthly report' }} />
-        <Stack.Screen name="funds/audit" options={{ ...cardOptions, title: 'Change history' }} />
-        <Stack.Screen name="calls/schedule" options={{ ...modalOptions, title: 'Schedule a call' }} />
-        <Stack.Screen name="calls/[id]" options={{ ...modalOptions, presentation: 'card', title: 'Group call', headerBackVisible: false, headerLeft: () => null, gestureEnabled: false }} />
-        <Stack.Screen name="calls/history" options={{ ...cardOptions, title: 'Call history' }} />
-        <Stack.Screen name="notifications/index" options={{ ...cardOptions, title: 'Notifications' }} />
-        <Stack.Screen name="notifications/settings" options={{ ...cardOptions, title: 'Notification settings' }} />
+        <Stack.Screen name="profile" options={{ ...modalOptions, title: t('profile.title') }} />
+        <Stack.Screen name="add-member" options={{ ...modalOptions, title: t('members.add.title') }} />
+        <Stack.Screen name="prayer/new" options={{ ...modalOptions, title: t('prayer.new.title') }} />
+        <Stack.Screen name="prayer/[id]" options={{ ...cardOptions, title: t('prayer.detail.title') }} />
+        <Stack.Screen name="journal/index" options={{ ...cardOptions, title: t('journal.title') }} />
+        <Stack.Screen name="journal/entry" options={{ ...modalOptions, title: t('journal.entry.title') }} />
+        <Stack.Screen name="resources/new" options={{ ...modalOptions, title: t('resources.new.title') }} />
+        <Stack.Screen name="resources/[id]" options={{ ...cardOptions, title: t('resources.detail.title') }} />
+        <Stack.Screen name="funds/contribution" options={{ ...modalOptions, title: t('funds.contribution.title') }} />
+        <Stack.Screen name="funds/expense" options={{ ...modalOptions, title: t('funds.expense.title') }} />
+        <Stack.Screen name="funds/report" options={{ ...cardOptions, title: t('funds.report.title') }} />
+        <Stack.Screen name="funds/audit" options={{ ...cardOptions, title: t('funds.audit.title') }} />
+        <Stack.Screen name="calls/schedule" options={{ ...modalOptions, title: t('calls.schedule.title') }} />
+        <Stack.Screen name="calls/[id]" options={{ ...modalOptions, presentation: 'card', title: t('calls.title'), headerBackVisible: false, headerLeft: () => null, gestureEnabled: false }} />
+        <Stack.Screen name="calls/history" options={{ ...cardOptions, title: t('calls.history.title') }} />
+        <Stack.Screen name="notifications/index" options={{ ...cardOptions, title: t('notifications.title') }} />
+        <Stack.Screen name="notifications/settings" options={{ ...cardOptions, title: t('notifications.settings') }} />
       </Stack.Protected>
       </Stack>
     </>
@@ -107,12 +109,14 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
+      <LanguageProvider>
       <SafeAreaProvider>
         <StatusBar style="dark" />
         <AuthProvider service={parseAuthService}>
           <GatedStack fontsLoaded={fontsLoaded} />
         </AuthProvider>
       </SafeAreaProvider>
+      </LanguageProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
   );

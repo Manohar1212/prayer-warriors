@@ -19,12 +19,14 @@ import {
 } from '@/features/bible';
 import { BibleNav } from '@/features/bible/BibleNav';
 import { LanguageToggle } from '@/features/bible/LanguageToggle';
+import { useT } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Button, Screen, Text } from '@/ui';
 
 const other = (l: BibleLanguage): BibleLanguage => (l === 'en' ? 'te' : 'en');
 
 export default function ChapterScreen() {
+  const t = useT();
   const router = useRouter();
   const params = useLocalSearchParams<{ book: string; chapter: string }>();
   const bookId = Number(params.book);
@@ -82,11 +84,11 @@ export default function ChapterScreen() {
         <View className="flex-row items-center justify-between gap-3 px-1">
           <BibleNav
             crumbs={[
-              { label: lang === 'te' ? 'గ్రంథాలు' : 'Books', href: '/bible' },
+              { label: t('bible.books'), href: '/bible' },
               { label: current ? bookName(current, lang, true) : '…', href: { pathname: '/bible/[book]', params: { book: String(bookId) } } },
             ]}
           />
-          <Pressable accessibilityRole="button" accessibilityLabel="Text size" onPress={cycleSize} hitSlop={8} className="flex-row items-end gap-0.5 rounded-full border border-border bg-surface px-3 py-1.5">
+          <Pressable accessibilityRole="button" accessibilityLabel={t('bible.textSize')} onPress={cycleSize} hitSlop={8} className="flex-row items-end gap-0.5 rounded-full border border-border bg-surface px-3 py-1.5">
             <Text variant="label" className="text-[12px]">A</Text>
             <Text variant="label" className="text-[17px] leading-[19px]">A</Text>
           </Pressable>
@@ -99,7 +101,7 @@ export default function ChapterScreen() {
             {error}
           </Text>
         ) : null}
-        {verses === null && !error ? <Text variant="muted">Loading…</Text> : null}
+        {verses === null && !error ? <Text variant="muted">{t('common.loading')}</Text> : null}
 
         <View className="gap-0.5">
           {verses?.map((v) => {
@@ -132,9 +134,9 @@ export default function ChapterScreen() {
                       <Text variant="muted">…</Text>
                     ) : null}
                     <View className="flex-row flex-wrap gap-2">
-                      <Button title={copied ? 'Copied' : 'Copy'} variant="secondary" onPress={() => copy(v)} className="min-h-[40px] px-4" />
-                      <Button title="Share" variant="secondary" onPress={() => Share.share({ message: `${v.text} — ${reference(v)}` })} className="min-h-[40px] px-4" />
-                      <Button title="Post to group" onPress={() => postToGroup(v)} className="min-h-[40px] px-4" />
+                      <Button title={copied ? t('bible.copied') : t('bible.copy')} variant="secondary" onPress={() => copy(v)} className="min-h-[40px] px-4" />
+                      <Button title={t('bible.share')} variant="secondary" onPress={() => Share.share({ message: `${v.text} — ${reference(v)}` })} className="min-h-[40px] px-4" />
+                      <Button title={t('bible.postToGroup')} onPress={() => postToGroup(v)} className="min-h-[40px] px-4" />
                     </View>
                   </View>
                 ) : null}
@@ -147,10 +149,10 @@ export default function ChapterScreen() {
           <View className="mt-2 flex-row items-center justify-between gap-3">
             <Pressable accessibilityRole="button" accessibilityLabel="Previous chapter" onPress={() => go(-1)} disabled={chapter <= 1} className={`flex-1 flex-row items-center justify-center gap-1 rounded-[14px] border border-border bg-surface py-3 ${chapter <= 1 ? 'opacity-40' : ''}`}>
               <Ionicons name="chevron-back" size={18} color={colors.primary} />
-              <Text variant="label" color="primary">{lang === 'te' ? 'మునుపటి' : 'Previous'}</Text>
+              <Text variant="label" color="primary">{t('bible.previous')}</Text>
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Next chapter" onPress={() => go(1)} disabled={chapter >= total} className={`flex-1 flex-row items-center justify-center gap-1 rounded-[14px] bg-primary py-3 ${chapter >= total ? 'opacity-40' : ''}`}>
-              <Text variant="label" color="cream">{lang === 'te' ? 'తరువాతి' : 'Next'}</Text>
+              <Text variant="label" color="cream">{t('bible.next')}</Text>
               <Ionicons name="chevron-forward" size={18} color={colors.cream} />
             </Pressable>
           </View>

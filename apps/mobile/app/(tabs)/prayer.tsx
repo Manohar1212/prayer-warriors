@@ -5,6 +5,7 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Tex
 
 import { CATEGORIES, usePrayerRequests, type PrayerCategory, type PrayerRequest, type PrayerStatus } from '@/features/prayer';
 import { timeAgoShort } from '@/lib/time';
+import { useT, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Avatar, Badge, Card, Chip, EmptyState, Fab, Screen, Segments, TabHeader, Text } from '@/ui';
@@ -12,6 +13,7 @@ import { Avatar, Badge, Card, Chip, EmptyState, Fab, Screen, Segments, TabHeader
 type Tab = PrayerStatus | 'journal';
 
 function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPray: () => void; onOpen: () => void }) {
+  const t = useT();
   const answered = request.status === 'answered';
   return (
     <Card className="gap-3">
@@ -26,8 +28,8 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
               {request.authorName} · {timeAgoShort(request.createdAt)}
             </Text>
           </View>
-          {request.urgency === 'urgent' && !answered ? <Badge label="Urgent" tone="blush" /> : null}
-          {answered ? <Badge label="Answered" tone="sage" /> : null}
+          {request.urgency === 'urgent' && !answered ? <Badge label={t('prayer.urgent')} tone="blush" /> : null}
+          {answered ? <Badge label={t('prayer.answered')} tone="sage" /> : null}
         </View>
         {request.description ? (
           <Text variant="muted" className="text-[14px] leading-[21px]" numberOfLines={2}>
@@ -43,19 +45,19 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-1.5">
           <Ionicons name={request.praying ? 'heart' : 'heart-outline'} size={16} color={colors.roseDeep} />
-          <Text variant="caption">{request.prayingCount} praying</Text>
+          <Text variant="caption">{request.prayingCount} {t('common.praying')}</Text>
         </View>
         {answered ? null : (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={request.praying ? 'Stop praying' : "I'm praying"}
+            accessibilityLabel={request.praying ? t('prayer.stopPraying') : t('prayer.imPraying')}
             onPress={onPray}
             hitSlop={8}
             className={`flex-row items-center gap-1.5 rounded-full px-3.5 py-2 ${request.praying ? 'bg-primary' : 'bg-lavender'}`}
           >
             {request.praying ? <Ionicons name="checkmark" size={14} color={colors.surface} /> : null}
             <Text variant="label" color={request.praying ? 'cream' : 'primary'} className="text-[13px]">
-              {request.praying ? 'Praying' : "I'm praying"}
+              {request.praying ? t('prayer.prayingNow') : t('prayer.imPraying')}
             </Text>
           </Pressable>
         )}
@@ -66,6 +68,7 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
 
 export default function PrayerScreen() {
   const router = useRouter();
+  const t = useT();
   const [status, setStatus] = useState<PrayerStatus>('active');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<PrayerCategory | 'all'>('all');
@@ -91,12 +94,12 @@ export default function PrayerScreen() {
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
         ListHeaderComponent={
           <View className="gap-3 pb-1">
-            <TabHeader title="Prayer" subtitle={status === 'active' ? `${requests.length} open ${requests.length === 1 ? 'request' : 'requests'}` : `${requests.length} answered`} right={<HeaderActions />} />
+            <TabHeader title={t('prayer.title')} subtitle={status === 'active' ? (requests.length === 1 ? t('prayer.openRequest') : t('prayer.openRequests', { count: requests.length })) : t('prayer.answeredCount', { count: requests.length })} right={<HeaderActions />} />
             <Segments<Tab>
               options={[
-                { value: 'active', label: 'Active' },
-                { value: 'answered', label: 'Answered' },
-                { value: 'journal', label: 'Journal' },
+                { value: 'active', label: t('prayer.active') },
+                { value: 'answered', label: t('prayer.answered') },
+                { value: 'journal', label: t('prayer.journal') },
               ]}
               value={status}
               onChange={onTab}
@@ -104,7 +107,7 @@ export default function PrayerScreen() {
             <View className="flex-row items-center gap-2 rounded-full bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
-                placeholder="Search prayer requests"
+                placeholder={t('prayer.searchPlaceholder')}
                 placeholderTextColor={colors.muted}
                 selectionColor={colors.primary}
                 value={query}
@@ -114,9 +117,9 @@ export default function PrayerScreen() {
               />
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
-              <Chip label="All" selected={category === 'all'} onPress={() => setCategory('all')} />
+              <Chip label={t('prayer.all')} selected={category === 'all'} onPress={() => setCategory('all')} />
               {CATEGORIES.map((c) => (
-                <Chip key={c.id} label={c.label} selected={category === c.id} onPress={() => setCategory(c.id)} />
+                <Chip key={c.id} label={t(`prayer.category.${c.id}` as TranslationKey)} selected={category === c.id} onPress={() => setCategory(c.id)} />
               ))}
             </ScrollView>
             {error ? (
@@ -133,8 +136,8 @@ export default function PrayerScreen() {
             <EmptyState
               icon={status === 'active' ? 'heart-outline' : 'sparkles-outline'}
               tone={status === 'active' ? 'blush' : 'honey'}
-              title={status === 'active' ? 'No requests yet' : 'No answered prayers yet'}
-              body={status === 'active' ? 'Share what is on your heart and the group will pray with you.' : 'When a request is answered, it moves here with its testimony.'}
+              title={status === 'active' ? t('prayer.emptyActiveTitle') : t('prayer.emptyAnsweredTitle')}
+              body={status === 'active' ? t('prayer.emptyActiveBody') : t('prayer.emptyAnsweredBody')}
             />
           )
         }
@@ -142,7 +145,7 @@ export default function PrayerScreen() {
           <RequestCard request={item} onPray={() => togglePraying(item.id)} onOpen={() => router.push({ pathname: '/prayer/[id]', params: { id: item.id } })} />
         )}
       />
-      <Fab label="New request" onPress={() => router.push('/prayer/new')} />
+      <Fab label={t('prayer.newRequest')} onPress={() => router.push('/prayer/new')} />
     </Screen>
   );
 }

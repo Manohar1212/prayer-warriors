@@ -6,11 +6,13 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from '
 import { formatRupees, useFunds, type Transaction } from '@/features/funds';
 import { useMembers } from '@/features/members';
 import { shortDate } from '@/lib/time';
+import { useLanguage } from '@/i18n';
 import { colors, gradients } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Card, Screen, TabHeader, Text } from '@/ui';
 
 function TransactionRow({ tx, onPress, last }: { tx: Transaction; onPress: () => void; last: boolean }) {
+  const { locale } = useLanguage();
   const credit = tx.kind === 'contribution';
   return (
     <Pressable accessibilityRole="button" onPress={onPress} className={`flex-row items-center gap-3 py-3 ${last ? '' : 'border-b border-border'}`}>
@@ -22,7 +24,7 @@ function TransactionRow({ tx, onPress, last }: { tx: Transaction; onPress: () =>
           {tx.title}
         </Text>
         <Text variant="caption">
-          {tx.subtitle} · {shortDate(tx.date)}
+          {tx.subtitle} · {shortDate(tx.date, locale)}
         </Text>
       </View>
       <Text variant="label" color={credit ? 'leaf' : 'roseDeep'} className="text-[15px]">
@@ -35,9 +37,10 @@ function TransactionRow({ tx, onPress, last }: { tx: Transaction; onPress: () =>
 
 export default function FundsScreen() {
   const router = useRouter();
+  const { t, locale } = useLanguage();
   const { isAdmin } = useMembers();
   const { transactions, balancePaise, thisMonth, loading, error, refresh } = useFunds();
-  const monthName = new Date().toLocaleDateString(undefined, { month: 'long' });
+  const monthName = new Date().toLocaleDateString(locale, { month: 'long' });
 
   return (
     <Screen edges={['top']} className="px-0 pt-0">
@@ -46,14 +49,14 @@ export default function FundsScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
       >
-        <TabHeader title="Funds" subtitle="Group contributions and expenses" right={<HeaderActions />} />
+        <TabHeader title={t('funds.title')} subtitle={t('funds.subtitle')} right={<HeaderActions />} />
         <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 22, padding: 20, gap: 14, overflow: 'hidden' }}>
           <View style={{ position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.08)' }} />
           <View style={{ position: 'absolute', right: 40, top: 60, width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255,255,255,0.06)' }} />
           <View className="flex-row items-start justify-between">
             <View className="gap-1">
               <Text variant="caption" color="creamSoft">
-                Current balance
+                {t('funds.balance')}
               </Text>
               <Text variant="display" color="cream" className="text-[38px] leading-[44px]">
                 {formatRupees(balancePaise)}
@@ -64,7 +67,7 @@ export default function FundsScreen() {
           <View className="gap-1.5">
             <View className="flex-row items-center justify-between">
               <Text variant="caption" color="creamSoft">
-                {monthName} collected
+                {t('funds.collected', { month: monthName })}
               </Text>
               <Text variant="label" color="cream" className="text-[15px]">
                 {formatRupees(thisMonth.collectedPaise)}
@@ -72,7 +75,7 @@ export default function FundsScreen() {
             </View>
             <View className="flex-row items-center justify-between">
               <Text variant="caption" color="creamSoft">
-                {monthName} expenses
+                {t('funds.expenses', { month: monthName })}
               </Text>
               <Text variant="label" color="cream" className="text-[15px]">
                 {formatRupees(thisMonth.spentPaise)}
@@ -83,12 +86,12 @@ export default function FundsScreen() {
             <View className="flex-row gap-2">
               <Pressable accessibilityRole="button" onPress={() => router.push('/funds/contribution')} className="flex-1 items-center rounded-full bg-surface py-2.5">
                 <Text variant="label" color="primary" className="text-[13px]">
-                  Record contribution
+                  {t('funds.recordContribution')}
                 </Text>
               </Pressable>
               <Pressable accessibilityRole="button" onPress={() => router.push('/funds/expense')} className="flex-1 items-center rounded-full bg-surface/20 py-2.5">
                 <Text variant="label" color="cream" className="text-[13px]">
-                  Record expense
+                  {t('funds.recordExpense')}
                 </Text>
               </Pressable>
             </View>
@@ -99,14 +102,14 @@ export default function FundsScreen() {
           <Pressable accessibilityRole="button" onPress={() => router.push('/funds/report')} className="flex-row items-center gap-1.5 py-1">
             <Ionicons name="document-text-outline" size={16} color={colors.primary} />
             <Text variant="label" color="primary" className="text-[13px]">
-              Monthly report
+              {t('funds.monthlyReport')}
             </Text>
           </Pressable>
           {isAdmin ? (
             <Pressable accessibilityRole="button" onPress={() => router.push('/funds/audit')} className="flex-row items-center gap-1.5 py-1">
               <Ionicons name="time-outline" size={16} color={colors.primary} />
               <Text variant="label" color="primary" className="text-[13px]">
-                Change history
+                {t('funds.changeHistory')}
               </Text>
             </Pressable>
           ) : null}
@@ -119,7 +122,7 @@ export default function FundsScreen() {
         ) : null}
 
         <Text variant="title" className="text-[20px]">
-          Recent transactions
+          {t('funds.recent')}
         </Text>
         {loading && !transactions.length ? (
           <ActivityIndicator color={colors.primary} className="mt-2" />
@@ -136,7 +139,7 @@ export default function FundsScreen() {
           </Card>
         ) : (
           <Text variant="muted" className="max-w-[300px] text-[15px] leading-[22px]">
-            Nothing recorded yet. {isAdmin ? 'Record the first contribution or expense above.' : 'Your admin will record contributions and expenses here.'}
+            {isAdmin ? t('funds.emptyAdmin') : t('funds.emptyMember')}
           </Text>
         )}
       </ScrollView>

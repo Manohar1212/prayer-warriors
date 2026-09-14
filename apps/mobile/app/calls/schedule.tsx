@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { isIsoDate, todayIso } from '@/features/funds/dates';
+import { useLanguage } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { callsService } from '@/lib/parse';
 import { Button, Input, Screen, Text } from '@/ui';
@@ -12,6 +13,7 @@ function isTime(value: string): boolean {
 }
 
 export default function ScheduleCallScreen() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [title, setTitle] = useState('Group prayer');
   const [date, setDate] = useState(todayIso());
@@ -30,7 +32,7 @@ export default function ScheduleCallScreen() {
       await callsService.schedule(title, new Date(y, mo - 1, d, h, m));
       goBackOr(router, '/(tabs)/community');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not schedule the call.');
+      setError(err instanceof Error ? err.message : t('calls.schedule.failed'));
     } finally {
       setBusy(false);
     }
@@ -39,19 +41,19 @@ export default function ScheduleCallScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <Text variant="muted" className="text-[15px] leading-[22px]">
-        Members can join from 15 minutes before the start time until you end the call.
+        {t('calls.schedule.intro')}
       </Text>
-      <Input label="Title" value={title} onChangeText={setTitle} maxLength={80} />
+      <Input label={t('calls.schedule.callTitle')} value={title} onChangeText={setTitle} maxLength={80} />
       <View className="flex-row gap-3">
-        <Input label="Date (YYYY-MM-DD)" className="flex-1" value={date} onChangeText={setDate} autoCapitalize="none" error={date && !isIsoDate(date) ? 'Enter a valid date.' : null} />
-        <Input label="Time (24h)" className="w-32" value={time} onChangeText={setTime} keyboardType="numbers-and-punctuation" error={time && !isTime(time) ? 'Use HH:MM.' : null} />
+        <Input label={t('common.date')} className="flex-1" value={date} onChangeText={setDate} autoCapitalize="none" error={date && !isIsoDate(date) ? t('common.invalidDate') : null} />
+        <Input label={t('calls.schedule.time')} className="w-32" value={time} onChangeText={setTime} keyboardType="numbers-and-punctuation" error={time && !isTime(time) ? t('calls.schedule.invalidTime') : null} />
       </View>
       {error ? (
         <Text variant="muted" color="rose">
           {error}
         </Text>
       ) : null}
-      <Button title="Schedule call" onPress={submit} loading={busy} disabled={!canSubmit} />
+      <Button title={t('calls.schedule.submit')} onPress={submit} loading={busy} disabled={!canSubmit} />
     </Screen>
   );
 }

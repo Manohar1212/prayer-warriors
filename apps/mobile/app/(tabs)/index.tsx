@@ -12,30 +12,27 @@ import { isJoinable, useCalls } from '@/features/calls';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { usePrayerRequests } from '@/features/prayer';
-import { RESOURCE_TYPES, type Resource } from '@/features/resources';
+import { type Resource } from '@/features/resources';
 import { resourcesService } from '@/lib/parse';
 import { timeAgoShort } from '@/lib/time';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors, gradients } from '@/theme/tokens';
 import { Avatar, Badge, Card, Text } from '@/ui';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
-function greeting(date: Date): string {
+function greetingKey(date: Date): TranslationKey {
   const h = date.getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (h < 12) return 'home.morning';
+  if (h < 17) return 'home.afternoon';
+  return 'home.evening';
 }
 
-function longDate(date: Date): string {
-  return date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
-}
-
-const actions: { label: string; icon: IconName; bg: string; fg: string; href: Href }[] = [
-  { label: 'Prayer', icon: 'heart', bg: 'bg-blush', fg: colors.roseDeep, href: '/prayer/new' },
-  { label: 'Call', icon: 'call', bg: 'bg-lavender', fg: colors.primary, href: '/(tabs)/community' },
-  { label: 'Songs', icon: 'musical-notes', bg: 'bg-sage', fg: colors.leaf, href: { pathname: '/resources/new', params: { type: 'song' } } },
-  { label: 'Word', icon: 'book', bg: 'bg-honey', fg: colors.gold, href: '/bible' },
+const actions: { label: TranslationKey; icon: IconName; bg: string; fg: string; href: Href }[] = [
+  { label: 'home.action.prayer', icon: 'heart', bg: 'bg-blush', fg: colors.roseDeep, href: '/prayer/new' },
+  { label: 'home.action.call', icon: 'call', bg: 'bg-lavender', fg: colors.primary, href: '/(tabs)/community' },
+  { label: 'home.action.songs', icon: 'musical-notes', bg: 'bg-sage', fg: colors.leaf, href: { pathname: '/resources/new', params: { type: 'song' } } },
+  { label: 'home.action.word', icon: 'book', bg: 'bg-honey', fg: colors.gold, href: '/bible' },
 ];
 
 const resourceIcon: Record<Resource['type'], { name: IconName; bg: string; fg: string }> = {
@@ -62,13 +59,14 @@ function SectionHeader({ title, actionLabel, onAction }: { title: string; action
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t, locale } = useLanguage();
   const { user } = useAuth();
   const [lang] = useBibleLanguage();
   const verse = useVerseOfTheDay(lang);
   const { requests, loading: loadingRequests } = usePrayerRequests('active');
   const [recent, setRecent] = useState<Resource[]>([]);
   const { next: nextCall } = useCalls();
-  const name = user?.displayName ?? 'friend';
+  const name = user?.displayName ?? t('home.friend');
   const firstName = name.split(' ')[0];
   const now = new Date();
 
@@ -95,10 +93,10 @@ export default function HomeScreen() {
           <View className="flex-row items-center justify-between">
             <View className="flex-1 gap-1 pr-3">
               <Text variant="caption" color="creamSoft">
-                {longDate(now)}
+                {now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}
               </Text>
               <Text variant="display" color="cream" className="text-[30px] leading-[36px]">
-                {greeting(now)}, {firstName}
+                {t(greetingKey(now))}, {firstName}
               </Text>
             </View>
             <HeaderActions onDark />
@@ -116,7 +114,7 @@ export default function HomeScreen() {
               <View className="flex-row items-center gap-2">
                 <View className="h-1.5 w-1.5 rounded-full bg-primary" />
                 <Text variant="caption" color="primary">
-                  {lang === 'te' ? 'ఈ రోజు వాక్యం' : 'Verse of the day'}
+                  {t('home.verseOfTheDay')}
                 </Text>
               </View>
               <Text variant="scripture" className={lang === 'te' ? 'text-[19px] leading-[32px]' : 'text-[21px] leading-[32px]'}>
@@ -128,7 +126,7 @@ export default function HomeScreen() {
                     {verse.reference}
                   </Text>
                   <View className="flex-row items-center gap-1">
-                    <Text variant="caption">Read chapter</Text>
+                    <Text variant="caption">{t('home.readChapter')}</Text>
                     <Ionicons name="chevron-forward" size={14} color={colors.muted} />
                   </View>
                 </View>
@@ -143,14 +141,14 @@ export default function HomeScreen() {
                   <Ionicons name={a.icon} size={22} color={a.fg} />
                 </View>
                 <Text variant="caption" color="ink">
-                  {a.label}
+                  {t(a.label)}
                 </Text>
               </Pressable>
             ))}
           </View>
 
           <View className="gap-3">
-            <SectionHeader title="Prayer requests" actionLabel="See all" onAction={() => router.push('/(tabs)/prayer')} />
+            <SectionHeader title={t('home.requests')} actionLabel={t('common.seeAll')} onAction={() => router.push('/(tabs)/prayer')} />
             {topRequests.length ? (
               <Card className="py-1">
                 {topRequests.map((r, i) => (
@@ -169,7 +167,7 @@ export default function HomeScreen() {
                         <Text variant="caption">
                           {r.authorName} · {timeAgoShort(r.createdAt)}
                         </Text>
-                        {r.urgency === 'urgent' ? <Badge label="Urgent" tone="blush" /> : null}
+                        {r.urgency === 'urgent' ? <Badge label={t('prayer.urgent')} tone="blush" /> : null}
                       </View>
                     </View>
                     <View className="flex-row items-center gap-1">
@@ -183,14 +181,14 @@ export default function HomeScreen() {
               <Card className="items-center gap-2 py-6">
                 <Ionicons name="heart-outline" size={22} color={colors.roseDeep} />
                 <Text variant="muted" className="text-center text-[14px] leading-[21px]">
-                  {loadingRequests ? 'Loading…' : 'No open requests right now.\nShare what is on your heart.'}
+                  {loadingRequests ? t('common.loading') : t('home.noRequests')}
                 </Text>
               </Card>
             )}
           </View>
 
           <View className="gap-3">
-            <SectionHeader title="Recently shared" actionLabel="See all" onAction={() => router.push('/(tabs)/resources')} />
+            <SectionHeader title={t('home.shared')} actionLabel={t('common.seeAll')} onAction={() => router.push('/(tabs)/resources')} />
             {recent.length ? (
               <Card className="py-1">
                 {recent.map((r, i) => {
@@ -210,7 +208,7 @@ export default function HomeScreen() {
                           {r.title}
                         </Text>
                         <Text variant="caption">
-                          {RESOURCE_TYPES.find((t) => t.id === r.type)?.label} · {r.sharedBy}
+                          {t(`resources.type.${r.type}` as TranslationKey)} · {r.sharedBy}
                         </Text>
                       </View>
                       <Ionicons name="chevron-forward" size={18} color={colors.muted} />
@@ -222,7 +220,7 @@ export default function HomeScreen() {
               <Card className="items-center gap-2 py-6">
                 <Ionicons name="musical-notes-outline" size={22} color={colors.primary} />
                 <Text variant="muted" className="text-center text-[14px] leading-[21px]">
-                  Nothing shared yet.{'\n'}Songs, scripture and prayers will appear here.
+                  {t('home.nothingShared')}
                 </Text>
               </Card>
             )}
@@ -237,21 +235,21 @@ export default function HomeScreen() {
               </View>
               <View className="flex-1 gap-0.5">
                 <Text variant="caption" color="creamSoft">
-                  Next group prayer
+                  {t('home.nextCall')}
                 </Text>
                 <Text variant="label" color="cream" className="text-[16px]">
-                  {nextCall ? nextCall.title : 'No call scheduled yet'}
+                  {nextCall ? nextCall.title : t('home.noCall')}
                 </Text>
                 <Text variant="caption" color="creamSoft">
                   {nextCall
-                    ? new Date(nextCall.scheduledAt).toLocaleString(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' })
-                    : 'Your admin will schedule the next one.'}
+                    ? new Date(nextCall.scheduledAt).toLocaleString(locale, { weekday: 'long', hour: 'numeric', minute: '2-digit' })
+                    : t('home.noCallBody')}
                 </Text>
               </View>
               {nextCall ? (
                 <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/calls/[id]', params: { id: nextCall.id } })} className="rounded-full bg-surface px-4 py-2">
                   <Text variant="label" color="primary" className="text-[13px]">
-                    {isJoinable(nextCall, now) ? 'Join' : 'View'}
+                    {isJoinable(nextCall, now) ? t('home.join') : t('home.view')}
                   </Text>
                 </Pressable>
               ) : null}

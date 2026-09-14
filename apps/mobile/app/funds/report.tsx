@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { Platform, Pressable, Share, View } from 'react-native';
 
 import { formatRupees, monthlyReport, reportCsv, useFunds } from '@/features/funds';
+import { useLanguage } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Button, Card, Screen, Text } from '@/ui';
 
@@ -25,6 +26,7 @@ function Line({ label, amountPaise, strong = false, negative = false }: { label:
 }
 
 export default function ReportScreen() {
+  const { t } = useLanguage();
   const { contributions, expenses } = useFunds();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -57,7 +59,7 @@ export default function ReportScreen() {
         setStatus(`Saved to ${file.uri}`);
       }
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'Could not export.');
+      setStatus(err instanceof Error ? err.message : t('funds.report.exportFailed'));
     }
   }
 
@@ -76,32 +78,32 @@ export default function ReportScreen() {
       </View>
 
       <Card className="gap-1">
-        <Line label="Opening balance" amountPaise={report.openingPaise} strong />
+        <Line label={t('funds.report.opening')} amountPaise={report.openingPaise} strong />
       </Card>
 
       <Card className="gap-1">
         <Text variant="title" className="mb-1">
-          Contributions
+          {t('funds.report.contributions')}
         </Text>
-        {report.contributions.length ? report.contributions.map((l) => <Line key={l.label} label={l.label} amountPaise={l.amountPaise} />) : <Text variant="muted">None this month.</Text>}
+        {report.contributions.length ? report.contributions.map((l) => <Line key={l.label} label={l.label} amountPaise={l.amountPaise} />) : <Text variant="muted">{t('funds.report.none')}</Text>}
         <View className="my-1 h-px bg-border" />
-        <Line label="Total collected" amountPaise={report.collectedPaise} strong />
+        <Line label={t('funds.report.totalCollected')} amountPaise={report.collectedPaise} strong />
       </Card>
 
       <Card className="gap-1">
         <Text variant="title" className="mb-1">
-          Expenses
+          {t('funds.report.expenses')}
         </Text>
-        {report.expenses.length ? report.expenses.map((l) => <Line key={l.label} label={l.label} amountPaise={l.amountPaise} negative />) : <Text variant="muted">None this month.</Text>}
+        {report.expenses.length ? report.expenses.map((l) => <Line key={l.label} label={l.label} amountPaise={l.amountPaise} negative />) : <Text variant="muted">{t('funds.report.none')}</Text>}
         <View className="my-1 h-px bg-border" />
-        <Line label="Total spent" amountPaise={report.spentPaise} strong negative />
+        <Line label={t('funds.report.totalSpent')} amountPaise={report.spentPaise} strong negative />
       </Card>
 
       <Card tone="honey" className="gap-1">
-        <Line label="Closing balance" amountPaise={report.closingPaise} strong />
+        <Line label={t('funds.report.closing')} amountPaise={report.closingPaise} strong />
       </Card>
 
-      <Button title="Export CSV" variant="secondary" onPress={exportCsv} />
+      <Button title={t('funds.report.export')} variant="secondary" onPress={exportCsv} />
       {status ? <Text variant="muted">{status}</Text> : null}
     </Screen>
   );

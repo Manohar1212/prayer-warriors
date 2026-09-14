@@ -5,6 +5,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { bookName, useAttribution, useBibleLanguage, useBooks, useLastRead, type BibleBook } from '@/features/bible';
 import { HeaderHome } from '@/features/bible/BibleNav';
 import { LanguageToggle } from '@/features/bible/LanguageToggle';
+import { useT } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Card, Screen, Text } from '@/ui';
 
@@ -30,6 +31,7 @@ function BookGrid({ books, lang, onOpen }: { books: BibleBook[]; lang: 'en' | 't
 
 export default function BibleScreen() {
   const router = useRouter();
+  const t = useT();
   const [lang, setLang] = useBibleLanguage();
   const { books, error } = useBooks();
   const attribution = useAttribution(lang);
@@ -48,7 +50,7 @@ export default function BibleScreen() {
           className="flex-row items-center gap-3 rounded-full border border-border bg-surface px-4 py-2.5"
         >
           <Ionicons name="search-outline" size={18} color={colors.muted} />
-          <Text variant="muted">{lang === 'te' ? 'బైబిల్‌లో వెతకండి' : 'Search the Bible'}</Text>
+          <Text variant="muted">{t('bible.search')}</Text>
         </Pressable>
         {error ? (
           <Text variant="muted" color="rose">
@@ -63,7 +65,7 @@ export default function BibleScreen() {
             <Card tone="honey" className="flex-row items-center justify-between gap-3">
               <View className="gap-0.5">
                 <Text variant="label" color="gold" className="text-[12px]">
-                  {lang === 'te' ? 'చదవడం కొనసాగించండి' : 'Continue reading'}
+                  {t('bible.continueReading')}
                 </Text>
                 <Text variant="title" className="text-[20px]">
                   {bookName(lastBook, lang, true)} {lastRead.chapter}
@@ -76,16 +78,16 @@ export default function BibleScreen() {
         {books.length ? (
           <>
             <View className="gap-3">
-              <Text variant="title">{lang === 'te' ? 'పాత నిబంధన' : 'Old Testament'}</Text>
+              <Text variant="title">{t('bible.oldTestament')}</Text>
               <BookGrid books={books.filter((b) => b.testament === 'OT')} lang={lang} onOpen={open} />
             </View>
             <View className="gap-3">
-              <Text variant="title">{lang === 'te' ? 'కొత్త నిబంధన' : 'New Testament'}</Text>
+              <Text variant="title">{t('bible.newTestament')}</Text>
               <BookGrid books={books.filter((b) => b.testament === 'NT')} lang={lang} onOpen={open} />
             </View>
           </>
         ) : !error ? (
-          <Text variant="muted">Loading…</Text>
+          <Text variant="muted">{t('common.loading')}</Text>
         ) : null}
         {attribution ? (
           <Text variant="muted" className="text-[12px] leading-[18px]">

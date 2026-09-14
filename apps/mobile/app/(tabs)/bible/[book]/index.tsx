@@ -3,9 +3,11 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { bookName, chapterCount, useBibleLanguage, useBooks } from '@/features/bible';
 import { BibleNav } from '@/features/bible/BibleNav';
+import { useT } from '@/i18n';
 import { Screen, Text } from '@/ui';
 
 export default function BookScreen() {
+  const t = useT();
   const router = useRouter();
   const { book } = useLocalSearchParams<{ book: string }>();
   const [lang] = useBibleLanguage();
@@ -15,7 +17,7 @@ export default function BookScreen() {
   if (!current) {
     return (
       <Screen backdrop className="justify-center">
-        <Text variant="muted">Loading…</Text>
+        <Text variant="muted">{t('common.loading')}</Text>
       </Screen>
     );
   }
@@ -26,8 +28,8 @@ export default function BookScreen() {
     <Screen backdrop className="px-0 pt-0">
       <Stack.Screen options={{ title: bookName(current, lang) }} />
       <ScrollView contentContainerClassName="gap-4 px-4 pb-32 pt-2" showsVerticalScrollIndicator={false}>
-        <BibleNav crumbs={[{ label: lang === 'te' ? 'అన్ని గ్రంథాలు' : 'All books', href: '/bible' }]} />
-        <Text variant="muted">{lang === 'te' ? 'అధ్యాయం ఎంచుకోండి' : 'Choose a chapter'}</Text>
+        <BibleNav crumbs={[{ label: t('bible.allBooks'), href: '/bible' }]} />
+        <Text variant="muted">{t('bible.chooseChapter')}</Text>
         <View className="flex-row flex-wrap gap-2">
           {chapters.map((c) => (
             <Pressable

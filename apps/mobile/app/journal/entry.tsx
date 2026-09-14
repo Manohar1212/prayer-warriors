@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { CATEGORIES, useJournal, type PrayerCategory } from '@/features/prayer';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { Button, Chip, Input, Screen, Text } from '@/ui';
 
 export default function JournalEntryScreen() {
+  const { t } = useLanguage();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { active, answered, loading, save, remove } = useJournal();
@@ -37,7 +39,7 @@ export default function JournalEntryScreen() {
       await save({ id: existing?.id, title, body, category, answered: isAnswered });
       goBackOr(router, '/journal');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save the entry.');
+      setError(err instanceof Error ? err.message : t('journal.entry.saveFailed'));
     } finally {
       setBusy(false);
     }
@@ -50,7 +52,7 @@ export default function JournalEntryScreen() {
       await remove(existing.id);
       goBackOr(router, '/journal');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not delete the entry.');
+      setError(err instanceof Error ? err.message : t('journal.entry.deleteFailed'));
       setBusy(false);
     }
   }
@@ -58,7 +60,7 @@ export default function JournalEntryScreen() {
   if (id && !existing && loading) {
     return (
       <Screen edges={['bottom']} backdrop className="justify-center">
-        <Text variant="muted">Loading…</Text>
+        <Text variant="muted">{t('common.loading')}</Text>
       </Screen>
     );
   }
@@ -66,9 +68,9 @@ export default function JournalEntryScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-7 pt-6">
       <View className="gap-5">
-        <Input label="What are you praying for?" value={title} onChangeText={setTitle} maxLength={120} autoFocus={!existing} />
+        <Input label={t('journal.entry.what')} value={title} onChangeText={setTitle} maxLength={120} autoFocus={!existing} />
         <Input
-          label="Notes (optional)"
+          label={t('journal.entry.notes')}
           value={body}
           onChangeText={setBody}
           maxLength={4000}
@@ -76,10 +78,10 @@ export default function JournalEntryScreen() {
           style={{ minHeight: 120, textAlignVertical: 'top' }}
         />
         <View className="gap-2">
-          <Text variant="label">Category</Text>
+          <Text variant="label">{t('common.category')}</Text>
           <View className="flex-row flex-wrap gap-2">
             {CATEGORIES.map((c) => (
-              <Chip key={c.id} label={c.label} selected={category === c.id} onPress={() => setCategory(c.id)} />
+              <Chip key={c.id} label={t(`prayer.category.${c.id}` as TranslationKey)} selected={category === c.id} onPress={() => setCategory(c.id)} />
             ))}
           </View>
         </View>
@@ -90,9 +92,9 @@ export default function JournalEntryScreen() {
           className="flex-row items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3"
         >
           <View className="gap-0.5">
-            <Text variant="label">Answered</Text>
+            <Text variant="label">{t('journal.entry.answered')}</Text>
             <Text variant="muted" className="text-[13px]">
-              Moves this entry to your answered prayers.
+              {t('journal.entry.answeredHint')}
             </Text>
           </View>
           <View className={`h-7 w-12 rounded-full p-1 ${isAnswered ? 'bg-gold' : 'bg-border'}`}>
@@ -104,16 +106,16 @@ export default function JournalEntryScreen() {
             {error}
           </Text>
         ) : null}
-        <Button title={existing ? 'Save changes' : 'Save entry'} onPress={submit} loading={busy} disabled={!title.trim()} className="mt-1" />
+        <Button title={existing ? t('common.saveChanges') : t('journal.entry.save')} onPress={submit} loading={busy} disabled={!title.trim()} className="mt-1" />
         {existing ? (
           confirmDelete ? (
             <View className="gap-2">
-              <Text variant="muted">Delete this entry? This cannot be undone.</Text>
-              <Button title="Delete entry" variant="secondary" onPress={destroy} loading={busy} />
-              <Button title="Keep it" variant="ghost" onPress={() => setConfirmDelete(false)} />
+              <Text variant="muted">{t('journal.entry.deleteConfirm')}</Text>
+              <Button title={t('journal.entry.delete')} variant="secondary" onPress={destroy} loading={busy} />
+              <Button title={t('common.keepIt')} variant="ghost" onPress={() => setConfirmDelete(false)} />
             </View>
           ) : (
-            <Button title="Delete entry" variant="ghost" onPress={() => setConfirmDelete(true)} className="self-start px-0" />
+            <Button title={t('journal.entry.delete')} variant="ghost" onPress={() => setConfirmDelete(true)} className="self-start px-0" />
           )
         ) : null}
       </View>

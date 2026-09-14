@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { Pressable } from 'react-native';
 
 import { useAuth } from '@/features/auth';
+import { useT } from '@/i18n';
 import { Button, Input, Text } from '@/ui';
 import { AuthShell } from '@/ui/AuthShell';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
+  const t = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
@@ -21,7 +23,7 @@ export default function LoginScreen() {
     try {
       await signIn(email, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not sign in.');
+      setError(err instanceof Error ? err.message : t('login.failed'));
     } finally {
       setBusy(false);
     }
@@ -30,18 +32,18 @@ export default function LoginScreen() {
   return (
     <AuthShell
       backTo="/(auth)/welcome"
-      title="Welcome back"
-      subtitle="Sign in with the email your group admin added."
+      title={t('login.title')}
+      subtitle={t('login.subtitle')}
       footer={
         <Text variant="caption" color="creamFaint" className="text-center">
-          Membership is by invitation from your group admin.
+          {t('welcome.invitation')}
         </Text>
       }
     >
       <Input
-        label="Email"
+        label={t('common.email')}
         variant="glass"
-        placeholder="you@example.com"
+        placeholder={t('login.emailPlaceholder')}
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"
@@ -51,9 +53,9 @@ export default function LoginScreen() {
         onChangeText={setEmail}
       />
       <Input
-        label="Password"
+        label={t('login.password')}
         variant="glass"
-        placeholder="Your password"
+        placeholder={t('login.passwordPlaceholder')}
         secureTextEntry={!show}
         autoComplete="password"
         textContentType="password"
@@ -63,16 +65,16 @@ export default function LoginScreen() {
         onSubmitEditing={submit}
         error={error}
         right={
-          <Pressable accessibilityRole="button" accessibilityLabel={show ? 'Hide password' : 'Show password'} onPress={() => setShow((s) => !s)} hitSlop={8}>
+          <Pressable accessibilityRole="button" accessibilityLabel={show ? t('login.hidePassword') : t('login.showPassword')} onPress={() => setShow((s) => !s)} hitSlop={8}>
             <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color="rgba(250, 247, 240, 0.7)" />
           </Pressable>
         }
       />
-      <Button title="Sign in" variant="inverse" onPress={submit} loading={busy} disabled={!email.trim() || !password} className="mt-1" />
+      <Button title={t('welcome.signIn')} variant="inverse" onPress={submit} loading={busy} disabled={!email.trim() || !password} className="mt-1" />
       <Link href="/(auth)/forgot-password" asChild>
         <Pressable accessibilityRole="link" className="self-center py-1">
           <Text variant="label" color="creamSoft" className="text-[14px]">
-            Forgot your password?
+            {t('login.forgot')}
           </Text>
         </Pressable>
       </Link>

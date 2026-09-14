@@ -5,8 +5,9 @@ import { Linking, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { useMembers } from '@/features/members';
-import { RESOURCE_TYPES, useResources, type Resource } from '@/features/resources';
+import { useResources, type Resource } from '@/features/resources';
 import { goBackOr } from '@/lib/navigation';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Button, Meta, Screen, Text } from '@/ui';
 
@@ -24,13 +25,14 @@ function useResourceById(id: string | undefined): { resource: Resource | null; l
   return { resource, loading, remove };
 }
 
-function longDate(iso: string): string {
+function longDate(iso: string, locale: string): string {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default function ResourceScreen() {
   const router = useRouter();
+  const { t, locale } = useLanguage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const { isAdmin } = useMembers();
@@ -42,12 +44,12 @@ export default function ResourceScreen() {
   if (!resource) {
     return (
       <Screen edges={['bottom']} backdrop className="justify-center">
-        <Text variant="muted">{loading ? 'Loading…' : "That resource isn't available."}</Text>
+        <Text variant="muted">{loading ? t('common.loading') : t('resources.detail.notAvailable')}</Text>
       </Screen>
     );
   }
 
-  const typeLabel = RESOURCE_TYPES.find((t) => t.id === resource.type)?.label ?? 'Resource';
+  const typeLabel = t(`resources.type.${resource.type}` as TranslationKey);
   const canRemove = resource.createdById === user?.id || isAdmin;
 
   async function destroy() {
@@ -58,7 +60,7 @@ export default function ResourceScreen() {
       await remove(resource.id);
       goBackOr(router, '/(tabs)/resources');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not remove this.');
+      setError(err instanceof Error ? err.message : t('resources.detail.removeFailed'));
       setBusy(false);
     }
   }
@@ -66,7 +68,7 @@ export default function ResourceScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-3">
-        <Meta parts={[{ text: typeLabel, dot: resource.type === 'song' ? 'honey' : resource.type === 'scripture' ? 'sage' : 'blush' }, { text: `Shared by ${resource.sharedBy}` }]} />
+        <Meta parts={[{ text: typeLabel, dot: resource.type === 'song' ? 'honey' : resource.type === 'scripture' ? 'sage' : 'blush' }, { text: t('resources.sharedBy', { name: resource.sharedBy }) }]} />
         <Text variant="display" color="primary" className="text-[28px] leading-[34px]">
           {resource.title}
         </Text>
@@ -75,13 +77,13 @@ export default function ResourceScreen() {
             {resource.reference}
           </Text>
         ) : null}
-        <Text variant="caption">{longDate(resource.createdAt)}</Text>
+        <Text variant="caption">{longDate(resource.createdAt, locale)}</Text>
       </View>
 
       {resource.url ? (
         <Button
-          title={resource.type === 'song' ? 'Play' : 'Open link'}
-          onPress={() => Linking.openURL(resource.url).catch(() => setError('Could not open the link.'))}
+          title={resource.type === 'song' ? t('resources.detail.play') : t('resources.detail.openLink')}
+          onPress={() => Linking.openURL(resource.url).catch(() => setError(t('resources.detail.linkFailed')))}
         />
       ) : null}
 
@@ -115,12 +117,12 @@ export default function ResourceScreen() {
       {canRemove ? (
         confirm ? (
           <View className="gap-2">
-            <Text variant="muted">Remove this from the group? This cannot be undone.</Text>
-            <Button title="Remove" variant="secondary" onPress={destroy} loading={busy} />
-            <Button title="Keep it" variant="ghost" onPress={() => setConfirm(false)} />
+            <Text variant="muted">{t('resources.detail.removeConfirm')}</Text>
+            <Button title={t('resources.detail.remove')} variant="secondary" onPress={destroy} loading={busy} />
+            <Button title={t('common.keepIt')} variant="ghost" onPress={() => setConfirm(false)} />
           </View>
         ) : (
-          <Button title="Remove" variant="ghost" onPress={() => setConfirm(true)} className="self-start px-0" />
+          <Button title={t('resources.detail.remove')} variant="ghost" onPress={() => setConfirm(true)} className="self-start px-0" />
         )
       ) : null}
     </Screen>

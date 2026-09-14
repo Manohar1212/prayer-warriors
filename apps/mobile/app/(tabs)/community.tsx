@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth';
 import { isJoinable, useCalls } from '@/features/calls';
 import { useMembers, type Member } from '@/features/members';
 import { callsService } from '@/lib/parse';
+import { useLanguage } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Avatar, AvatarStack, Button, Card, Screen, Segments, TabHeader, Text } from '@/ui';
@@ -14,6 +15,7 @@ import { Avatar, AvatarStack, Button, Card, Screen, Segments, TabHeader, Text } 
 type Tab = 'calls' | 'members';
 
 function MemberRow({ member, isYou, last }: { member: Member; isYou: boolean; last: boolean }) {
+  const { t } = useLanguage();
   const admin = member.role === 'admin';
   return (
     <View className={`flex-row items-center gap-3 py-3 ${last ? '' : 'border-b border-border'}`}>
@@ -21,11 +23,11 @@ function MemberRow({ member, isYou, last }: { member: Member; isYou: boolean; la
       <View className="flex-1 gap-0.5">
         <Text variant="label" className="text-[15px]">
           {member.displayName}
-          {isYou ? ' (You)' : ''}
+          {isYou ? ` (${t('common.you')})` : ''}
         </Text>
         {admin ? (
           <Text variant="caption" color="primary">
-            Admin
+            {t('common.admin')}
           </Text>
         ) : null}
       </View>
@@ -33,13 +35,14 @@ function MemberRow({ member, isYou, last }: { member: Member; isYou: boolean; la
   );
 }
 
-function callWhen(iso: string): string {
+function callWhen(iso: string, locale: string): string {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' });
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(locale, { weekday: 'long', hour: 'numeric', minute: '2-digit' });
 }
 
 export default function CommunityScreen() {
   const router = useRouter();
+  const { t, locale } = useLanguage();
   const { user } = useAuth();
   const { members, loading, error, isAdmin, refresh } = useMembers();
   const { next, past } = useCalls();
@@ -69,11 +72,11 @@ export default function CommunityScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
       >
-        <TabHeader title="Community" subtitle={members.length === 1 ? '1 member' : `${members.length} members`} right={<HeaderActions />} />
+        <TabHeader title={t('community.title')} subtitle={members.length === 1 ? t('community.member') : t('community.members', { count: members.length })} right={<HeaderActions />} />
         <Segments<Tab>
           options={[
-            { value: 'calls', label: 'Group calls' },
-            { value: 'members', label: 'Members' },
+            { value: 'calls', label: t('community.calls') },
+            { value: 'members', label: t('community.membersTab') },
           ]}
           value={tab}
           onChange={setTab}
@@ -83,16 +86,16 @@ export default function CommunityScreen() {
           <View className="gap-4">
             <View className="flex-row items-center justify-between">
               <Text variant="title" className="text-[20px]">
-                {live ? 'Happening now' : 'Next call'}
+                {live ? t('community.happeningNow') : t('community.nextCall')}
               </Text>
               <View className="flex-row items-center gap-3">
                 <Pressable accessibilityRole="button" onPress={() => router.push('/calls/history')} hitSlop={8} className="flex-row items-center gap-1 py-1">
                   <Ionicons name="time-outline" size={15} color={colors.primary} />
                   <Text variant="label" color="primary" className="text-[13px]">
-                    History
+                    {t('common.history')}
                   </Text>
                 </Pressable>
-                {isAdmin ? <Button title="Schedule" size="compact" variant="secondary" icon="add" onPress={() => router.push('/calls/schedule')} /> : null}
+                {isAdmin ? <Button title={t('community.schedule')} size="compact" variant="secondary" icon="add" onPress={() => router.push('/calls/schedule')} /> : null}
               </View>
             </View>
             {next ? (
@@ -106,24 +109,24 @@ export default function CommunityScreen() {
                       {next.title}
                     </Text>
                     <Text variant="caption" color={live ? 'leaf' : 'primary'}>
-                      {live ? `${onCall.length === 1 ? '1 member' : `${onCall.length} members`} on the call` : callWhen(next.scheduledAt)}
+                      {live ? (onCall.length === 1 ? t('community.oneOnCall') : t('community.onCall', { count: onCall.length })) : callWhen(next.scheduledAt, locale)}
                     </Text>
                   </View>
                 </View>
                 {onCall.length ? <AvatarStack names={onCall} size={32} /> : null}
-                <Button title={joinable ? 'Join now' : 'View details'} icon={joinable ? 'call' : undefined} onPress={() => router.push({ pathname: '/calls/[id]', params: { id: next.id } })} />
+                <Button title={joinable ? t('community.joinNow') : t('community.viewDetails')} icon={joinable ? 'call' : undefined} onPress={() => router.push({ pathname: '/calls/[id]', params: { id: next.id } })} />
               </Card>
             ) : (
               <Card className="gap-2">
                 <Text variant="label" className="text-[15px]">
-                  No call scheduled yet
+                  {t('community.noCallTitle')}
                 </Text>
-                <Text variant="caption">{isAdmin ? 'Schedule one and everyone gets a reminder.' : 'Your admin will schedule the next group prayer.'}</Text>
+                <Text variant="caption">{isAdmin ? t('community.noCallAdmin') : t('community.noCallMember')}</Text>
               </Card>
             )}
             {past.length ? (
               <View className="gap-2">
-                <Text variant="caption">Recent calls</Text>
+                <Text variant="caption">{t('community.recentCalls')}</Text>
                 <Card className="py-1">
                   {past.slice(0, 3).map((c, i) => (
                     <Pressable
@@ -140,7 +143,7 @@ export default function CommunityScreen() {
                           {c.title}
                         </Text>
                         <Text variant="caption">
-                          {new Date(c.scheduledAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} · {c.participantCount} joined
+                          {new Date(c.scheduledAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' })} · {c.participantCount} {t('common.joined')}
                         </Text>
                       </View>
                     </Pressable>
@@ -153,9 +156,9 @@ export default function CommunityScreen() {
           <View className="gap-3">
             <View className="flex-row items-center justify-between">
               <Text variant="title" className="text-[20px]">
-                {members.length === 1 ? '1 member' : `${members.length} members`}
+                {members.length === 1 ? t('community.member') : t('community.members', { count: members.length })}
               </Text>
-              {isAdmin ? <Button title="Add member" size="compact" icon="add" onPress={() => router.push('/add-member')} /> : null}
+              {isAdmin ? <Button title={t('community.addMember')} size="compact" icon="add" onPress={() => router.push('/add-member')} /> : null}
             </View>
             {loading && !members.length ? (
               <ActivityIndicator color={colors.primary} className="mt-6" />

@@ -4,6 +4,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { useNotifications, type AppNotification, type NotificationType } from '@/features/notifications';
 import { timeAgo } from '@/lib/time';
+import { useLanguage } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Screen, Text } from '@/ui';
 
@@ -22,6 +23,7 @@ const icons: Record<NotificationType, { name: IconName; bg: string; fg: string }
 };
 
 function Row({ item, onPress }: { item: AppNotification; onPress: () => void }) {
+  const { t, locale } = useLanguage();
   const icon = icons[item.type];
   const unread = !item.readAt;
   return (
@@ -34,7 +36,7 @@ function Row({ item, onPress }: { item: AppNotification; onPress: () => void }) 
             <Text variant="label" color={unread ? 'ink' : 'muted'} className="flex-1 text-[15px]">
               {item.title}
             </Text>
-            {unread ? <View accessibilityLabel="Unread" className="mt-1.5 h-2.5 w-2.5 rounded-full bg-primary" /> : null}
+            {unread ? <View accessibilityLabel={t('notifications.oneNew')} className="mt-1.5 h-2.5 w-2.5 rounded-full bg-primary" /> : null}
           </View>
           {item.body ? (
             <Text variant="body" color={unread ? 'ink' : 'muted'} className="text-[15px] leading-[22px]">
@@ -42,7 +44,7 @@ function Row({ item, onPress }: { item: AppNotification; onPress: () => void }) 
             </Text>
           ) : null}
           <Text variant="caption" className="text-[12px]">
-            {timeAgo(item.createdAt)}
+            {timeAgo(item.createdAt, undefined, t, locale)}
           </Text>
         </View>
     </Pressable>
@@ -51,6 +53,7 @@ function Row({ item, onPress }: { item: AppNotification; onPress: () => void }) 
 
 export default function NotificationsScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { items, loading, error, markRead, markAllRead } = useNotifications();
   const unread = items.filter((n) => !n.readAt).length;
 
@@ -63,16 +66,16 @@ export default function NotificationsScreen() {
     <Screen edges={['bottom']} backdrop className="px-0 pt-0">
       <ScrollView contentContainerClassName="px-4 pb-8 pt-3" showsVerticalScrollIndicator={false}>
         <View className="flex-row items-center justify-between border-b border-border pb-3">
-          <Text variant="muted">{unread === 0 ? 'Nothing new' : unread === 1 ? '1 new' : `${unread} new`}</Text>
+          <Text variant="muted">{unread === 0 ? t('notifications.nothingNew') : unread === 1 ? t('notifications.oneNew') : t('notifications.new', { count: unread })}</Text>
           <View className="flex-row items-center gap-5">
             {unread > 0 ? (
               <Pressable accessibilityRole="button" onPress={markAllRead} hitSlop={8}>
                 <Text variant="label" color="primary" className="text-[13px]">
-                  Mark all read
+                  {t('notifications.markAllRead')}
                 </Text>
               </Pressable>
             ) : null}
-            <Pressable accessibilityRole="button" accessibilityLabel="Notification settings" onPress={() => router.push('/notifications/settings')} hitSlop={8}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('notifications.settings')} onPress={() => router.push('/notifications/settings')} hitSlop={8}>
               <Ionicons name="options-outline" size={22} color={colors.primary} />
             </Pressable>
           </View>
@@ -86,8 +89,8 @@ export default function NotificationsScreen() {
 
         {items.length === 0 ? (
           <View className="mt-10 gap-2">
-            <Text variant="title">{loading ? 'Loading…' : "You're all caught up"}</Text>
-            {!loading ? <Text variant="muted" className="max-w-[300px] text-[15px] leading-[22px]">New requests, calls, and shares from the group will show up here.</Text> : null}
+            <Text variant="title">{loading ? t('common.loading') : t('notifications.emptyTitle')}</Text>
+            {!loading ? <Text variant="muted" className="max-w-[300px] text-[15px] leading-[22px]">{t('notifications.emptyBody')}</Text> : null}
           </View>
         ) : (
           items.map((item, i) => (

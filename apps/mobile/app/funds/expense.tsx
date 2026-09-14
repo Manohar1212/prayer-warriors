@@ -5,11 +5,13 @@ import { View } from 'react-native';
 import { categoryLabel, EXPENSE_CATEGORIES, formatRupees, parseRupees, useFunds, type ExpenseCategory } from '@/features/funds';
 import { isIsoDate, longDate, todayIso } from '@/features/funds/dates';
 import { useMembers } from '@/features/members';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { fundsService } from '@/lib/parse';
 import { Button, Card, Chip, Input, Screen, Text } from '@/ui';
 
 export default function ExpenseScreen() {
+  const { t } = useLanguage();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { isAdmin } = useMembers();
@@ -48,7 +50,7 @@ export default function ExpenseScreen() {
           −{formatRupees(existing.amountPaise)}
         </Text>
         <Card className="gap-3">
-          <Text variant="muted">Paid to</Text>
+          <Text variant="muted">{t('funds.expense.paidTo')}</Text>
           <Text variant="title">{existing.paidTo}</Text>
           <Text variant="muted">
             {categoryLabel(existing.category)} on {longDate(existing.transactionDate)}
@@ -71,7 +73,7 @@ export default function ExpenseScreen() {
       }
       goBackOr(router, '/(tabs)/funds');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save.');
+      setError(err instanceof Error ? err.message : t('funds.saveFailed'));
     } finally {
       setBusy(false);
     }
@@ -85,7 +87,7 @@ export default function ExpenseScreen() {
       await fundsService.deleteExpense(existing.id, reason);
       goBackOr(router, '/(tabs)/funds');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not delete.');
+      setError(err instanceof Error ? err.message : t('funds.deleteFailed'));
       setBusy(false);
     }
   }
@@ -93,7 +95,7 @@ export default function ExpenseScreen() {
   if (id && !existing && loading) {
     return (
       <Screen edges={['bottom']} backdrop className="justify-center">
-        <Text variant="muted">Loading…</Text>
+        <Text variant="muted">{t('common.loading')}</Text>
       </Screen>
     );
   }
@@ -101,33 +103,33 @@ export default function ExpenseScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-2">
-        <Text variant="label">Category</Text>
+        <Text variant="label">{t('common.category')}</Text>
         <View className="flex-row flex-wrap gap-2">
           {EXPENSE_CATEGORIES.map((c) => (
             <Chip key={c.id} label={c.label} selected={category === c.id} onPress={() => setCategory(c.id)} />
           ))}
         </View>
       </View>
-      <Input label="Amount (₹)" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="3500" error={amount && !amountPaise ? 'Enter an amount greater than zero.' : null} />
-      <Input label="Paid to" value={paidTo} onChangeText={setPaidTo} maxLength={120} placeholder="Community hall" />
-      <Input label="Description (optional)" value={description} onChangeText={setDescription} maxLength={500} multiline style={{ minHeight: 70, textAlignVertical: 'top' }} />
-      <Input label="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} autoCapitalize="none" error={date && !dateOk ? 'Enter a valid date.' : null} />
-      {existing ? <Input label="Reason for this change" value={reason} onChangeText={setReason} maxLength={200} /> : null}
+      <Input label={t('common.amount')} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="3500" error={amount && !amountPaise ? t('common.invalidAmount') : null} />
+      <Input label={t('funds.expense.paidTo')} value={paidTo} onChangeText={setPaidTo} maxLength={120} placeholder="Community hall" />
+      <Input label={t('funds.expense.description')} value={description} onChangeText={setDescription} maxLength={500} multiline style={{ minHeight: 70, textAlignVertical: 'top' }} />
+      <Input label={t('common.date')} value={date} onChangeText={setDate} autoCapitalize="none" error={date && !dateOk ? t('common.invalidDate') : null} />
+      {existing ? <Input label={t('common.reasonForChange')} value={reason} onChangeText={setReason} maxLength={200} /> : null}
       {error ? (
         <Text variant="muted" color="rose">
           {error}
         </Text>
       ) : null}
-      <Button title={existing ? 'Save changes' : 'Record expense'} onPress={submit} loading={busy && !deleting} disabled={!canSubmit} />
+      <Button title={existing ? t('common.saveChanges') : t('funds.recordExpense')} onPress={submit} loading={busy && !deleting} disabled={!canSubmit} />
       {existing ? (
         deleting ? (
           <View className="gap-2">
-            <Text variant="muted">Delete this expense? The change is kept in the history.</Text>
-            <Button title="Delete" variant="secondary" onPress={destroy} loading={busy} disabled={!reason.trim()} />
-            <Button title="Keep it" variant="ghost" onPress={() => setDeleting(false)} />
+            <Text variant="muted">{t('funds.expense.deleteConfirm')}</Text>
+            <Button title={t('common.delete')} variant="secondary" onPress={destroy} loading={busy} disabled={!reason.trim()} />
+            <Button title={t('common.keepIt')} variant="ghost" onPress={() => setDeleting(false)} />
           </View>
         ) : (
-          <Button title="Delete" variant="ghost" onPress={() => setDeleting(true)} className="self-start px-0" />
+          <Button title={t('common.delete')} variant="ghost" onPress={() => setDeleting(true)} className="self-start px-0" />
         )
       ) : null}
     </Screen>

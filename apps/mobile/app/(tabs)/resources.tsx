@@ -6,17 +6,19 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View
 
 import { matchesQuery, RESOURCE_TYPES, useResources, type Resource, type ResourceType } from '@/features/resources';
 import { shortDate } from '@/lib/time';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors, gradients } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Card, EmptyState, Fab, Screen, Segments, TabHeader, Text } from '@/ui';
 
 type Tab = ResourceType | 'bible';
 
-const emptyCopy: Record<ResourceType, { title: string; body: string }> = {
-  song: { title: 'No songs yet', body: 'Share a song that lifts the group up. A link to YouTube or Spotify is enough.' },
-  scripture: { title: 'No scripture yet', body: 'Share a verse that spoke to you this week.' },
-  prayer: { title: 'No prayers yet', body: 'Share a written prayer the group can pray together.' },
+const emptyCopy: Record<ResourceType, { title: TranslationKey; body: TranslationKey }> = {
+  song: { title: 'resources.emptySongTitle', body: 'resources.emptySongBody' },
+  scripture: { title: 'resources.emptyScriptureTitle', body: 'resources.emptyScriptureBody' },
+  prayer: { title: 'resources.emptyPrayerTitle', body: 'resources.emptyPrayerBody' },
 };
+const pluralKey: Record<ResourceType, TranslationKey> = { song: 'resources.songs', scripture: 'resources.scripture', prayer: 'resources.prayers' };
 
 function Thumb({ type }: { type: ResourceType }) {
   if (type === 'song') {
@@ -37,6 +39,7 @@ function Thumb({ type }: { type: ResourceType }) {
 }
 
 function ResourceCard({ resource, onOpen }: { resource: Resource; onOpen: () => void }) {
+  const { t, locale } = useLanguage();
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`Open ${resource.title}`} onPress={onOpen}>
       <Card className="flex-row items-center gap-3">
@@ -55,7 +58,7 @@ function ResourceCard({ resource, onOpen }: { resource: Resource; onOpen: () => 
             </Text>
           ) : null}
           <Text variant="caption" className="text-[12px]">
-            Shared by {resource.sharedBy} · {shortDate(resource.createdAt)}
+            {t('resources.sharedBy', { name: resource.sharedBy })} · {shortDate(resource.createdAt, locale)}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.muted} />
@@ -66,11 +69,12 @@ function ResourceCard({ resource, onOpen }: { resource: Resource; onOpen: () => 
 
 export default function ResourcesScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [type, setType] = useState<ResourceType>('song');
   const [query, setQuery] = useState('');
   const { resources, loading, error, refresh } = useResources(type);
   const visible = useMemo(() => resources.filter((r) => matchesQuery(r, query)), [resources, query]);
-  const plural = RESOURCE_TYPES.find((t) => t.id === type)?.plural ?? '';
+  const plural = t(pluralKey[type]);
 
   const onTab = (tab: Tab) => {
     if (tab === 'bible') router.push('/bible');
@@ -87,12 +91,12 @@ export default function ResourcesScreen() {
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
         ListHeaderComponent={
           <View className="gap-3 pb-1">
-            <TabHeader title="Resources" subtitle="Songs, scripture and prayers" right={<HeaderActions />} />
-            <Segments<Tab> options={[...RESOURCE_TYPES.map((t) => ({ value: t.id as Tab, label: t.plural })), { value: 'bible', label: 'Bible' }]} value={type} onChange={onTab} />
+            <TabHeader title={t('resources.title')} subtitle={t('resources.subtitle')} right={<HeaderActions />} />
+            <Segments<Tab> options={[...RESOURCE_TYPES.map((r) => ({ value: r.id as Tab, label: t(pluralKey[r.id]) })), { value: 'bible', label: t('resources.bible') }]} value={type} onChange={onTab} />
             <View className="flex-row items-center gap-2 rounded-full bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
-                placeholder={`Search ${plural.toLowerCase()}`}
+                placeholder={t('resources.searchIn', { plural: plural.toLowerCase() })}
                 placeholderTextColor={colors.muted}
                 selectionColor={colors.primary}
                 value={query}
@@ -113,15 +117,15 @@ export default function ResourcesScreen() {
             <ActivityIndicator color={colors.primary} className="mt-10" />
           ) : query ? (
             <Text variant="muted" className="mt-8">
-              Nothing matches "{query}".
+              {t('resources.noMatch', { query })}
             </Text>
           ) : (
-            <EmptyState icon={type === 'song' ? 'musical-notes-outline' : type === 'scripture' ? 'book-outline' : 'hand-left-outline'} tone={type === 'song' ? 'lavender' : type === 'scripture' ? 'sage' : 'honey'} title={emptyCopy[type].title} body={emptyCopy[type].body} />
+            <EmptyState icon={type === 'song' ? 'musical-notes-outline' : type === 'scripture' ? 'book-outline' : 'hand-left-outline'} tone={type === 'song' ? 'lavender' : type === 'scripture' ? 'sage' : 'honey'} title={t(emptyCopy[type].title)} body={t(emptyCopy[type].body)} />
           )
         }
         renderItem={({ item }) => <ResourceCard resource={item} onOpen={() => router.push({ pathname: '/resources/[id]', params: { id: item.id } })} />}
       />
-      <Fab label="Share something" onPress={() => router.push({ pathname: '/resources/new', params: { type } })} />
+      <Fab label={t('resources.share')} onPress={() => router.push({ pathname: '/resources/new', params: { type } })} />
     </Screen>
   );
 }

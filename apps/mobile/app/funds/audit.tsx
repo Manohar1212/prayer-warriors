@@ -3,12 +3,13 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { formatRupees, type AuditEntry } from '@/features/funds';
 import { fundsService } from '@/lib/parse';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Badge, Card, Screen, Text } from '@/ui';
 
-function when(iso: string): string {
+function when(iso: string, locale: string): string {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(locale, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 }
 
 function describe(entry: AuditEntry): string {
@@ -33,6 +34,7 @@ function changedFields(entry: AuditEntry): string[] {
 }
 
 export default function AuditScreen() {
+  const { t, locale } = useLanguage();
   const [entries, setEntries] = useState<AuditEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,13 +42,13 @@ export default function AuditScreen() {
     fundsService
       .auditLog()
       .then(setEntries)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Could not load the history.'));
+      .catch((err) => setError(err instanceof Error ? err.message : t('funds.audit.loadFailed')));
   }, []);
 
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-4 pt-6">
       <Text variant="muted" className="text-[15px] leading-[22px]">
-        Every change to the ledger, who made it, and why.
+        {t('funds.audit.intro')}
       </Text>
       {error ? (
         <Text variant="muted" color="rose">
@@ -56,14 +58,14 @@ export default function AuditScreen() {
       {entries === null ? (
         <ActivityIndicator color={colors.primary} className="mt-6" />
       ) : entries.length === 0 ? (
-        <Text variant="muted">No changes yet.</Text>
+        <Text variant="muted">{t('funds.audit.empty')}</Text>
       ) : (
         entries.map((entry) => (
           <Card key={entry.id} className="gap-2">
             <View className="flex-row items-center justify-between">
-              <Badge label={entry.action === 'create' ? 'Recorded' : entry.action === 'update' ? 'Changed' : 'Deleted'} tone={entry.action === 'delete' ? 'blush' : entry.action === 'update' ? 'honey' : 'sage'} />
+              <Badge label={t(`funds.audit.${entry.action === 'create' ? 'recorded' : entry.action === 'update' ? 'changed' : 'deleted'}` as TranslationKey)} tone={entry.action === 'delete' ? 'blush' : entry.action === 'update' ? 'honey' : 'sage'} />
               <Text variant="muted" className="text-[13px]">
-                {when(entry.createdAt)}
+                {when(entry.createdAt, locale)}
               </Text>
             </View>
             <Text variant="label" className="text-[16px]">
@@ -75,7 +77,7 @@ export default function AuditScreen() {
               </Text>
             ))}
             <Text variant="muted" className="text-[13px]">
-              By {entry.actor}
+              {t('funds.audit.by', { name: entry.actor })}
               {entry.reason ? ` · ${entry.reason}` : ''}
             </Text>
           </Card>

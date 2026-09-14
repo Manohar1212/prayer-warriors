@@ -5,12 +5,14 @@ import { View } from 'react-native';
 import { formatRupees, methodLabel, PAYMENT_METHODS, parseRupees, useFunds, type PaymentMethod } from '@/features/funds';
 import { isIsoDate, longDate, todayIso } from '@/features/funds/dates';
 import { useMembers } from '@/features/members';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { fundsService } from '@/lib/parse';
 import { Button, Card, Chip, Input, Screen, Text } from '@/ui';
 
 export default function ContributionScreen() {
   const router = useRouter();
+  const { t, locale } = useLanguage();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { members, isAdmin } = useMembers();
   const { contributions, loading } = useFunds();
@@ -50,10 +52,10 @@ export default function ContributionScreen() {
           {formatRupees(existing.amountPaise)}
         </Text>
         <Card className="gap-3">
-          <Text variant="muted">Contribution from</Text>
+          <Text variant="muted">{t('funds.contribution.from')}</Text>
           <Text variant="title">{existing.memberName}</Text>
           <Text variant="muted">
-            {methodLabel(existing.paymentMethod)} on {longDate(existing.transactionDate)}
+            {t(`funds.method.${existing.paymentMethod}` as TranslationKey)} · {new Date(existing.transactionDate).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })}
           </Text>
           {existing.reference ? <Text>{existing.reference}</Text> : null}
           {existing.note ? <Text variant="muted">{existing.note}</Text> : null}
@@ -74,7 +76,7 @@ export default function ContributionScreen() {
       }
       goBackOr(router, '/(tabs)/funds');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save.');
+      setError(err instanceof Error ? err.message : t('funds.saveFailed'));
     } finally {
       setBusy(false);
     }
@@ -88,7 +90,7 @@ export default function ContributionScreen() {
       await fundsService.deleteContribution(existing.id, reason);
       goBackOr(router, '/(tabs)/funds');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not delete.');
+      setError(err instanceof Error ? err.message : t('funds.deleteFailed'));
       setBusy(false);
     }
   }
@@ -96,7 +98,7 @@ export default function ContributionScreen() {
   if (id && !existing && loading) {
     return (
       <Screen edges={['bottom']} backdrop className="justify-center">
-        <Text variant="muted">Loading…</Text>
+        <Text variant="muted">{t('common.loading')}</Text>
       </Screen>
     );
   }
@@ -104,41 +106,41 @@ export default function ContributionScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-2">
-        <Text variant="label">Member</Text>
+        <Text variant="label">{t('funds.contribution.member')}</Text>
         <View className="flex-row flex-wrap gap-2">
           {members.map((m) => (
             <Chip key={m.userId} label={m.displayName} selected={memberId === m.userId} onPress={() => setMemberId(m.userId)} />
           ))}
         </View>
       </View>
-      <Input label="Amount (₹)" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="5000" error={amount && !amountPaise ? 'Enter an amount greater than zero.' : null} />
-      <Input label="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} autoCapitalize="none" error={date && !dateOk ? 'Enter a valid date.' : null} />
+      <Input label={t('common.amount')} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="5000" error={amount && !amountPaise ? t('common.invalidAmount') : null} />
+      <Input label={t('common.date')} value={date} onChangeText={setDate} autoCapitalize="none" error={date && !dateOk ? t('common.invalidDate') : null} />
       <View className="gap-2">
-        <Text variant="label">Payment method</Text>
+        <Text variant="label">{t('funds.contribution.method')}</Text>
         <View className="flex-row flex-wrap gap-2">
           {PAYMENT_METHODS.map((m) => (
-            <Chip key={m.id} label={m.label} selected={method === m.id} onPress={() => setMethod(m.id)} />
+            <Chip key={m.id} label={t(`funds.method.${m.id}` as TranslationKey)} selected={method === m.id} onPress={() => setMethod(m.id)} />
           ))}
         </View>
       </View>
-      <Input label="Reference (optional)" value={reference} onChangeText={setReference} maxLength={120} placeholder="September contribution" />
-      <Input label="Note (optional)" value={note} onChangeText={setNote} maxLength={500} multiline style={{ minHeight: 70, textAlignVertical: 'top' }} />
-      {existing ? <Input label="Reason for this change" value={reason} onChangeText={setReason} maxLength={200} /> : null}
+      <Input label={t('funds.contribution.reference')} value={reference} onChangeText={setReference} maxLength={120} placeholder="September contribution" />
+      <Input label={t('funds.contribution.note')} value={note} onChangeText={setNote} maxLength={500} multiline style={{ minHeight: 70, textAlignVertical: 'top' }} />
+      {existing ? <Input label={t('common.reasonForChange')} value={reason} onChangeText={setReason} maxLength={200} /> : null}
       {error ? (
         <Text variant="muted" color="rose">
           {error}
         </Text>
       ) : null}
-      <Button title={existing ? 'Save changes' : 'Record contribution'} onPress={submit} loading={busy && !deleting} disabled={!canSubmit} />
+      <Button title={existing ? t('common.saveChanges') : t('funds.recordContribution')} onPress={submit} loading={busy && !deleting} disabled={!canSubmit} />
       {existing ? (
         deleting ? (
           <View className="gap-2">
-            <Text variant="muted">Delete this contribution? The change is kept in the history.</Text>
-            <Button title="Delete" variant="secondary" onPress={destroy} loading={busy} disabled={!reason.trim()} />
-            <Button title="Keep it" variant="ghost" onPress={() => setDeleting(false)} />
+            <Text variant="muted">{t('funds.contribution.deleteConfirm')}</Text>
+            <Button title={t('common.delete')} variant="secondary" onPress={destroy} loading={busy} disabled={!reason.trim()} />
+            <Button title={t('common.keepIt')} variant="ghost" onPress={() => setDeleting(false)} />
           </View>
         ) : (
-          <Button title="Delete" variant="ghost" onPress={() => setDeleting(true)} className="self-start px-0" />
+          <Button title={t('common.delete')} variant="ghost" onPress={() => setDeleting(true)} className="self-start px-0" />
         )
       ) : null}
     </Screen>

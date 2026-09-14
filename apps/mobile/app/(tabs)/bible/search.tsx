@@ -5,11 +5,13 @@ import { ActivityIndicator, FlatList, Pressable, View } from 'react-native';
 import { useBibleLanguage, useSearch, type SearchHit } from '@/features/bible';
 import { Highlight } from '@/features/bible/Highlight';
 import { LanguageToggle } from '@/features/bible/LanguageToggle';
+import { useT } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Input, Screen, Text } from '@/ui';
 
 export default function BibleSearchScreen() {
   const router = useRouter();
+  const t = useT();
   const params = useLocalSearchParams<{ q?: string }>();
   const [lang, setLang] = useBibleLanguage();
   const [query, setQuery] = useState(params.q ?? '');
@@ -27,7 +29,7 @@ export default function BibleSearchScreen() {
         ListHeaderComponent={
           <View className="mb-2 gap-4">
             <LanguageToggle value={lang} onChange={setLang} />
-            <Input placeholder={lang === 'te' ? 'పదం లేదా వాక్యం' : 'A word or phrase'} value={query} onChangeText={setQuery} autoFocus autoCapitalize="none" returnKeyType="search" />
+            <Input placeholder={t('bible.searchPlaceholder')} value={query} onChangeText={setQuery} autoFocus autoCapitalize="none" returnKeyType="search" />
             {error ? (
               <Text variant="muted" color="rose">
                 {error}
@@ -35,7 +37,7 @@ export default function BibleSearchScreen() {
             ) : null}
             {searching ? <ActivityIndicator color={colors.primary} /> : null}
             {!searching && query.trim().length >= 2 ? (
-              <Text variant="muted">{hits.length === 200 ? 'Showing the first 200 matches' : `${hits.length} ${hits.length === 1 ? 'match' : 'matches'}`}</Text>
+              <Text variant="muted">{hits.length === 200 ? t('bible.first200') : hits.length === 1 ? t('bible.match') : t('bible.matches', { count: hits.length })}</Text>
             ) : null}
           </View>
         }

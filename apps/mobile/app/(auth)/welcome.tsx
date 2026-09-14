@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { AccessibilityInfo, Animated, Easing, Image, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useT } from '@/i18n';
 import { gradients } from '@/theme/tokens';
 import { Button, Text } from '@/ui';
 import { Glow } from '@/ui/Glow';
@@ -13,6 +14,7 @@ const logo = require('../../assets/logo.png');
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const t = useT();
   const settle = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -49,21 +51,21 @@ export default function WelcomeScreen() {
               <Image source={logo} accessibilityLabel="Prayer Warriors" style={{ width: 280, height: 280 }} resizeMode="contain" />
             </Animated.View>
             <Text variant="body" color="creamSoft" className="max-w-[260px] text-center text-[16px] leading-[24px]">
-              A sisterhood that prays together, grows together.
+              {t('welcome.tagline')}
             </Text>
             <View className="items-center gap-2">
               <Text variant="scripture" color="creamSoft" className="max-w-[280px] text-center text-[18px] leading-[28px]">
-                “For where two or three gather in my name, there am I with them.”
+                {t('welcome.verse')}
               </Text>
               <Text variant="caption" color="creamFaint">
-                Matthew 18:20
+                {t('welcome.verseRef')}
               </Text>
             </View>
           </View>
           <View className="gap-4">
-            <Button title="Sign in" variant="inverse" onPress={() => router.push('/(auth)/login')} />
+            <Button title={t('welcome.signIn')} variant="inverse" onPress={() => router.push('/(auth)/login')} />
             <Text variant="caption" color="creamFaint" className="text-center">
-              Membership is by invitation from your group admin.
+              {t('welcome.invitation')}
             </Text>
           </View>
         </View>
