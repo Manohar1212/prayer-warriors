@@ -8,6 +8,7 @@ import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { gradients } from '../theme/tokens';
+import { Glow } from './Glow';
 import { HeaderBack } from './HeaderBack';
 import { Text } from './Text';
 
@@ -59,7 +60,8 @@ export function AuthShell({ title, subtitle, footer, backTo, children }: Props) 
             showsVerticalScrollIndicator={false}
           >
             <View className="items-center">
-              <Animated.View style={[{ overflow: 'hidden', alignItems: 'center' }, fold]}>
+              <Animated.View style={[{ alignItems: 'center', justifyContent: 'center' }, fold]}>
+                <Glow size={260} strength={0.4} />
                 <Image source={emblem} accessibilityLabel="Prayer Warriors" style={{ width: 96, height: 94 }} resizeMode="contain" />
               </Animated.View>
               <View className="items-center gap-1.5">

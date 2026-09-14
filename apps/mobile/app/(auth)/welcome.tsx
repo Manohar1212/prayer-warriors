@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { gradients } from '@/theme/tokens';
 import { Button, Text } from '@/ui';
+import { Glow } from '@/ui/Glow';
 
 const logo = require('../../assets/logo.png');
 
@@ -43,7 +44,8 @@ export default function WelcomeScreen() {
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <View className="flex-1 justify-between px-6 pb-6 pt-4">
           <View className="flex-1 items-center justify-center gap-8">
-            <Animated.View style={{ opacity: settle, transform: [{ scale }] }}>
+            <Animated.View style={{ opacity: settle, transform: [{ scale }], alignItems: 'center', justifyContent: 'center' }}>
+              <Glow size={520} strength={0.42} />
               <Image source={logo} accessibilityLabel="Prayer Warriors" style={{ width: 280, height: 280 }} resizeMode="contain" />
             </Animated.View>
             <Text variant="body" color="creamSoft" className="max-w-[260px] text-center text-[16px] leading-[24px]">
