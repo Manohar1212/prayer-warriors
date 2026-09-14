@@ -22,6 +22,7 @@ import { AuthProvider, resolveGate, useAuth } from '@/features/auth';
 import { PushRegistrar } from '@/features/notifications';
 import { parseAuthService } from '@/lib/parse';
 import { colors, fonts } from '@/theme/tokens';
+import { HeaderBack } from '@/ui/HeaderBack';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,6 +33,15 @@ const modalOptions = {
   headerShadowVisible: false,
   headerTitleStyle: { fontFamily: fonts.display, fontSize: 20, color: colors.primary },
   headerTintColor: colors.primary,
+  headerLeft: () => <HeaderBack modal />,
+};
+
+/** Pushed screens: our own back control so deep links and web reloads still have a way back. */
+const cardOptions = {
+  ...modalOptions,
+  presentation: 'card' as const,
+  headerBackVisible: false,
+  headerLeft: () => <HeaderBack />,
 };
 
 function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
@@ -60,20 +70,20 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
         <Stack.Screen name="profile" options={{ ...modalOptions, title: 'Profile' }} />
         <Stack.Screen name="add-member" options={{ ...modalOptions, title: 'Add member' }} />
         <Stack.Screen name="prayer/new" options={{ ...modalOptions, title: 'New request' }} />
-        <Stack.Screen name="prayer/[id]" options={{ ...modalOptions, presentation: 'card', title: 'Prayer request' }} />
-        <Stack.Screen name="journal/index" options={{ ...modalOptions, presentation: 'card', title: 'My journal' }} />
+        <Stack.Screen name="prayer/[id]" options={{ ...cardOptions, title: 'Prayer request' }} />
+        <Stack.Screen name="journal/index" options={{ ...cardOptions, title: 'My journal' }} />
         <Stack.Screen name="journal/entry" options={{ ...modalOptions, title: 'Journal entry' }} />
         <Stack.Screen name="resources/new" options={{ ...modalOptions, title: 'Share with the group' }} />
-        <Stack.Screen name="resources/[id]" options={{ ...modalOptions, presentation: 'card', title: 'Resource' }} />
+        <Stack.Screen name="resources/[id]" options={{ ...cardOptions, title: 'Resource' }} />
         <Stack.Screen name="funds/contribution" options={{ ...modalOptions, title: 'Contribution' }} />
         <Stack.Screen name="funds/expense" options={{ ...modalOptions, title: 'Expense' }} />
-        <Stack.Screen name="funds/report" options={{ ...modalOptions, presentation: 'card', title: 'Monthly report' }} />
-        <Stack.Screen name="funds/audit" options={{ ...modalOptions, presentation: 'card', title: 'Change history' }} />
+        <Stack.Screen name="funds/report" options={{ ...cardOptions, title: 'Monthly report' }} />
+        <Stack.Screen name="funds/audit" options={{ ...cardOptions, title: 'Change history' }} />
         <Stack.Screen name="calls/schedule" options={{ ...modalOptions, title: 'Schedule a call' }} />
-        <Stack.Screen name="calls/[id]" options={{ ...modalOptions, presentation: 'card', title: 'Group call', headerBackVisible: false, gestureEnabled: false }} />
-        <Stack.Screen name="calls/history" options={{ ...modalOptions, presentation: 'card', title: 'Call history' }} />
-        <Stack.Screen name="notifications/index" options={{ ...modalOptions, presentation: 'card', title: 'Notifications' }} />
-        <Stack.Screen name="notifications/settings" options={{ ...modalOptions, presentation: 'card', title: 'Notification settings' }} />
+        <Stack.Screen name="calls/[id]" options={{ ...modalOptions, presentation: 'card', title: 'Group call', headerBackVisible: false, headerLeft: () => null, gestureEnabled: false }} />
+        <Stack.Screen name="calls/history" options={{ ...cardOptions, title: 'Call history' }} />
+        <Stack.Screen name="notifications/index" options={{ ...cardOptions, title: 'Notifications' }} />
+        <Stack.Screen name="notifications/settings" options={{ ...cardOptions, title: 'Notification settings' }} />
       </Stack.Protected>
       </Stack>
     </>

@@ -29,6 +29,7 @@ export default function LoginScreen() {
 
   return (
     <AuthShell
+      backTo="/(auth)/welcome"
       title="Welcome back"
       subtitle="Sign in with the email your group admin added."
       footer={

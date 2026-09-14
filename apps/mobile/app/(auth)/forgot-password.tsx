@@ -31,6 +31,7 @@ export default function ForgotPasswordScreen() {
 
   return (
     <AuthShell
+      backTo="/(auth)/login"
       title="Reset your password"
       subtitle={sent ? undefined : 'Enter your email and we will send you a link to choose a new one.'}
       footer={

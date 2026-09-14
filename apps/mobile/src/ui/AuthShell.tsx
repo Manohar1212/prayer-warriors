@@ -1,5 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import type { Href } from 'expo-router';
 import type { PropsWithChildren, ReactNode } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
@@ -7,6 +8,7 @@ import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { gradients } from '../theme/tokens';
+import { HeaderBack } from './HeaderBack';
 import { Text } from './Text';
 
 const emblem = require('../../assets/logo-emblem.png');
@@ -14,8 +16,10 @@ const emblem = require('../../assets/logo-emblem.png');
 type Props = PropsWithChildren<{
   title: string;
   subtitle?: string;
-  /** Rendered under the card, for example a sign-out link or a note about invitations. */
+  /** Rendered under the form, for example a sign-out link or a note about invitations. */
   footer?: ReactNode;
+  /** Where the top-left back control leads; omit it to hide the control. */
+  backTo?: Href;
 }>;
 
 /**
@@ -23,7 +27,7 @@ type Props = PropsWithChildren<{
  * The keyboard drives one continuous motion: the block lifts with the keyboard's own frames while
  * the emblem and footer fold away, so nothing scrolls or jumps.
  */
-export function AuthShell({ title, subtitle, footer, children }: Props) {
+export function AuthShell({ title, subtitle, footer, backTo, children }: Props) {
   const { height, progress } = useReanimatedKeyboardAnimation();
   const lift = useAnimatedStyle(() => ({ paddingBottom: -height.value }));
   const fold = useAnimatedStyle(() => ({
@@ -41,6 +45,11 @@ export function AuthShell({ title, subtitle, footer, children }: Props) {
       <StatusBar style="light" />
       <LinearGradient colors={[...gradients.welcome]} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+        {backTo ? (
+          <View style={{ position: 'absolute', top: 8, left: 16, zIndex: 1 }}>
+            <HeaderBack fallback={backTo} onDark />
+          </View>
+        ) : null}
         <Animated.View style={[{ flex: 1 }, lift]}>
           <ScrollView
             contentContainerClassName="flex-grow justify-center gap-6 px-5 py-6"
