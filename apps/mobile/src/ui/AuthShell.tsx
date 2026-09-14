@@ -25,7 +25,7 @@ export function AuthShell({ title, subtitle, footer, children }: Props) {
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'web' ? undefined : 'padding'}>
           <ScrollView
-            contentContainerClassName="flex-grow justify-center gap-6 px-5 pb-6 pt-8"
+            contentContainerClassName="flex-grow justify-center gap-6 px-5 py-6"
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
             showsVerticalScrollIndicator={false}

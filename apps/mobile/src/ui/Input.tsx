@@ -22,7 +22,7 @@ export function Input({ label, error, className = '', variant = 'line', right, m
   const field = multiline
     ? `rounded-[14px] border bg-surface px-4 py-3 text-[16px] leading-[24px] ${edge}`
     : variant === 'filled'
-      ? `rounded-[14px] border bg-cream px-4 py-3 text-[16px] ${edge} ${right ? 'pr-12' : ''}`
+      ? `h-[52px] rounded-[14px] border bg-cream px-4 py-0 text-[16px] ${edge} ${right ? 'pr-12' : ''}`
       : `border-b bg-transparent px-0 pb-2.5 pt-2 text-[17px] ${edge}`;
   return (
     <View className={`gap-1.5 ${className}`}>
@@ -45,7 +45,7 @@ export function Input({ label, error, className = '', variant = 'line', right, m
             onBlur?.(e);
           }}
           className={`min-h-[48px] font-sans text-ink ${field}`}
-          style={[multiline ? { minHeight: 96, textAlignVertical: 'top' } : null, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null, style]}
+          style={[multiline ? { minHeight: 96, textAlignVertical: 'top' } : { textAlignVertical: 'center' }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null, style]}
           {...rest}
         />
         {right ? <View className="absolute bottom-0 right-3 top-0 justify-center">{right}</View> : null}
