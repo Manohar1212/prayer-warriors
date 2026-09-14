@@ -1,6 +1,8 @@
 import type { PropsWithChildren } from 'react';
-import { Platform, ScrollView, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+
+import { KeyboardScroll } from './KeyboardScroll';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { colors } from '../theme/tokens';
@@ -49,25 +51,26 @@ export function Screen({
   edges = [],
   className = '',
 }: Props) {
+  // Scrolling screens (forms) scroll the focused field above the keyboard themselves; fixed screens get padded.
   const body = scroll ? (
-    <ScrollView
+    <KeyboardScroll
+      bottomOffset={140}
       contentContainerClassName={`flex-grow ${withDefaultPadding(className, ['px-4', 'pb-8', 'pt-4'])}`}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       showsVerticalScrollIndicator={false}
     >
       {children}
-    </ScrollView>
+    </KeyboardScroll>
   ) : (
-    <View className={`flex-1 ${withDefaultPadding(className, ['px-4', 'pb-8', 'pt-4'])}`}>{children}</View>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'web' ? undefined : 'padding'}>
+      <View className={`flex-1 ${withDefaultPadding(className, ['px-4', 'pb-8', 'pt-4'])}`}>{children}</View>
+    </KeyboardAvoidingView>
   );
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: background[tone] }} edges={edges}>
       {backdrop ? <Backdrop /> : null}
-      {/* keyboard-controller animates in step with the keyboard on both platforms (Android is edge-to-edge on SDK 57). */}
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'web' ? undefined : 'padding'}>
-        {body}
-      </KeyboardAvoidingView>
+      {body}
     </SafeAreaView>
   );
 }

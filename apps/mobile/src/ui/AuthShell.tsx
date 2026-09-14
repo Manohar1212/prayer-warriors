@@ -1,11 +1,11 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import type { PropsWithChildren, ReactNode } from 'react';
-import { Image, Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { Image, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { cardShadow, gradients } from '../theme/tokens';
+import { KeyboardScroll } from './KeyboardScroll';
 import { Text } from './Text';
 
 const emblem = require('../../assets/logo-emblem.png');
@@ -24,13 +24,13 @@ export function AuthShell({ title, subtitle, footer, children }: Props) {
       <StatusBar style="light" />
       <LinearGradient colors={[...gradients.welcome]} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'web' ? undefined : 'padding'}>
-          <ScrollView
-            contentContainerClassName="flex-grow justify-center gap-6 px-5 py-6"
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            showsVerticalScrollIndicator={false}
-          >
+        <KeyboardScroll
+          bottomOffset={160}
+          contentContainerClassName="flex-grow justify-center gap-6 px-5 py-6"
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
+        >
             <View className="items-center gap-4">
               <Image source={emblem} accessibilityLabel="Prayer Warriors" style={{ width: 96, height: 94 }} resizeMode="contain" />
               <View className="items-center gap-1.5">
@@ -48,8 +48,7 @@ export function AuthShell({ title, subtitle, footer, children }: Props) {
               {children}
             </View>
             {footer ? <View className="items-center">{footer}</View> : null}
-          </ScrollView>
-        </KeyboardAvoidingView>
+        </KeyboardScroll>
       </SafeAreaView>
     </View>
   );
