@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { Platform, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { colors } from '../theme/tokens';
@@ -63,7 +64,7 @@ export function Screen({
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: background[tone] }} edges={edges}>
       {backdrop ? <Backdrop /> : null}
-      {/* Android runs edge-to-edge on SDK 57, so the window no longer resizes for the keyboard; pad on both platforms. */}
+      {/* keyboard-controller animates in step with the keyboard on both platforms (Android is edge-to-edge on SDK 57). */}
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'web' ? undefined : 'padding'}>
         {body}
       </KeyboardAvoidingView>
