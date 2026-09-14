@@ -43,13 +43,13 @@ export default function ForgotPasswordScreen() {
     >
       {sent ? (
         <View className="items-center gap-3 py-2">
-          <View className="h-14 w-14 items-center justify-center rounded-full bg-sage">
-            <Ionicons name="mail-open-outline" size={24} color={colors.leaf} />
+          <View className="h-14 w-14 items-center justify-center rounded-full bg-surface/15">
+            <Ionicons name="mail-open-outline" size={24} color={colors.goldLight} />
           </View>
-          <Text variant="title" className="text-center text-[20px]">
+          <Text variant="title" color="cream" className="text-center text-[20px]">
             Check your email
           </Text>
-          <Text variant="muted" className="text-center text-[15px] leading-[22px]">
+          <Text variant="body" color="creamSoft" className="text-center text-[15px] leading-[22px]">
             A reset link is on its way to {email.trim()}. Open it to choose a new password.
           </Text>
         </View>
@@ -57,7 +57,7 @@ export default function ForgotPasswordScreen() {
         <>
           <Input
             label="Email"
-            variant="filled"
+            variant="glass"
             placeholder="you@example.com"
             autoCapitalize="none"
             keyboardType="email-address"
@@ -68,7 +68,7 @@ export default function ForgotPasswordScreen() {
             onSubmitEditing={submit}
             error={error}
           />
-          <Button title="Send reset link" onPress={submit} loading={busy} disabled={!email.trim()} className="mt-1" />
+          <Button title="Send reset link" variant="inverse" onPress={submit} loading={busy} disabled={!email.trim()} className="mt-1" />
         </>
       )}
     </AuthShell>

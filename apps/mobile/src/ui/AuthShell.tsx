@@ -6,7 +6,7 @@ import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller
 import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { cardShadow, gradients } from '../theme/tokens';
+import { gradients } from '../theme/tokens';
 import { Text } from './Text';
 
 const emblem = require('../../assets/logo-emblem.png');
@@ -63,9 +63,7 @@ export function AuthShell({ title, subtitle, footer, children }: Props) {
                 ) : null}
               </View>
             </View>
-            <View className="gap-4 rounded-[28px] bg-surface p-5" style={cardShadow}>
-              {children}
-            </View>
+            <View className="gap-4 px-1">{children}</View>
             {footer ? (
               <Animated.View style={[{ overflow: 'hidden', alignItems: 'center' }, footerFold]}>
                 {footer}

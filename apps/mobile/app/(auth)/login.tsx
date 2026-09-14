@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Pressable } from 'react-native';
 
 import { useAuth } from '@/features/auth';
-import { colors } from '@/theme/tokens';
 import { Button, Input, Text } from '@/ui';
 import { AuthShell } from '@/ui/AuthShell';
 
@@ -40,7 +39,7 @@ export default function LoginScreen() {
     >
       <Input
         label="Email"
-        variant="filled"
+        variant="glass"
         placeholder="you@example.com"
         autoCapitalize="none"
         autoComplete="email"
@@ -52,7 +51,7 @@ export default function LoginScreen() {
       />
       <Input
         label="Password"
-        variant="filled"
+        variant="glass"
         placeholder="Your password"
         secureTextEntry={!show}
         autoComplete="password"
@@ -64,14 +63,14 @@ export default function LoginScreen() {
         error={error}
         right={
           <Pressable accessibilityRole="button" accessibilityLabel={show ? 'Hide password' : 'Show password'} onPress={() => setShow((s) => !s)} hitSlop={8}>
-            <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.muted} />
+            <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color="rgba(250, 247, 240, 0.7)" />
           </Pressable>
         }
       />
-      <Button title="Sign in" onPress={submit} loading={busy} disabled={!email.trim() || !password} className="mt-1" />
+      <Button title="Sign in" variant="inverse" onPress={submit} loading={busy} disabled={!email.trim() || !password} className="mt-1" />
       <Link href="/(auth)/forgot-password" asChild>
         <Pressable accessibilityRole="link" className="self-center py-1">
-          <Text variant="label" color="primary" className="text-[14px]">
+          <Text variant="label" color="creamSoft" className="text-[14px]">
             Forgot your password?
           </Text>
         </Pressable>

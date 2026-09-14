@@ -35,8 +35,8 @@ export default function AccountSetupScreen() {
         </Pressable>
       }
     >
-      <Input label="Your name" variant="filled" placeholder="e.g. Mary Joseph" value={displayName} onChangeText={setDisplayName} onSubmitEditing={submit} maxLength={40} autoFocus error={error} />
-      <Button title="Continue" onPress={submit} loading={busy} disabled={displayName.trim().length === 0} className="mt-1" />
+      <Input label="Your name" variant="glass" placeholder="e.g. Mary Joseph" value={displayName} onChangeText={setDisplayName} onSubmitEditing={submit} maxLength={40} autoFocus error={error} />
+      <Button title="Continue" variant="inverse" onPress={submit} loading={busy} disabled={displayName.trim().length === 0} className="mt-1" />
     </AuthShell>
   );
 }
