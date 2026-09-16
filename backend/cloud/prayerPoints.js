@@ -18,6 +18,7 @@ const MESSAGES = {
   notYours: 'This point is not yours to change.',
   alreadyDone: 'This point is already marked done.',
   notHolder: 'Only the member carrying this point, or an admin, can mark it answered.',
+  notDoneYet: 'Mark the point done for this month first, then mark it answered.',
   alreadyAnswered: 'This point has already been answered.',
   testimonyTooLong: 'Keep the testimony under 1000 characters.',
 };
@@ -148,6 +149,7 @@ function createPrayerPointHandlers({ memberships, points, claims, now = () => ne
       if (adminGroupId !== groupId) {
         const claim = await claims.find(point.id, monthKeyFor(now()));
         if (!claim || claim.userId !== callerId) throw fail(MESSAGES.notHolder);
+        if (!claim.doneAt) throw fail(MESSAGES.notDoneYet);
       }
       return points.update(point.id, { answeredAt: now(), testimony: cleanTestimony });
     },

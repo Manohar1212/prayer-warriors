@@ -149,11 +149,16 @@ describe('answered points', () => {
     expect(result[1].testimony).toBe('Peace came');
   });
 
-  it('lets the holder mark a point answered with a testimony', async () => {
-    const d = deps({ found: claimRow() });
+  it('lets the holder mark a point answered with a testimony once it is done', async () => {
+    const d = deps({ found: claimRow({ doneAt: '2026-09-10T00:00:00.000Z' }) });
     const result = await createPrayerPointHandlers(d).markPrayerPointAnswered({ pointId: 'p1', testimony: ' God moved ' }, caller);
     expect(d.points.update).toHaveBeenCalledWith('p1', { answeredAt: NOW, testimony: 'God moved' });
     expect(result.answeredAt).toBe(NOW);
+  });
+
+  it('refuses the holder before the point is marked done', async () => {
+    const d = deps({ found: claimRow() });
+    await expect(createPrayerPointHandlers(d).markPrayerPointAnswered({ pointId: 'p1' }, caller)).rejects.toThrow(MESSAGES.notDoneYet);
   });
 
   it('lets an admin mark any point answered, but refuses other members', async () => {

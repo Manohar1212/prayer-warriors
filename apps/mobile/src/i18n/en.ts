@@ -142,7 +142,7 @@ export const en = {
   'prayer.points.remove': 'Remove from the list',
   'prayer.points.failed': 'Could not save.',
   'prayer.points.markAnswered': 'Prayer answered',
-  'prayer.points.answeredIntro': 'When the group sees this prayer answered, close it here. It will stop coming back each month and move to Answered.',
+  'prayer.points.answeredIntro': 'This point is done for the month. If the group has seen this prayer answered, close it here: it will stop coming back each month and move to Answered.',
   'prayer.points.answeredHeading': 'Monthly points answered',
   'prayer.points.answeredOn': 'Answered {date}',
   'prayer.emptyActiveTitle': 'No requests yet',

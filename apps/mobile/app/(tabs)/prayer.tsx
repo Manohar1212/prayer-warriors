@@ -116,7 +116,7 @@ function PointRow({ point, canEdit, onClaim, onRelease, onDone, onEdit, onAnswer
           <Button title={t('prayer.points.markDone')} size="compact" icon="checkmark" onPress={onDone} />
         </View>
       ) : null}
-      {point.mine || canEdit ? (
+      {done && (point.mine || canEdit) ? (
         <Pressable accessibilityRole="button" onPress={onAnswered} hitSlop={8} className="flex-row items-center gap-1.5 self-start py-0.5">
           <Ionicons name="sparkles-outline" size={14} color={colors.leaf} />
           <Text variant="label" color="leaf" className="text-[13px]">

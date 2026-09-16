@@ -26,7 +26,7 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'prayer.points.remove': 'జాబితా నుండి తీసివేయండి',
   'prayer.points.failed': 'సేవ్ కాలేదు.',
   'prayer.points.markAnswered': 'ప్రార్థనకు జవాబు వచ్చింది',
-  'prayer.points.answeredIntro': 'ఈ ప్రార్థనకు జవాబు వచ్చిందని గ్రూప్ చూసినప్పుడు ఇక్కడ ముగించండి. ఇది ప్రతి నెలా తిరిగి రాకుండా జవాబు పొందినవాటిలోకి వెళ్తుంది.',
+  'prayer.points.answeredIntro': 'ఈ నెలకు ఈ అంశం పూర్తయింది. ఈ ప్రార్థనకు జవాబు వచ్చిందని గ్రూప్ చూసి ఉంటే ఇక్కడ ముగించండి: ఇది ప్రతి నెలా తిరిగి రాకుండా జవాబు పొందినవాటిలోకి వెళ్తుంది.',
   'prayer.points.answeredHeading': 'జవాబు పొందిన నెలవారీ అంశాలు',
   'prayer.points.answeredOn': '{date}న జవాబు వచ్చింది',
   'common.continue': 'కొనసాగించండి',
