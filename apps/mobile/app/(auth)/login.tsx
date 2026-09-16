@@ -32,19 +32,19 @@ export default function LoginScreen() {
 
   return (
     <AuthShell
-      backTo="/(auth)/welcome"
+      backTo="/(auth)/language"
+      brand
       title={t('login.title')}
       subtitle={t('login.subtitle')}
       footer={
-        <Text variant="caption" color="muted" className="text-center">
+        <Text variant="caption" className="text-center">
           {t('welcome.invitation')}
         </Text>
       }
     >
       <Input
-        label={t('common.email')}
-        variant="filled"
-        placeholder={t('login.emailPlaceholder')}
+        left="mail-outline"
+        placeholder={t('common.email')}
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"
@@ -54,9 +54,8 @@ export default function LoginScreen() {
         onChangeText={setEmail}
       />
       <Input
-        label={t('login.password')}
-        variant="filled"
-        placeholder={t('login.passwordPlaceholder')}
+        left="lock-closed-outline"
+        placeholder={t('login.password')}
         secureTextEntry={!show}
         autoComplete="password"
         textContentType="password"
@@ -71,10 +70,10 @@ export default function LoginScreen() {
           </Pressable>
         }
       />
-      <Button title={t('welcome.signIn')} variant="primary" onPress={submit} loading={busy} disabled={!email.trim() || !password} className="mt-1" />
+      <Button title={t('welcome.signIn')} onPress={submit} loading={busy} disabled={!email.trim() || !password} className="mt-1" />
       <Link href="/(auth)/forgot-password" asChild>
         <Pressable accessibilityRole="link" className="self-center py-1">
-          <Text variant="label" color="muted" className="text-[14px]">
+          <Text variant="label" color="primary" className="text-[14px]">
             {t('login.forgot')}
           </Text>
         </Pressable>

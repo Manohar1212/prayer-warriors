@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useState, type ReactNode } from 'react';
 import { Platform, TextInput, View, type TextInputProps } from 'react-native';
 
@@ -15,20 +16,22 @@ type Props = TextInputProps & {
   variant?: InputVariant;
   /** Something at the trailing edge, such as a show-password toggle. */
   right?: ReactNode;
+  /** An icon at the leading edge, such as an envelope on an email field. */
+  left?: keyof typeof Ionicons.glyphMap;
 };
 
-export function Input({ label, error, className = '', variant = 'filled', right, multiline, onFocus, onBlur, style, ...rest }: Props) {
+export function Input({ label, error, className = '', variant = 'filled', right, left, multiline, onFocus, onBlur, style, ...rest }: Props) {
   const [focused, setFocused] = useState(false);
   const glass = variant === 'glass';
   const edge = glass
     ? error ? 'border-rose' : focused ? 'border-surface/70' : 'border-surface/20'
     : error ? 'border-rose-deep' : focused ? 'border-primary' : 'border-border';
   const field = multiline
-    ? `rounded-[10px] border bg-surface px-4 py-3 text-[16px] leading-[24px] ${edge}`
+    ? `rounded-[12px] border bg-surface px-4 py-3 text-[15px] leading-[22px] ${edge}`
     : glass
       ? `h-[54px] rounded-[16px] border bg-surface/15 px-4 py-0 text-[16px] text-cream ${edge} ${right ? 'pr-12' : ''}`
       : variant === 'filled'
-        ? `h-[52px] rounded-[10px] border bg-surface px-4 py-0 text-[16px] ${edge} ${right ? 'pr-12' : ''}`
+        ? `h-[50px] rounded-[12px] border bg-surface px-4 py-0 text-[15px] ${edge} ${right ? 'pr-12' : ''} ${left ? 'pl-11' : ''}`
         : `border-b bg-transparent px-0 pb-2.5 pt-2 text-[16px] ${edge}`;
   return (
     <View className={`gap-1.5 ${className}`}>
@@ -54,6 +57,11 @@ export function Input({ label, error, className = '', variant = 'filled', right,
           style={[multiline ? { minHeight: 96, textAlignVertical: 'top' } : { textAlignVertical: 'center' }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null, style]}
           {...rest}
         />
+        {left ? (
+          <View pointerEvents="none" className="absolute bottom-0 left-3.5 top-0 justify-center">
+            <Ionicons name={left} size={18} color={colors.muted} />
+          </View>
+        ) : null}
         {right ? <View className="absolute bottom-0 right-3 top-0 justify-center">{right}</View> : null}
       </View>
       {error ? (

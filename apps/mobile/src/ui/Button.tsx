@@ -19,14 +19,14 @@ type Props = Omit<PressableProps, 'children' | 'style'> & {
 
 const container: Record<ButtonVariant, string> = {
   primary: 'bg-primary',
-  secondary: 'bg-surface border border-primary/50',
+  secondary: 'bg-surface border border-border',
   ghost: 'bg-transparent',
   inverse: 'bg-surface',
   danger: 'bg-surface border border-rose',
 };
 
 const label: Record<ButtonVariant, TextColor> = {
-  primary: 'goldLight',
+  primary: 'cream',
   secondary: 'primary',
   ghost: 'primary',
   inverse: 'primaryDark',
@@ -34,7 +34,7 @@ const label: Record<ButtonVariant, TextColor> = {
 };
 
 const spinner: Record<ButtonVariant, string> = {
-  primary: colors.goldLight,
+  primary: colors.surface,
   secondary: colors.primary,
   ghost: colors.primary,
   inverse: colors.primaryDark,
@@ -42,7 +42,7 @@ const spinner: Record<ButtonVariant, string> = {
 };
 
 const iconColor: Record<ButtonVariant, string> = {
-  primary: colors.goldLight,
+  primary: colors.surface,
   secondary: colors.primary,
   ghost: colors.primary,
   inverse: colors.primaryDark,
@@ -50,8 +50,8 @@ const iconColor: Record<ButtonVariant, string> = {
 };
 
 const sizing: Record<ButtonSize, { box: string; text: string; icon: number }> = {
-  regular: { box: 'min-h-[52px] rounded-[10px] px-6', text: 'text-[16px]', icon: 18 },
-  compact: { box: 'min-h-[38px] rounded-[8px] px-4', text: 'text-[14px]', icon: 15 },
+  regular: { box: 'min-h-[50px] rounded-[12px] px-6', text: 'text-[15px]', icon: 18 },
+  compact: { box: 'min-h-[36px] rounded-full px-4', text: 'text-[13px]', icon: 15 },
 };
 
 export function Button({ title, variant = 'primary', size = 'regular', icon, loading = false, disabled, className = '', ...rest }: Props) {

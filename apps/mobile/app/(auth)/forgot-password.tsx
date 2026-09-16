@@ -34,34 +34,26 @@ export default function ForgotPasswordScreen() {
   return (
     <AuthShell
       backTo="/(auth)/login"
-      title={t('forgot.title')}
-      subtitle={sent ? undefined : t('forgot.subtitle')}
+      icon={sent ? 'mail-open-outline' : 'lock-closed-outline'}
+      title={sent ? t('forgot.sentTitle') : t('forgot.title')}
+      subtitle={sent ? t('forgot.sentBody', { email: email.trim() }) : t('forgot.subtitle')}
       footer={
         <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8} className="py-1">
-          <Text variant="label" color="muted" className="text-[14px]">
-            {sent ? t('forgot.backToSignIn') : t('common.cancel')}
+          <Text variant="label" color="primary" className="text-[14px]">
+            {t('forgot.backToSignIn')}
           </Text>
         </Pressable>
       }
     >
       {sent ? (
-        <View className="items-center gap-3 py-2">
-          <View className="h-14 w-14 items-center justify-center rounded-full bg-lavender">
-            <Ionicons name="mail-open-outline" size={24} color={colors.primary} />
-          </View>
-          <Text variant="title" className="text-center text-[17px]">
-            {t('forgot.sentTitle')}
-          </Text>
-          <Text variant="body" color="muted" className="text-center text-[15px] leading-[22px]">
-            {t('forgot.sentBody', { email: email.trim() })}
-          </Text>
+        <View className="items-center py-2">
+          <Ionicons name="checkmark-circle" size={36} color={colors.leaf} />
         </View>
       ) : (
         <>
           <Input
-            label={t('common.email')}
-            variant="filled"
-            placeholder={t('login.emailPlaceholder')}
+            left="mail-outline"
+            placeholder={t('common.email')}
             autoCapitalize="none"
             keyboardType="email-address"
             textContentType="emailAddress"
@@ -71,7 +63,7 @@ export default function ForgotPasswordScreen() {
             onSubmitEditing={submit}
             error={error}
           />
-          <Button title={t('forgot.send')} variant="primary" onPress={submit} loading={busy} disabled={!email.trim()} className="mt-1" />
+          <Button title={t('forgot.send')} onPress={submit} loading={busy} disabled={!email.trim()} className="mt-1" />
         </>
       )}
     </AuthShell>

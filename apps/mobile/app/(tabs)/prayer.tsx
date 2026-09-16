@@ -8,7 +8,7 @@ import { timeAgoShort } from '@/lib/time';
 import { useT, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
-import { Avatar, Badge, Card, Chip, EmptyState, Fab, Screen, Segments, TabHeader, Text } from '@/ui';
+import { Badge, Button, Card, Chip, EmptyState, Screen, Segments, TabHeader, Text } from '@/ui';
 
 type Tab = PrayerStatus | 'journal';
 
@@ -19,7 +19,9 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
     <Card className="gap-3">
       <Pressable accessibilityRole="button" accessibilityLabel={`Open ${request.title}`} onPress={onOpen} className="gap-3">
         <View className="flex-row items-center gap-3">
-          <Avatar name={request.authorName} size={40} />
+          <View className="h-11 w-11 items-center justify-center rounded-full bg-honey">
+            <Ionicons name="hand-left" size={20} color={colors.gold} />
+          </View>
           <View className="flex-1 gap-0.5">
             <Text variant="label" className="text-[15px]" numberOfLines={2}>
               {request.title}
@@ -89,7 +91,7 @@ export default function PrayerScreen() {
       <FlatList
         data={visible}
         keyExtractor={(r) => r.id}
-        contentContainerClassName="flex-grow gap-3 px-4 pb-24 pt-1"
+        contentContainerClassName="flex-grow gap-3 px-4 pb-6 pt-1"
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
         ListHeaderComponent={
@@ -104,7 +106,7 @@ export default function PrayerScreen() {
               value={status}
               onChange={onTab}
             />
-            <View className="flex-row items-center gap-2 rounded-[10px] border border-border bg-surface px-3.5">
+            <View className="flex-row items-center gap-2 rounded-[12px] border border-border bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
                 placeholder={t('prayer.searchPlaceholder')}
@@ -145,7 +147,9 @@ export default function PrayerScreen() {
           <RequestCard request={item} onPray={() => togglePraying(item.id)} onOpen={() => router.push({ pathname: '/prayer/[id]', params: { id: item.id } })} />
         )}
       />
-      <Fab label={t('prayer.newRequest')} onPress={() => router.push('/prayer/new')} />
+      <View className="border-t border-border bg-surface px-4 pb-3 pt-3">
+        <Button title={t('prayer.newRequest')} icon="add" onPress={() => router.push('/prayer/new')} />
+      </View>
     </Screen>
   );
 }

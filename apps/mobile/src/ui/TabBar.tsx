@@ -29,7 +29,7 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
   // Only routes with an icon are tabs; hidden routes (the Bible stack) have none.
   const routes = state.routes.filter((r) => r.name in icons && descriptors[r.key]?.options.href !== null);
   return (
-    <View className="flex-row border-t border-gold/60 bg-surface" style={{ paddingBottom: Math.max(insets.bottom, 8) }}>
+    <View className="flex-row border-t border-border bg-surface" style={{ paddingBottom: Math.max(insets.bottom, 8) }}>
       {routes.map((route) => {
         const focused = state.routes[state.index]?.key === route.key;
         const options = descriptors[route.key]?.options;
@@ -49,7 +49,7 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
             className="flex-1 items-center gap-1 pb-1 pt-3"
           >
             <Ionicons name={focused ? icon.active : icon.icon} size={23} color={focused ? colors.primary : colors.muted} />
-            <Text variant="label" color={focused ? 'primary' : 'muted'} className="text-[11px] leading-[14px]" style={{ letterSpacing: -0.2 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+            <Text variant="label" color={focused ? 'primary' : 'muted'} className="text-[10px] leading-[13px]" style={{ letterSpacing: -0.1 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
               {label}
             </Text>
           </Pressable>

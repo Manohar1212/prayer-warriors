@@ -6,6 +6,7 @@ export function LanguageToggle({ value, onChange }: { value: BibleLanguage; onCh
   const t = useT();
   return (
     <Segments
+      variant="pill"
       options={[
         { value: 'en', label: t('bible.english') },
         { value: 'te', label: t('bible.telugu') },

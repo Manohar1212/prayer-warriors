@@ -58,6 +58,7 @@ export default function ProfileScreen() {
           </Text>
         </View>
         <Segments<Language>
+          variant="pill"
           options={[
             { value: 'en', label: t('language.en') },
             { value: 'te', label: t('language.te') },

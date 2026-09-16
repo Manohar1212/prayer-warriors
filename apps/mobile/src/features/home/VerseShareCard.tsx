@@ -41,7 +41,7 @@ function CrossWithRays() {
       {[0, 30, 60, 90, 120, 150].map((deg) => (
         <Line key={`b${deg}`} x1={48} y1={48} x2={48 - 44 * Math.cos((deg * Math.PI) / 180)} y2={48 - 44 * Math.sin((deg * Math.PI) / 180)} stroke="#E3C77A" strokeWidth={0.8} strokeOpacity={0.5} />
       ))}
-      <Circle cx={48} cy={48} r={26} fill="#F7F1E6" fillOpacity={0.9} />
+      <Circle cx={48} cy={48} r={26} fill="#FFFFFF" fillOpacity={0.9} />
       <Rect x={45} y={30} width={6} height={36} rx={2} fill="#B8922E" />
       <Rect x={35} y={41} width={26} height={6} rx={2} fill="#B8922E" />
     </Svg>
@@ -57,19 +57,19 @@ export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function Ver
   const verseSize = telugu ? (long ? 18 : 21) : long ? 20 : 24;
   const verseLine = telugu ? (long ? 30 : 34) : long ? 30 : 35;
   return (
-    <View ref={ref} collapsable={false} style={{ width: W, height: H, backgroundColor: '#F7F1E6', overflow: 'hidden' }}>
+    <View ref={ref} collapsable={false} style={{ width: W, height: H, backgroundColor: '#FFFFFF', overflow: 'hidden' }}>
       {/* Washes: soft radial gradients, like colour bleeding into wet paper. */}
       <Svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ position: 'absolute', left: 0, top: 0 }}>
         <Defs>
           <RadialGradient id="w-rose" cx="50%" cy="50%" r="50%">
-            <Stop offset="0" stopColor="#E8D08A" stopOpacity={0.5} />
-            <Stop offset="0.6" stopColor="#E8D08A" stopOpacity={0.2} />
-            <Stop offset="1" stopColor="#E8D08A" stopOpacity={0} />
+            <Stop offset="0" stopColor="#E3EEFA" stopOpacity={0.9} />
+            <Stop offset="0.6" stopColor="#E3EEFA" stopOpacity={0.4} />
+            <Stop offset="1" stopColor="#E3EEFA" stopOpacity={0} />
           </RadialGradient>
           <RadialGradient id="w-sage" cx="50%" cy="50%" r="50%">
-            <Stop offset="0" stopColor="#E7C3C5" stopOpacity={0.5} />
-            <Stop offset="0.6" stopColor="#E7C3C5" stopOpacity={0.2} />
-            <Stop offset="1" stopColor="#E7C3C5" stopOpacity={0} />
+            <Stop offset="0" stopColor="#EEE6FA" stopOpacity={0.9} />
+            <Stop offset="0.6" stopColor="#EEE6FA" stopOpacity={0.4} />
+            <Stop offset="1" stopColor="#EEE6FA" stopOpacity={0} />
           </RadialGradient>
           <RadialGradient id="w-honey" cx="50%" cy="50%" r="50%">
             <Stop offset="0" stopColor="#FFE0AA" stopOpacity={0.65} />
@@ -82,8 +82,8 @@ export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function Ver
         <Ellipse cx={330} cy={420} rx={180} ry={140} fill="url(#w-honey)" />
       </Svg>
       {/* Double frame */}
-      <View pointerEvents="none" style={{ position: 'absolute', left: 12, top: 12, right: 12, bottom: 12, borderWidth: 1, borderColor: 'rgba(201,154,63,0.55)', borderRadius: 4 }} />
-      <View pointerEvents="none" style={{ position: 'absolute', left: 17, top: 17, right: 17, bottom: 17, borderWidth: 0.6, borderColor: 'rgba(201,154,63,0.4)', borderRadius: 2 }} />
+      <View pointerEvents="none" style={{ position: 'absolute', left: 12, top: 12, right: 12, bottom: 12, borderWidth: 1, borderColor: 'rgba(30,58,95,0.45)', borderRadius: 4 }} />
+      <View pointerEvents="none" style={{ position: 'absolute', left: 17, top: 17, right: 17, bottom: 17, borderWidth: 0.6, borderColor: 'rgba(30,58,95,0.25)', borderRadius: 2 }} />
 
       <View style={{ flex: 1, paddingHorizontal: 34, paddingTop: 30, paddingBottom: 26, alignItems: 'center', justifyContent: 'space-between' }}>
         <View style={{ alignItems: 'center', gap: 2 }}>

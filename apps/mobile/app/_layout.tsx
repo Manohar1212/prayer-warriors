@@ -1,9 +1,8 @@
 import '../global.css';
 import '@/lib/livekitGlobals';
 
-import { CormorantGaramond_500Medium_Italic, CormorantGaramond_600SemiBold, CormorantGaramond_700Bold } from '@expo-google-fonts/cormorant-garamond';
-import { Lora_400Regular, Lora_400Regular_Italic, Lora_500Medium, Lora_600SemiBold } from '@expo-google-fonts/lora';
-import { NotoSerifTelugu_400Regular, NotoSerifTelugu_500Medium, NotoSerifTelugu_700Bold } from '@expo-google-fonts/noto-serif-telugu';
+import { Inter_400Regular, Inter_400Regular_Italic, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import { NotoSansTelugu_400Regular, NotoSansTelugu_500Medium, NotoSansTelugu_700Bold } from '@expo-google-fonts/noto-sans-telugu';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -27,7 +26,7 @@ const modalOptions = {
   headerShown: true,
   headerStyle: { backgroundColor: colors.bloom },
   headerShadowVisible: false,
-  headerTitleStyle: { fontFamily: fonts.display, fontSize: 18, color: colors.ink },
+  headerTitleStyle: { fontFamily: fonts.sansSemiBold, fontSize: 17, color: colors.ink },
   headerTintColor: colors.primary,
   headerLeft: () => <HeaderBack modal />,
 };
@@ -65,6 +64,7 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
       <Stack.Protected guard={gate === 'app'}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="profile" options={{ ...modalOptions, title: t('profile.title') }} />
+        <Stack.Screen name="promise" options={{ ...cardOptions, title: t('home.dailyPromise') }} />
         <Stack.Screen name="add-member" options={{ ...modalOptions, title: t('members.add.title') }} />
         <Stack.Screen name="prayer/new" options={{ ...modalOptions, title: t('prayer.new.title') }} />
         <Stack.Screen name="prayer/[id]" options={{ ...cardOptions, title: t('prayer.detail.title') }} />
@@ -89,16 +89,14 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    CormorantGaramond_500Medium_Italic,
-    CormorantGaramond_600SemiBold,
-    CormorantGaramond_700Bold,
-    Lora_400Regular,
-    Lora_400Regular_Italic,
-    Lora_500Medium,
-    Lora_600SemiBold,
-    NotoSerifTelugu_400Regular,
-    NotoSerifTelugu_500Medium,
-    NotoSerifTelugu_700Bold,
+    Inter_400Regular,
+    Inter_400Regular_Italic,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    NotoSansTelugu_400Regular,
+    NotoSansTelugu_500Medium,
+    NotoSansTelugu_700Bold,
   });
 
   return (

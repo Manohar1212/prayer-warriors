@@ -9,7 +9,7 @@ import { shortDate } from '@/lib/time';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors, gradients } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
-import { Card, EmptyState, Fab, Screen, Segments, TabHeader, Text } from '@/ui';
+import { Card, Chip, EmptyState, Fab, Screen, TabHeader, Text } from '@/ui';
 
 type Tab = ResourceType | 'bible';
 
@@ -92,8 +92,12 @@ export default function ResourcesScreen() {
         ListHeaderComponent={
           <View className="gap-3 pb-1">
             <TabHeader title={t('resources.title')} subtitle={t('resources.subtitle')} right={<HeaderActions />} />
-            <Segments<Tab> options={[...RESOURCE_TYPES.map((r) => ({ value: r.id as Tab, label: t(pluralKey[r.id]) })), { value: 'bible', label: t('resources.bible') }]} value={type} onChange={onTab} />
-            <View className="flex-row items-center gap-2 rounded-[10px] border border-border bg-surface px-3.5">
+            <View className="flex-row gap-2">
+              {[...RESOURCE_TYPES.map((r) => ({ value: r.id as Tab, label: t(pluralKey[r.id]) })), { value: 'bible' as Tab, label: t('resources.bible') }].map((o) => (
+                <Chip key={o.value} label={o.label} selected={type === o.value} onPress={() => onTab(o.value)} />
+              ))}
+            </View>
+            <View className="flex-row items-center gap-2 rounded-[12px] border border-border bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
                 placeholder={t('resources.searchIn', { plural: plural.toLowerCase() })}

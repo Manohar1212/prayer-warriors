@@ -182,7 +182,7 @@ export default function PrayerRequestScreen() {
         ) : (
           <Text variant="caption">{t('prayer.detail.firstComment')}</Text>
         )}
-        <View className="flex-row items-center gap-2 rounded-[10px] border border-border bg-surface py-1 pl-4 pr-1">
+        <View className="flex-row items-center gap-2 rounded-full border border-border bg-surface py-1 pl-4 pr-1">
           <TextInput
             placeholder={t('prayer.detail.addComment')}
             placeholderTextColor={colors.muted}

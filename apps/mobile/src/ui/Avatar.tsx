@@ -4,12 +4,14 @@ import { colors } from '../theme/tokens';
 import { Text } from './Text';
 
 const palette = [
-  { bg: '#F1DFE0', fg: '#7A1F2B' },
-  { bg: '#F3E7C9', fg: '#8A6A1E' },
-  { bg: '#E4E8DA', fg: '#4E6B3F' },
+  { bg: '#E6F4EA', fg: '#2E9E5B' },
+  { bg: '#E3EEFA', fg: '#2F6FCB' },
+  { bg: '#EEE6FA', fg: '#7C4DCC' },
+  { bg: '#FBE4EC', fg: '#D6336C' },
+  { bg: '#FDF0D8', fg: '#E9A23B' },
 ];
 
-/** A burgundy, gold or green disc, stable per person. */
+/** A pastel disc with a saturated initial, stable per person. */
 export function avatarTone(name: string): { bg: string; fg: string } {
   let hash = 0;
   for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;

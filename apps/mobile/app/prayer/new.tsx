@@ -62,7 +62,7 @@ export default function NewPrayerRequestScreen() {
           accessibilityRole="switch"
           accessibilityState={{ checked: urgent }}
           onPress={() => setUrgent((u) => !u)}
-          className="flex-row items-center justify-between rounded-[10px] border border-border bg-surface px-4 py-3"
+          className="flex-row items-center justify-between rounded-[14px] border border-border bg-surface px-4 py-3"
         >
           <View className="gap-0.5">
             <Text variant="label">{t('prayer.new.urgent')}</Text>

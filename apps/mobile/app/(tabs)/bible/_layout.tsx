@@ -10,7 +10,7 @@ export default function BibleLayout() {
         headerShown: true,
         headerStyle: { backgroundColor: colors.bloom },
         headerShadowVisible: false,
-        headerTitleStyle: { fontFamily: fonts.display, fontSize: 18, color: colors.ink },
+        headerTitleStyle: { fontFamily: fonts.sansSemiBold, fontSize: 17, color: colors.ink },
         headerTintColor: colors.primary,
         contentStyle: { backgroundColor: colors.cream },
       }}

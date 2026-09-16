@@ -89,7 +89,7 @@ export default function JournalEntryScreen() {
           accessibilityRole="switch"
           accessibilityState={{ checked: isAnswered }}
           onPress={() => setIsAnswered((a) => !a)}
-          className="flex-row items-center justify-between rounded-[10px] border border-border bg-surface px-4 py-3"
+          className="flex-row items-center justify-between rounded-[14px] border border-border bg-surface px-4 py-3"
         >
           <View className="gap-0.5">
             <Text variant="label">{t('journal.entry.answered')}</Text>

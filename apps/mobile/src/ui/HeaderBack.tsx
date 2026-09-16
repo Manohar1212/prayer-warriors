@@ -23,10 +23,10 @@ export function HeaderBack({ modal = false, fallback = '/(tabs)', onDark = false
       accessibilityLabel={modal ? 'Close' : 'Back'}
       onPress={() => goBackOr(router, fallback)}
       hitSlop={10}
-      className={`h-9 w-9 items-center justify-center rounded-full ${onDark ? 'bg-surface/15' : 'border border-gold/60 bg-surface'}`}
+      className={`h-9 w-9 items-center justify-center rounded-full ${onDark ? 'bg-surface/15' : ''}`}
       style={{ marginLeft: onDark ? 0 : 4 }}
     >
-      <Ionicons name={modal ? 'close' : 'chevron-back'} size={20} color={onDark ? colors.surface : colors.primary} />
+      <Ionicons name={modal ? 'close' : 'arrow-back'} size={22} color={onDark ? colors.surface : colors.ink} />
     </Pressable>
   );
 }

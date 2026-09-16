@@ -14,18 +14,20 @@ export type TextColor =
   | 'creamFaint'
   | 'gold'
   | 'goldLight'
+  | 'violet'
+  | 'skyDeep'
   | 'rose'
   | 'roseDeep'
   | 'leaf';
 
 const variantClass: Record<TextVariant, string> = {
-  display: 'font-display text-[32px] leading-[36px]',
-  title: 'font-display text-[24px] leading-[28px]',
-  scripture: 'font-display-italic text-[18px] leading-[28px]',
-  body: 'font-sans text-[16px] leading-[24px]',
-  label: 'font-medium text-[15px] leading-[20px]',
-  caption: 'font-sans text-[14px] leading-[19px]',
-  muted: 'font-sans text-[15px] leading-[22px]',
+  display: 'font-display text-[24px] leading-[30px]',
+  title: 'font-display text-[18px] leading-[24px]',
+  scripture: 'font-display-italic text-[17px] leading-[26px]',
+  body: 'font-sans text-[15px] leading-[22px]',
+  label: 'font-medium text-[14px] leading-[20px]',
+  caption: 'font-sans text-[13px] leading-[18px]',
+  muted: 'font-sans text-[14px] leading-[20px]',
 };
 
 const defaultColor: Record<TextVariant, TextColor> = {
@@ -48,12 +50,14 @@ const colorValue: Record<TextColor, string> = {
   creamFaint: 'rgba(250, 247, 240, 0.55)',
   gold: colors.gold,
   goldLight: colors.goldLight,
+  violet: colors.violet,
+  skyDeep: colors.skyDeep,
   rose: colors.roseDeep,
   roseDeep: colors.roseDeep,
   leaf: colors.leaf,
 };
 
-/** Telugu faces that stand in for Cormorant and Lora, which have no Telugu glyphs. */
+/** Telugu faces that stand in for Inter, which has no Telugu glyphs. */
 const teluguFamily: Record<TextVariant, string> = {
   display: fonts.teluguBold,
   title: fonts.teluguBold,
