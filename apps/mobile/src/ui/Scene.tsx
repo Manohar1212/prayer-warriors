@@ -32,6 +32,8 @@ type Props = {
   variant?: SceneVariant;
   /** Fades the lower part to dark so white text stays readable on top of it. */
   dim?: boolean;
+  /** Which side to keep when the box is taller than the scene: 'right' keeps the cross in view. */
+  align?: 'center' | 'right';
   style?: StyleProp<ViewStyle>;
 };
 
@@ -39,12 +41,12 @@ type Props = {
  * A sky over mountains with a cross on the near hill, drawn as vectors so it ships with the app
  * and scales to any box. Stands in for the photographs in the design until real ones are added.
  */
-export function Scene({ variant = 'dawn', dim = false, style }: Props) {
+export function Scene({ variant = 'dawn', dim = false, align = 'center', style }: Props) {
   const sky = skies[variant];
   const id = `scene-${variant}`;
   return (
     <View pointerEvents="none" style={style}>
-      <Svg width="100%" height="100%" viewBox="0 0 390 260" preserveAspectRatio="xMidYMid slice">
+      <Svg width="100%" height="100%" viewBox="0 0 390 260" preserveAspectRatio={align === 'right' ? 'xMaxYMid slice' : 'xMidYMid slice'}>
         <Defs>
           <LinearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={sky.stops[0]} />

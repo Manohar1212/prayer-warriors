@@ -36,7 +36,7 @@ export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function Ver
   const verseLine = telugu ? (long ? 30 : 34) : long ? 30 : 35;
   return (
     <View ref={ref} collapsable={false} style={{ width: W, height: H, backgroundColor: '#1E2D42', overflow: 'hidden' }}>
-      <Scene variant={sky} dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+      <Scene variant={sky} dim align="right" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       {/* A darker veil in the middle so the verse reads on the bright skies too. */}
       <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(11,21,38,0.28)' }} />
       <View style={{ flex: 1, paddingHorizontal: 30, paddingTop: 30, paddingBottom: 24, alignItems: 'center', justifyContent: 'space-between' }}>
