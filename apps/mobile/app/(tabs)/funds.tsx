@@ -53,7 +53,7 @@ export default function FundsScreen() {
         <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 22, padding: 20, gap: 14, overflow: 'hidden' }}>
           <View style={{ position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.08)' }} />
           <View style={{ position: 'absolute', right: 40, top: 60, width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255,255,255,0.06)' }} />
-          <View className="flex-row items-start justify-between">
+          <View>
             <View className="gap-1">
               <Text variant="caption" color="creamSoft">
                 {t('funds.balance')}
@@ -62,7 +62,6 @@ export default function FundsScreen() {
                 {formatRupees(balancePaise)}
               </Text>
             </View>
-            <Ionicons name="leaf-outline" size={26} color="rgba(255,255,255,0.45)" />
           </View>
           <View className="gap-1.5">
             <View className="flex-row items-center justify-between">
