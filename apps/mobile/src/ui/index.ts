@@ -17,3 +17,4 @@ export { Avatar, AvatarStack, avatarTone } from './Avatar';
 export { TabHeader } from './TabHeader';
 export { EmptyState } from './EmptyState';
 export { HeaderBack } from './HeaderBack';
+export { Aurora, paletteForHour } from './Aurora';

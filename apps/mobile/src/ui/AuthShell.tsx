@@ -1,4 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import type { Href } from 'expo-router';
 import type { PropsWithChildren, ReactNode } from 'react';
@@ -8,6 +7,7 @@ import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { gradients } from '../theme/tokens';
+import { Aurora } from './Aurora';
 import { Glow } from './Glow';
 import { HeaderBack } from './HeaderBack';
 import { Text } from './Text';
@@ -45,7 +45,7 @@ export function AuthShell({ title, subtitle, footer, backTo, children }: Props) 
   return (
     <View style={{ flex: 1, backgroundColor: gradients.welcome[0] }}>
       <StatusBar style="light" />
-      <LinearGradient colors={[...gradients.welcome]} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={StyleSheet.absoluteFill} />
+      <Aurora palette="dusk" style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         {backTo ? (
           <View style={{ position: 'absolute', top: insets.top + 8, left: 16, zIndex: 1 }}>

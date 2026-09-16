@@ -1,4 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
@@ -8,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useT } from '@/i18n';
 import { gradients } from '@/theme/tokens';
 import { Button, Text } from '@/ui';
+import { Aurora } from '@/ui/Aurora';
 import { Glow } from '@/ui/Glow';
 
 const logo = require('../../assets/logo.png');
@@ -42,7 +42,7 @@ export default function WelcomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: gradients.welcome[0] }}>
       <StatusBar style="light" />
-      <LinearGradient colors={[...gradients.welcome]} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={StyleSheet.absoluteFill} />
+      <Aurora palette="dusk" style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <View className="flex-1 justify-between px-6 pb-6 pt-4">
           <View className="flex-1 items-center justify-center gap-8">
