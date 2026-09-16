@@ -13,14 +13,15 @@ export type TextColor =
   | 'creamSoft'
   | 'creamFaint'
   | 'gold'
+  | 'goldLight'
   | 'rose'
   | 'roseDeep'
   | 'leaf';
 
 const variantClass: Record<TextVariant, string> = {
-  display: 'font-display text-[26px] leading-[32px]',
-  title: 'font-display text-[20px] leading-[26px]',
-  scripture: 'font-display-italic text-[19px] leading-[29px]',
+  display: 'font-display text-[32px] leading-[36px]',
+  title: 'font-display text-[24px] leading-[28px]',
+  scripture: 'font-display-italic text-[18px] leading-[28px]',
   body: 'font-sans text-[16px] leading-[24px]',
   label: 'font-medium text-[15px] leading-[20px]',
   caption: 'font-sans text-[14px] leading-[19px]',
@@ -46,12 +47,13 @@ const colorValue: Record<TextColor, string> = {
   creamSoft: 'rgba(250, 247, 240, 0.78)',
   creamFaint: 'rgba(250, 247, 240, 0.55)',
   gold: colors.gold,
+  goldLight: colors.goldLight,
   rose: colors.roseDeep,
   roseDeep: colors.roseDeep,
   leaf: colors.leaf,
 };
 
-/** Telugu faces that stand in for Playfair and Lato, which have no Telugu glyphs. */
+/** Telugu faces that stand in for Cormorant and Lora, which have no Telugu glyphs. */
 const teluguFamily: Record<TextVariant, string> = {
   display: fonts.teluguBold,
   title: fonts.teluguBold,

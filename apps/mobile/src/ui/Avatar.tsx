@@ -4,12 +4,12 @@ import { colors } from '../theme/tokens';
 import { Text } from './Text';
 
 const palette = [
-  { bg: '#F4D6DF', fg: '#9A4D68' },
-  { bg: '#D6E8DE', fg: '#3F6E56' },
-  { bg: '#FFEFC9', fg: '#B8892E' },
+  { bg: '#F1DFE0', fg: '#7A1F2B' },
+  { bg: '#F3E7C9', fg: '#8A6A1E' },
+  { bg: '#E4E8DA', fg: '#4E6B3F' },
 ];
 
-/** A rose, sage or honey disc, stable per person. */
+/** A burgundy, gold or green disc, stable per person. */
 export function avatarTone(name: string): { bg: string; fg: string } {
   let hash = 0;
   for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;

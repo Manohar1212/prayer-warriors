@@ -16,9 +16,9 @@ export function Fab({ label, icon = 'add', onPress }: Props) {
         accessibilityLabel={label}
         onPress={onPress}
         className="h-14 w-14 items-center justify-center rounded-full bg-primary active:opacity-85"
-        style={{ boxShadow: '0 8px 20px rgba(63, 110, 86, 0.30)' }}
+        style={{ boxShadow: '0 8px 20px rgba(90, 21, 32, 0.30)' }}
       >
-        <Ionicons name={icon} size={28} color={colors.surface} />
+        <Ionicons name={icon} size={28} color={colors.goldLight} />
       </Pressable>
     </View>
   );

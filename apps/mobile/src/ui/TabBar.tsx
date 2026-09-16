@@ -29,7 +29,7 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
   // Only routes with an icon are tabs; hidden routes (the Bible stack) have none.
   const routes = state.routes.filter((r) => r.name in icons && descriptors[r.key]?.options.href !== null);
   return (
-    <View className="flex-row border-t border-border bg-surface/85" style={{ paddingBottom: Math.max(insets.bottom, 8) }}>
+    <View className="flex-row border-t border-gold/60 bg-surface" style={{ paddingBottom: Math.max(insets.bottom, 8) }}>
       {routes.map((route) => {
         const focused = state.routes[state.index]?.key === route.key;
         const options = descriptors[route.key]?.options;

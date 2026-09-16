@@ -37,7 +37,7 @@ export default function WelcomeScreen() {
   const scale = settle.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] });
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#FFFDF9' }}>
+    <View style={{ flex: 1, backgroundColor: '#F7F1E6' }}>
       <StatusBar style="dark" />
       <Backdrop />
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>

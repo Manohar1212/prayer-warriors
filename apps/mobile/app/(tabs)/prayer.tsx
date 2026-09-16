@@ -104,7 +104,7 @@ export default function PrayerScreen() {
               value={status}
               onChange={onTab}
             />
-            <View className="flex-row items-center gap-2 rounded-full border border-border bg-surface/80 px-3.5">
+            <View className="flex-row items-center gap-2 rounded-[10px] border border-border bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
                 placeholder={t('prayer.searchPlaceholder')}

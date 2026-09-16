@@ -23,7 +23,7 @@ export function HeaderActions({ onDark = false }: { onDark?: boolean }) {
         accessibilityLabel={unread ? t('home.notificationsUnread', { count: unread }) : t('home.notifications')}
         onPress={() => router.push('/notifications')}
         hitSlop={8}
-        className={`h-10 w-10 items-center justify-center rounded-full ${onDark ? 'bg-surface/20' : 'border border-border bg-surface/80'}`}
+        className={`h-10 w-10 items-center justify-center rounded-full ${onDark ? 'bg-surface/20' : 'border border-gold/60 bg-surface'}`}
       >
         <Ionicons name={unread ? 'notifications' : 'notifications-outline'} size={20} color={onDark ? colors.surface : colors.primary} />
         {unread ? (

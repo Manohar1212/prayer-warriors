@@ -47,7 +47,7 @@ export default function BibleScreen() {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push('/bible/search')}
-          className="flex-row items-center gap-3 rounded-full border border-border bg-surface/80 px-4 py-2.5"
+          className="flex-row items-center gap-3 rounded-[10px] border border-border bg-surface px-4 py-2.5"
         >
           <Ionicons name="search-outline" size={18} color={colors.muted} />
           <Text variant="muted">{t('bible.search')}</Text>

@@ -1,9 +1,9 @@
 import '../global.css';
 import '@/lib/livekitGlobals';
 
-import { Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato';
-import { PlayfairDisplay_400Regular_Italic, PlayfairDisplay_500Medium, PlayfairDisplay_600SemiBold } from '@expo-google-fonts/playfair-display';
-import { NotoSansTelugu_400Regular, NotoSansTelugu_500Medium, NotoSansTelugu_700Bold } from '@expo-google-fonts/noto-sans-telugu';
+import { CormorantGaramond_500Medium_Italic, CormorantGaramond_600SemiBold, CormorantGaramond_700Bold } from '@expo-google-fonts/cormorant-garamond';
+import { Lora_400Regular, Lora_400Regular_Italic, Lora_500Medium, Lora_600SemiBold } from '@expo-google-fonts/lora';
+import { NotoSerifTelugu_400Regular, NotoSerifTelugu_500Medium, NotoSerifTelugu_700Bold } from '@expo-google-fonts/noto-serif-telugu';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -89,14 +89,16 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Lato_400Regular,
-    Lato_700Bold,
-    PlayfairDisplay_400Regular_Italic,
-    PlayfairDisplay_500Medium,
-    PlayfairDisplay_600SemiBold,
-    NotoSansTelugu_400Regular,
-    NotoSansTelugu_500Medium,
-    NotoSansTelugu_700Bold,
+    CormorantGaramond_500Medium_Italic,
+    CormorantGaramond_600SemiBold,
+    CormorantGaramond_700Bold,
+    Lora_400Regular,
+    Lora_400Regular_Italic,
+    Lora_500Medium,
+    Lora_600SemiBold,
+    NotoSerifTelugu_400Regular,
+    NotoSerifTelugu_500Medium,
+    NotoSerifTelugu_700Bold,
   });
 
   return (
