@@ -61,6 +61,7 @@ export default function PromiseScreen() {
             date={now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             prayer={t('home.dailyBreadPrayer')}
             prayerReference={t('home.dailyBreadPrayerRef')}
+            sky={sky}
             telugu={lang === 'te'}
           />
         </View>
