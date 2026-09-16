@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useBibleLanguage } from '@/features/bible';
@@ -10,7 +10,7 @@ import { VerseShareCard } from '@/features/home/VerseShareCard';
 import { useLanguage } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Button, Screen, Text } from '@/ui';
-import { Scene } from '@/ui/Scene';
+import { Scene, randomSceneVariant } from '@/ui/Scene';
 
 /** Today's promise on the sunrise, with share and read actions. */
 export default function PromiseScreen() {
@@ -20,11 +20,12 @@ export default function PromiseScreen() {
   const verse = useVerseOfTheDay(lang);
   const shareCard = useRef<View>(null);
   const now = new Date();
+  const [sky] = useState(randomSceneVariant);
 
   return (
     <Screen edges={['bottom']} scroll className="gap-6 pt-4">
       <View className="overflow-hidden rounded-[16px]" style={{ height: 380 }}>
-        <Scene dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+        <Scene variant={sky} dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
         <View className="flex-1 items-center justify-center gap-4 px-7">
           <Text variant="caption" color="cream" style={{ letterSpacing: 2.5 }}>
             {t('promise.today').toUpperCase()}
