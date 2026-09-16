@@ -25,7 +25,7 @@ export const colors = {
 
 export const fonts = {
   // Playfair Display for the greeting, verse and headings; Karla for everything you read and tap.
-  display: 'PlayfairDisplay_500Medium',
+  display: 'PlayfairDisplay_400Regular_Italic',
   displayBold: 'PlayfairDisplay_600SemiBold',
   displayItalic: 'PlayfairDisplay_400Regular_Italic',
   light: 'Karla_400Regular',

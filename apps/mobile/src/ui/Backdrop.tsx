@@ -5,10 +5,10 @@ type Wash = { cx: string; cy: string; rx: string; ry: string; color: string; opa
 
 /** Three soft washes, like colour bleeding into wet paper: rose top right, sage left, honey mid right. */
 const washes: Wash[] = [
-  { cx: '92%', cy: '4%', rx: '70%', ry: '22%', color: '#F4B4C8', opacity: 0.55 },
-  { cx: '2%', cy: '22%', rx: '52%', ry: '18%', color: '#B4D6C4', opacity: 0.6 },
-  { cx: '78%', cy: '40%', rx: '46%', ry: '15%', color: '#FFE0AA', opacity: 0.55 },
-  { cx: '10%', cy: '78%', rx: '50%', ry: '16%', color: '#F4B4C8', opacity: 0.22 },
+  { cx: '92%', cy: '4%', rx: '70%', ry: '22%', color: '#F4B4C8', opacity: 0.7 },
+  { cx: '2%', cy: '22%', rx: '52%', ry: '18%', color: '#B4D6C4', opacity: 0.75 },
+  { cx: '78%', cy: '40%', rx: '46%', ry: '15%', color: '#FFE0AA', opacity: 0.7 },
+  { cx: '10%', cy: '78%', rx: '50%', ry: '16%', color: '#F4B4C8', opacity: 0.3 },
 ];
 
 export function Backdrop() {

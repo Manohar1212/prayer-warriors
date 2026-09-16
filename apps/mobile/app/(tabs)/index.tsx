@@ -100,7 +100,7 @@ export default function HomeScreen() {
           <HeaderActions />
         </View>
         {/* The greeting is the one italic line on the page. */}
-        <Text variant="display" className="mt-2 text-[32px] leading-[40px]" style={{ fontFamily: fonts.displayItalic }} numberOfLines={2}>
+        <Text variant="display" className="mt-2 text-[32px] leading-[40px]" numberOfLines={2}>
           {t(greetingKey(now))}, {firstName}
         </Text>
 
@@ -113,7 +113,7 @@ export default function HomeScreen() {
           className="mt-7 gap-2.5"
         >
           <View className="flex-row items-center gap-2.5">
-            <Text style={{ fontFamily: fonts.display, fontSize: 18, lineHeight: 22, color: colors.roseDeep }}>❦</Text>
+            <Text style={{ fontFamily: fonts.displayBold, fontSize: 18, lineHeight: 22, color: colors.roseDeep }}>❦</Text>
             <Text variant="label" color="roseDeep" className="text-[12px]">
               {t('home.verseOfTheDay')}
             </Text>

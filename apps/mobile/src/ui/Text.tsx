@@ -19,7 +19,7 @@ export type TextColor =
 
 const variantClass: Record<TextVariant, string> = {
   display: 'font-display text-[26px] leading-[32px]',
-  title: 'font-display text-[19px] leading-[24px]',
+  title: 'font-display-italic text-[20px] leading-[26px]',
   scripture: 'font-display-italic text-[18px] leading-[28px]',
   body: 'font-sans text-[15px] leading-[22px]',
   label: 'font-medium text-sm leading-5',

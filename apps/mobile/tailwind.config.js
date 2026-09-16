@@ -25,7 +25,7 @@ module.exports = {
         border: '#E6DFD8',
       },
       fontFamily: {
-        display: ['PlayfairDisplay_500Medium'],
+        display: ['PlayfairDisplay_400Regular_Italic'],
         'display-bold': ['PlayfairDisplay_600SemiBold'],
         'display-italic': ['PlayfairDisplay_400Regular_Italic'],
         sans: ['Karla_400Regular'],
