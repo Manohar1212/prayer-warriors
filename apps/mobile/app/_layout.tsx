@@ -8,8 +8,7 @@ import {
   Montserrat_600SemiBold,
   Montserrat_700Bold,
 } from '@expo-google-fonts/montserrat';
-import { NotoSansTelugu_400Regular, NotoSansTelugu_500Medium } from '@expo-google-fonts/noto-sans-telugu';
-import { NotoSerifTelugu_400Regular, NotoSerifTelugu_600SemiBold } from '@expo-google-fonts/noto-serif-telugu';
+import { NotoSansTelugu_400Regular, NotoSansTelugu_500Medium, NotoSansTelugu_700Bold } from '@expo-google-fonts/noto-sans-telugu';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -100,10 +99,9 @@ export default function RootLayout() {
     Montserrat_500Medium,
     Montserrat_600SemiBold,
     Montserrat_700Bold,
-    NotoSerifTelugu_400Regular,
-    NotoSerifTelugu_600SemiBold,
     NotoSansTelugu_400Regular,
     NotoSansTelugu_500Medium,
+    NotoSansTelugu_700Bold,
   });
 
   return (

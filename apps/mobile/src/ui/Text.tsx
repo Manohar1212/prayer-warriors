@@ -53,9 +53,9 @@ const colorValue: Record<TextColor, string> = {
 
 /** Telugu faces that stand in for Montserrat, which has no Telugu glyphs. */
 const teluguFamily: Record<TextVariant, string> = {
-  display: fonts.teluguSerif,
-  title: fonts.teluguSerif,
-  scripture: fonts.teluguSerifRegular,
+  display: fonts.teluguBold,
+  title: fonts.teluguBold,
+  scripture: fonts.teluguSans,
   body: fonts.teluguSans,
   label: fonts.teluguSansMedium,
   caption: fonts.teluguSans,

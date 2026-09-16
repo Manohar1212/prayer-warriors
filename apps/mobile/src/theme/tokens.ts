@@ -31,9 +31,8 @@ export const fonts = {
   sansSemiBold: 'Montserrat_600SemiBold',
   numeric: 'Montserrat_600SemiBold',
   numericBold: 'Montserrat_700Bold',
-  // Telugu: Montserrat has no Telugu glyphs, so Telugu text gets matching Noto faces.
-  teluguSerif: 'NotoSerifTelugu_600SemiBold',
-  teluguSerifRegular: 'NotoSerifTelugu_400Regular',
+  // Telugu: Montserrat has no Telugu glyphs, so Telugu text gets Noto Sans Telugu in matching weights.
+  teluguBold: 'NotoSansTelugu_700Bold',
   teluguSans: 'NotoSansTelugu_400Regular',
   teluguSansMedium: 'NotoSansTelugu_500Medium',
 } as const;
