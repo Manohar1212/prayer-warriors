@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, type PressableProps } from 'react-native';
 
-import { colors } from '../theme/tokens';
+import { cardShadow, colors } from '../theme/tokens';
 import { Text, type TextColor } from './Text';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'inverse' | 'danger';
@@ -19,7 +19,7 @@ type Props = Omit<PressableProps, 'children' | 'style'> & {
 
 const container: Record<ButtonVariant, string> = {
   primary: 'bg-primary',
-  secondary: 'bg-surface border border-border',
+  secondary: 'bg-surface',
   ghost: 'bg-transparent',
   inverse: 'bg-surface',
   danger: 'bg-surface border border-rose',
@@ -63,6 +63,7 @@ export function Button({ title, variant = 'primary', size = 'regular', icon, loa
       accessibilityState={{ disabled: blocked, busy: loading }}
       disabled={blocked}
       className={`flex-row items-center justify-center gap-2 active:opacity-85 ${box} ${container[variant]} ${blocked ? 'opacity-40' : ''} ${className}`}
+      style={variant === 'secondary' || variant === 'inverse' ? cardShadow : undefined}
       {...rest}
     >
       {loading ? (

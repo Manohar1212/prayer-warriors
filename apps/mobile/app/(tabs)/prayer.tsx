@@ -6,7 +6,7 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Tex
 import { CATEGORIES, usePrayerRequests, type PrayerCategory, type PrayerRequest, type PrayerStatus } from '@/features/prayer';
 import { timeAgoShort } from '@/lib/time';
 import { useT, type TranslationKey } from '@/i18n';
-import { colors } from '@/theme/tokens';
+import { cardShadow, colors } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Avatar, Badge, Card, Chip, EmptyState, Fab, Screen, Segments, TabHeader, Text } from '@/ui';
 
@@ -104,7 +104,7 @@ export default function PrayerScreen() {
               value={status}
               onChange={onTab}
             />
-            <View className="flex-row items-center gap-2 rounded-full border border-border bg-surface px-3.5">
+            <View className="flex-row items-center gap-2 rounded-full bg-surface px-3.5" style={cardShadow}>
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
                 placeholder={t('prayer.searchPlaceholder')}
