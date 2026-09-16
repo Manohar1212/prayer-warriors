@@ -42,7 +42,7 @@ export default function BibleScreen() {
   return (
     <Screen backdrop className="px-0 pt-0">
       <Stack.Screen options={{ headerLeft: () => <HeaderHome /> }} />
-      <ScrollView contentContainerClassName="gap-6 px-4 pb-32 pt-2" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerClassName="gap-6 px-4 pb-8 pt-2" showsVerticalScrollIndicator={false}>
         <LanguageToggle value={lang} onChange={setLang} />
         <Pressable
           accessibilityRole="button"

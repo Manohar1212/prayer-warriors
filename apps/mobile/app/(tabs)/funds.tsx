@@ -45,7 +45,7 @@ export default function FundsScreen() {
   return (
     <Screen edges={['top']} className="px-0 pt-0">
       <ScrollView
-        contentContainerClassName="gap-4 px-4 pb-36 pt-1"
+        contentContainerClassName="gap-4 px-4 pb-24 pt-1"
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
       >

@@ -87,7 +87,7 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-cream">
-      <ScrollView contentContainerClassName="pb-32" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerClassName="pb-6" showsVerticalScrollIndicator={false}>
         {/* Hero: purple header with the greeting; the verse card hangs over its bottom edge. */}
         <LinearGradient colors={[...gradients.welcome]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ paddingTop: insets.top + 10, paddingHorizontal: 20, paddingBottom: 64, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 }}>
           <View className="flex-row items-center justify-between">

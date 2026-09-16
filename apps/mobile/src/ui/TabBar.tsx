@@ -21,47 +21,41 @@ export type TabBarProps = {
 };
 
 /**
- * A floating white bar instead of the stock one: icon above label on every tab, with a lavender
- * pill behind the active icon.
+ * A flat, edge-to-edge bar that sits in the bottom safe area: a hairline on top, icon above label
+ * on every tab, and a short purple mark above the active icon.
  */
 export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
   const insets = useSafeAreaInsets();
   // Only routes with an icon are tabs; hidden routes (the Bible stack) have none.
   const routes = state.routes.filter((r) => r.name in icons && descriptors[r.key]?.options.href !== null);
   return (
-    <View style={{ position: 'absolute', left: 16, right: 16, bottom: Math.max(insets.bottom, 12), pointerEvents: 'box-none' }}>
-      <View
-        className="flex-row items-center rounded-[28px] bg-surface px-1 py-2"
-        style={{ boxShadow: '0 10px 30px rgba(62, 42, 124, 0.16)' }}
-      >
-        {routes.map((route) => {
-          const focused = state.routes[state.index]?.key === route.key;
-          const options = descriptors[route.key]?.options;
-          const label = typeof options?.title === 'string' ? options.title : route.name;
-          const icon = icons[route.name] ?? { icon: 'ellipse-outline', active: 'ellipse' };
-          const onPress = () => {
-            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-            if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
-          };
-          return (
-            <Pressable
-              key={route.key}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: focused }}
-              accessibilityLabel={label}
-              onPress={onPress}
-              className="flex-1 items-center gap-1 px-0.5 py-1"
-            >
-              <View className={`h-8 w-14 items-center justify-center rounded-full ${focused ? 'bg-lavender' : ''}`}>
-                <Ionicons name={focused ? icon.active : icon.icon} size={22} color={focused ? colors.primary : colors.muted} />
-              </View>
-              <Text variant="label" color={focused ? 'primary' : 'muted'} className="text-[10px] leading-[13px]" numberOfLines={1}>
-                {label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+    <View className="flex-row border-t border-border bg-surface" style={{ paddingBottom: Math.max(insets.bottom, 8) }}>
+      {routes.map((route) => {
+        const focused = state.routes[state.index]?.key === route.key;
+        const options = descriptors[route.key]?.options;
+        const label = typeof options?.title === 'string' ? options.title : route.name;
+        const icon = icons[route.name] ?? { icon: 'ellipse-outline', active: 'ellipse' };
+        const onPress = () => {
+          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+          if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
+        };
+        return (
+          <Pressable
+            key={route.key}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: focused }}
+            accessibilityLabel={label}
+            onPress={onPress}
+            className="flex-1 items-center gap-1 pb-1 pt-2"
+          >
+            <View className={`h-[3px] w-5 rounded-full ${focused ? 'bg-primary' : 'bg-transparent'}`} />
+            <Ionicons name={focused ? icon.active : icon.icon} size={23} color={focused ? colors.primary : colors.muted} />
+            <Text variant="label" color={focused ? 'primary' : 'muted'} className="text-[10px] leading-[13px]" numberOfLines={1}>
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }

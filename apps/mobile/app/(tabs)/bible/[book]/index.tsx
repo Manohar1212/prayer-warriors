@@ -27,7 +27,7 @@ export default function BookScreen() {
   return (
     <Screen backdrop className="px-0 pt-0">
       <Stack.Screen options={{ title: bookName(current, lang) }} />
-      <ScrollView contentContainerClassName="gap-4 px-4 pb-32 pt-2" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerClassName="gap-4 px-4 pb-8 pt-2" showsVerticalScrollIndicator={false}>
         <BibleNav crumbs={[{ label: t('bible.allBooks'), href: '/bible' }]} />
         <Text variant="muted">{t('bible.chooseChapter')}</Text>
         <View className="flex-row flex-wrap gap-2">

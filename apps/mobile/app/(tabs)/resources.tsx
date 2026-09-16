@@ -86,7 +86,7 @@ export default function ResourcesScreen() {
       <FlatList
         data={visible}
         keyExtractor={(r) => r.id}
-        contentContainerClassName="flex-grow gap-3 px-4 pb-36 pt-1"
+        contentContainerClassName="flex-grow gap-3 px-4 pb-24 pt-1"
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
         ListHeaderComponent={
