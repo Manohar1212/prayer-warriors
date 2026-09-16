@@ -74,6 +74,7 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
 
 function PointRow({ point, canEdit, onClaim, onRelease, onDone, onEdit, onAnswered }: { point: PrayerPoint; canEdit: boolean; onClaim: () => void; onRelease: () => void; onDone: () => void; onEdit: () => void; onAnswered: () => void }) {
   const t = useT();
+  const router = useRouter();
   const done = Boolean(point.claim?.doneAt);
   const taken = Boolean(point.claim) && !point.mine;
   return (
@@ -115,6 +116,12 @@ function PointRow({ point, canEdit, onClaim, onRelease, onDone, onEdit, onAnswer
           </Pressable>
           <Button title={t('prayer.points.markDone')} size="compact" icon="checkmark" onPress={onDone} />
         </View>
+      ) : null}
+      {point.requestId ? (
+        <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/prayer/[id]', params: { id: point.requestId } })} hitSlop={8} className="flex-row items-center gap-1 self-start py-0.5">
+          <Ionicons name="open-outline" size={13} color={colors.muted} />
+          <Text variant="caption">{t('prayer.points.openRequest')}</Text>
+        </Pressable>
       ) : null}
       {done && (point.mine || canEdit) ? (
         <Pressable accessibilityRole="button" onPress={onAnswered} hitSlop={8} className="flex-row items-center gap-1.5 self-start py-0.5">

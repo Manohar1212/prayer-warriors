@@ -6,7 +6,7 @@ import { Pressable, Switch, TextInput, View } from 'react-native';
 import { useAuth } from '@/features/auth';
 import { useMembers } from '@/features/members';
 import { usePrayerRequests, type PrayerComment } from '@/features/prayer';
-import { prayerService } from '@/lib/parse';
+import { prayerPointsService, prayerService } from '@/lib/parse';
 import { timeAgo } from '@/lib/time';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
@@ -33,6 +33,7 @@ export default function PrayerRequestScreen() {
   const [answering, setAnswering] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [monthly, setMonthly] = useState<'idle' | 'busy' | 'added'>('idle');
 
   const loadComments = useCallback(() => {
     if (!id) return;
@@ -68,6 +69,19 @@ export default function PrayerRequestScreen() {
       setError(err instanceof Error ? err.message : t('prayer.detail.updateFailed'));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function addToMonthly() {
+    if (!request) return;
+    setMonthly('busy');
+    setError(null);
+    try {
+      await prayerPointsService.addRequest(request.id);
+      setMonthly('added');
+    } catch (err) {
+      setMonthly('idle');
+      setError(err instanceof Error ? err.message : t('prayer.detail.updateFailed'));
     }
   }
 
@@ -129,6 +143,21 @@ export default function PrayerRequestScreen() {
         </Text>
         {names.length ? <AvatarStack names={names} size={36} max={5} /> : null}
       </View>
+
+      {isAdmin && !isAnswered ? (
+        <Card className="flex-row items-center gap-3">
+          <View className="h-10 w-10 items-center justify-center rounded-full bg-honey">
+            <Ionicons name="calendar-outline" size={18} color={colors.gold} />
+          </View>
+          <View className="flex-1 gap-0.5">
+            <Text variant="label" className="text-[15px]">
+              {monthly === 'added' ? t('prayer.detail.addedToMonthly') : t('prayer.detail.addToMonthly')}
+            </Text>
+            <Text variant="caption">{t('prayer.detail.addToMonthlyHint')}</Text>
+          </View>
+          {monthly === 'added' ? <Ionicons name="checkmark-circle" size={22} color={colors.leaf} /> : <Button title={t('common.add')} size="compact" variant="secondary" onPress={addToMonthly} loading={monthly === 'busy'} />}
+        </Card>
+      ) : null}
 
       {canAnswer ? (
         <Card className="gap-3">

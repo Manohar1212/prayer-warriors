@@ -11,6 +11,8 @@ export type PrayerPoint = {
   claim: { userId: string; userName: string; doneAt: string | null } | null;
   /** True when the claim belongs to the signed-in member. */
   mine: boolean;
+  /** Set when an admin promoted a one-off request to the monthly list. */
+  requestId: string | null;
 };
 
 export type PrayerPointsResult = { month: string; points: PrayerPoint[] };
@@ -18,7 +20,7 @@ export type PrayerPointsResult = { month: string; points: PrayerPoint[] };
 /** A point the group has seen answered; it no longer returns each month. */
 export type AnsweredPrayerPoint = { id: string; title: string; answeredAt: string; testimony: string };
 
-type RawList = { month: string; points: { id: string; title: string; order: number; claim: { userId: string; userName: string; doneAt: string | null } | null }[] };
+type RawList = { month: string; points: { id: string; title: string; order: number; requestId?: string | null; claim: { userId: string; userName: string; doneAt: string | null } | null }[] };
 
 type Deps = {
   cloud: { run(name: string, params?: Record<string, unknown>): Promise<unknown> };
@@ -40,10 +42,11 @@ export function createPrayerPointsService({ cloud, currentUserId }: Deps) {
       const me = currentUserId();
       return {
         month: raw.month,
-        points: raw.points.map((p) => ({ ...p, mine: Boolean(p.claim && me && p.claim.userId === me) })),
+        points: raw.points.map((p) => ({ ...p, requestId: p.requestId ?? null, mine: Boolean(p.claim && me && p.claim.userId === me) })),
       };
     },
     add: (title: string) => guarded(() => cloud.run('addPrayerPoint', { title })),
+    addRequest: (requestId: string) => guarded(() => cloud.run('addRequestToMonthly', { requestId })),
     update: (pointId: string, title: string) => guarded(() => cloud.run('updatePrayerPoint', { pointId, title })),
     remove: (pointId: string) => guarded(() => cloud.run('removePrayerPoint', { pointId })),
     claim: (pointId: string) => guarded(() => cloud.run('claimPrayerPoint', { pointId })),

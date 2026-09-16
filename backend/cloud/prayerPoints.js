@@ -21,6 +21,9 @@ const MESSAGES = {
   notDoneYet: 'Mark the point done for this month first, then mark it answered.',
   alreadyAnswered: 'This point has already been answered.',
   testimonyTooLong: 'Keep the testimony under 1000 characters.',
+  requestNotFound: "That prayer request isn't available.",
+  requestNotActive: 'Only an open request can join the monthly list.',
+  requestAlreadyMonthly: 'This request is already on the monthly list.',
 };
 
 function fail(message) {
@@ -39,7 +42,7 @@ function monthKeyFor(date) {
   return `${year}-${month}`;
 }
 
-function createPrayerPointHandlers({ memberships, points, claims, now = () => new Date() }) {
+function createPrayerPointHandlers({ memberships, points, claims, requests, now = () => new Date() }) {
   async function requireGroup(callerId) {
     const groupId = callerId ? await memberships.findGroupId(callerId) : null;
     if (!groupId) throw fail(MESSAGES.notMember);
@@ -85,6 +88,7 @@ function createPrayerPointHandlers({ memberships, points, claims, now = () => ne
               id: p.id,
               title: p.title,
               order: p.order,
+              requestId: p.requestId || null,
               claim: claim ? { userId: claim.userId, userName: claim.userName, doneAt: claim.doneAt || null } : null,
             };
           }),
@@ -96,6 +100,18 @@ function createPrayerPointHandlers({ memberships, points, claims, now = () => ne
       const existing = await points.listActive(groupId);
       const order = existing.reduce((max, p) => Math.max(max, p.order), 0) + 1;
       return points.create({ groupId, title: cleanTitle(title), order, active: true });
+    },
+
+    /** Admin: a one-off request becomes a monthly point, linked so answering one answers the other. */
+    async addRequestToMonthly({ requestId } = {}, { callerId } = {}) {
+      const groupId = await requireAdminGroup(callerId);
+      const request = requestId && requests ? await requests.get(requestId) : null;
+      if (!request || request.groupId !== groupId) throw fail(MESSAGES.requestNotFound);
+      if (request.status !== 'active') throw fail(MESSAGES.requestNotActive);
+      if (await points.findByRequest(request.id)) throw fail(MESSAGES.requestAlreadyMonthly);
+      const existing = await points.listActive(groupId);
+      const order = existing.reduce((max, p) => Math.max(max, p.order), 0) + 1;
+      return points.create({ groupId, title: request.title, order, active: true, requestId: request.id });
     },
 
     async updatePrayerPoint({ pointId, title } = {}, { callerId } = {}) {
@@ -151,7 +167,12 @@ function createPrayerPointHandlers({ memberships, points, claims, now = () => ne
         if (!claim || claim.userId !== callerId) throw fail(MESSAGES.notHolder);
         if (!claim.doneAt) throw fail(MESSAGES.notDoneYet);
       }
-      return points.update(point.id, { answeredAt: now(), testimony: cleanTestimony });
+      const updated = await points.update(point.id, { answeredAt: now(), testimony: cleanTestimony });
+      if (point.requestId && requests) {
+        const request = await requests.get(point.requestId);
+        if (request && request.status === 'active') await requests.update(request.id, { status: 'answered', answeredAt: now(), testimony: cleanTestimony || null });
+      }
+      return updated;
     },
 
     async markPrayerPointDone({ pointId } = {}, { callerId } = {}) {

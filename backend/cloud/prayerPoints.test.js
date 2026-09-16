@@ -5,14 +5,14 @@ const caller = { callerId: 'u1' };
 const admin = { callerId: 'a1' };
 
 function point(overrides = {}) {
-  return { id: 'p1', groupId: 'g1', title: 'Our nation', order: 1, active: true, answeredAt: null, testimony: '', ...overrides };
+  return { id: 'p1', groupId: 'g1', title: 'Our nation', order: 1, active: true, answeredAt: null, testimony: '', requestId: null, ...overrides };
 }
 
 function claimRow(overrides = {}) {
   return { id: 'c1', pointId: 'p1', userId: 'u1', userName: 'Shiny', groupId: 'g1', month: '2026-09', doneAt: null, ...overrides };
 }
 
-function deps({ groupId = 'g1', adminGroupId = null, points = [point()], claims = [], found = null, mine = null } = {}) {
+function deps({ groupId = 'g1', adminGroupId = null, points = [point()], claims = [], found = null, mine = null, request = null, linked = null } = {}) {
   return {
     memberships: {
       findGroupId: jest.fn(async () => groupId),
@@ -24,6 +24,11 @@ function deps({ groupId = 'g1', adminGroupId = null, points = [point()], claims 
       get: jest.fn(async (id) => points.find((p) => p.id === id) || null),
       create: jest.fn(async (fields) => ({ id: 'new1', ...fields })),
       update: jest.fn(async (id, patch) => ({ ...points.find((p) => p.id === id), ...patch })),
+      findByRequest: jest.fn(async () => linked),
+    },
+    requests: {
+      get: jest.fn(async () => request),
+      update: jest.fn(async (id, patch) => ({ ...request, ...patch })),
     },
     claims: {
       listForMonth: jest.fn(async () => claims),
@@ -174,5 +179,36 @@ describe('answered points', () => {
     const h = createPrayerPointHandlers(d);
     expect((await h.listPrayerPoints({}, caller)).points).toEqual([]);
     await expect(h.claimPrayerPoint({ pointId: 'p1' }, caller)).rejects.toThrow(MESSAGES.alreadyAnswered);
+  });
+});
+
+describe('addRequestToMonthly', () => {
+  const request = { id: 'r1', groupId: 'g1', title: 'Healing for Mom', status: 'active' };
+
+  it('creates a linked point from an open request (admin only)', async () => {
+    const d = deps({ adminGroupId: 'g1', request });
+    const created = await createPrayerPointHandlers(d).addRequestToMonthly({ requestId: 'r1' }, admin);
+    expect(d.points.create).toHaveBeenCalledWith({ groupId: 'g1', title: 'Healing for Mom', order: 2, active: true, requestId: 'r1' });
+    expect(created.requestId).toBe('r1');
+    await expect(createPrayerPointHandlers(deps({ request })).addRequestToMonthly({ requestId: 'r1' }, caller)).rejects.toThrow(MESSAGES.notAdmin);
+  });
+
+  it('refuses answered, foreign, missing or already-listed requests', async () => {
+    await expect(createPrayerPointHandlers(deps({ adminGroupId: 'g1', request: { ...request, status: 'answered' } })).addRequestToMonthly({ requestId: 'r1' }, admin)).rejects.toThrow(MESSAGES.requestNotActive);
+    await expect(createPrayerPointHandlers(deps({ adminGroupId: 'g1', request: { ...request, groupId: 'g2' } })).addRequestToMonthly({ requestId: 'r1' }, admin)).rejects.toThrow(MESSAGES.requestNotFound);
+    await expect(createPrayerPointHandlers(deps({ adminGroupId: 'g1', request: null })).addRequestToMonthly({ requestId: 'r1' }, admin)).rejects.toThrow(MESSAGES.requestNotFound);
+    await expect(createPrayerPointHandlers(deps({ adminGroupId: 'g1', request, linked: point() })).addRequestToMonthly({ requestId: 'r1' }, admin)).rejects.toThrow(MESSAGES.requestAlreadyMonthly);
+  });
+
+  it('answering a linked point answers the request too', async () => {
+    const d = deps({ adminGroupId: 'g1', points: [point({ requestId: 'r1' })], request });
+    await createPrayerPointHandlers(d).markPrayerPointAnswered({ pointId: 'p1', testimony: 'Healed' }, admin);
+    expect(d.requests.update).toHaveBeenCalledWith('r1', { status: 'answered', answeredAt: NOW, testimony: 'Healed' });
+  });
+
+  it('exposes the link in the monthly list', async () => {
+    const d = deps({ points: [point({ requestId: 'r1' })] });
+    const result = await createPrayerPointHandlers(d).listPrayerPoints({}, caller);
+    expect(result.points[0].requestId).toBe('r1');
   });
 });

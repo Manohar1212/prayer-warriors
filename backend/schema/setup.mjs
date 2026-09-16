@@ -300,6 +300,7 @@ const prayerPointSchema = {
     active: { type: 'Boolean', defaultValue: true },
     answeredAt: { type: 'Date' },
     testimony: { type: 'String' },
+    request: { type: 'Pointer', targetClass: 'PrayerRequest' },
   },
   classLevelPermissions: {
     find: authenticated, get: authenticated, count: authenticated,

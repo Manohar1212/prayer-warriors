@@ -232,6 +232,7 @@ function prayerPointDto(obj) {
     active: obj.get('active') !== false,
     answeredAt: answeredAt ? answeredAt.toISOString() : null,
     testimony: obj.get('testimony') || '',
+    requestId: refId(obj.get('request')),
   };
 }
 
@@ -260,12 +261,20 @@ const prayerPoints = {
     const obj = await new Parse.Query('PrayerPoint').get(id, { useMasterKey: true }).catch(() => null);
     return obj ? prayerPointDto(obj) : null;
   },
-  async create({ groupId, title, order, active }) {
+  async findByRequest(requestId) {
+    const obj = await new Parse.Query('PrayerPoint')
+      .equalTo('request', pointer('PrayerRequest', requestId))
+      .notEqualTo('active', false)
+      .first({ useMasterKey: true });
+    return obj ? prayerPointDto(obj) : null;
+  },
+  async create({ groupId, title, order, active, requestId }) {
     const obj = new Parse.Object('PrayerPoint');
     obj.set('group', pointer('Group', groupId));
     obj.set('title', title);
     obj.set('order', order);
     obj.set('active', active);
+    if (requestId) obj.set('request', pointer('PrayerRequest', requestId));
     obj.setACL(groupReadAcl(groupId));
     await obj.save(null, { useMasterKey: true });
     return prayerPointDto(obj);
@@ -732,7 +741,7 @@ function withNotify(handler, after) {
 
 const memberHandlers = createMemberHandlers({ memberships, users, roles, generatePassword });
 const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, comments: prayerComments });
-const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims });
+const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims, requests });
 const resourceHandlers = createResourceHandlers({ memberships, resources });
 const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
@@ -755,9 +764,11 @@ Parse.Cloud.define(
 );
 Parse.Cloud.define(
   'markAnswered',
-  withNotify(prayerHandlers.markAnswered, (dto, _params, { callerId: actorId }) =>
-    notifier.notify({ type: 'answered', groupId: dto.groupId, actorId, requestId: dto.id, title: dto.title }),
-  ),
+  withNotify(prayerHandlers.markAnswered, async (dto, _params, { callerId: actorId }) => {
+    const linked = await prayerPoints.findByRequest(dto.id);
+    if (linked && !linked.answeredAt) await prayerPoints.update(linked.id, { answeredAt: new Date(), testimony: dto.testimony || '' });
+    await notifier.notify({ type: 'answered', groupId: dto.groupId, actorId, requestId: dto.id, title: dto.title });
+  }),
 );
 Parse.Cloud.define(
   'addPrayerComment',
@@ -820,7 +831,7 @@ Parse.Cloud.define('joinCall', async (request) => {
 ['registerPushToken', 'unregisterPushToken', 'markNotificationsRead', 'markAllNotificationsRead', 'updateNotificationPrefs'].forEach((name) =>
   Parse.Cloud.define(name, (request) => notificationHandlers[name](request.params, { callerId: callerId(request) })),
 );
-['listPrayerPoints', 'listAnsweredPrayerPoints', 'addPrayerPoint', 'updatePrayerPoint', 'removePrayerPoint', 'claimPrayerPoint', 'releasePrayerPoint', 'markPrayerPointDone', 'markPrayerPointAnswered'].forEach((name) =>
+['listPrayerPoints', 'listAnsweredPrayerPoints', 'addPrayerPoint', 'addRequestToMonthly', 'updatePrayerPoint', 'removePrayerPoint', 'claimPrayerPoint', 'releasePrayerPoint', 'markPrayerPointDone', 'markPrayerPointAnswered'].forEach((name) =>
   Parse.Cloud.define(name, (request) => prayerPointHandlers[name](request.params, { callerId: callerId(request) })),
 );
 Parse.Cloud.define('ping', () => 'pong');
