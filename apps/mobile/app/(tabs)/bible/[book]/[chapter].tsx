@@ -20,7 +20,7 @@ import {
 import { BibleNav } from '@/features/bible/BibleNav';
 import { LanguageToggle } from '@/features/bible/LanguageToggle';
 import { useT } from '@/i18n';
-import { colors } from '@/theme/tokens';
+import { colors, fonts } from '@/theme/tokens';
 import { Button, Screen, Text } from '@/ui';
 
 const other = (l: BibleLanguage): BibleLanguage => (l === 'en' ? 'te' : 'en');
@@ -117,7 +117,7 @@ export default function ChapterScreen() {
                   className={`rounded-xl px-2 py-1.5 ${active ? 'bg-honey' : ''}`}
                 >
                   <Text style={style}>
-                    <RNText style={{ fontFamily: 'Inter_600SemiBold', color: colors.gold, fontSize: Math.round(style.fontSize * 0.7) }}>
+                    <RNText style={{ fontFamily: fonts.sansSemiBold, color: colors.gold, fontSize: Math.round(style.fontSize * 0.7) }}>
                       {v.label}
                     </RNText>
                     {' '}

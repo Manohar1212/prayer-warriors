@@ -50,7 +50,7 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
           >
             <View className={`h-[3px] w-5 rounded-full ${focused ? 'bg-primary' : 'bg-transparent'}`} />
             <Ionicons name={focused ? icon.active : icon.icon} size={23} color={focused ? colors.primary : colors.muted} />
-            <Text variant="label" color={focused ? 'primary' : 'muted'} className="text-[10px] leading-[13px]" numberOfLines={1}>
+            <Text variant="label" color={focused ? 'primary' : 'muted'} className="text-[10px] leading-[13px]" style={{ letterSpacing: -0.2 }} numberOfLines={1}>
               {label}
             </Text>
           </Pressable>

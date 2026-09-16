@@ -51,7 +51,7 @@ const colorValue: Record<TextColor, string> = {
   leaf: colors.leaf,
 };
 
-/** Telugu faces that stand in for Playfair / Inter, which have no Telugu glyphs. */
+/** Telugu faces that stand in for Montserrat, which has no Telugu glyphs. */
 const teluguFamily: Record<TextVariant, string> = {
   display: fonts.teluguSerif,
   title: fonts.teluguSerif,

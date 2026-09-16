@@ -22,16 +22,16 @@ export const colors = {
 } as const;
 
 export const fonts = {
-  display: 'PlayfairDisplay_600SemiBold',
-  displayBold: 'PlayfairDisplay_700Bold',
-  displayItalic: 'PlayfairDisplay_400Regular_Italic',
-  sans: 'Inter_400Regular',
-  sansMedium: 'Inter_500Medium',
-  sansSemiBold: 'Inter_600SemiBold',
-  // Money: Montserrat's even, geometric figures read better than the serif's old-style numerals.
+  // One Latin family for the whole app: Montserrat, bold for headings and regular for reading.
+  display: 'Montserrat_700Bold',
+  displayBold: 'Montserrat_700Bold',
+  displayItalic: 'Montserrat_400Regular_Italic',
+  sans: 'Montserrat_400Regular',
+  sansMedium: 'Montserrat_500Medium',
+  sansSemiBold: 'Montserrat_600SemiBold',
   numeric: 'Montserrat_600SemiBold',
   numericBold: 'Montserrat_700Bold',
-  // Telugu: Playfair and Inter have no Telugu glyphs, so Telugu text gets matching Noto faces.
+  // Telugu: Montserrat has no Telugu glyphs, so Telugu text gets matching Noto faces.
   teluguSerif: 'NotoSerifTelugu_600SemiBold',
   teluguSerifRegular: 'NotoSerifTelugu_400Regular',
   teluguSans: 'NotoSansTelugu_400Regular',

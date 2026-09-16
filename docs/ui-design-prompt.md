@@ -7,7 +7,7 @@ Produce one mockup per screen listed below, at iPhone size (390 × 844 pt), plus
 ## Brand and feel
 - Mood: calm, warm, devotional, like a well-set prayer book. Not a dashboard, not a social feed.
 - Colors: forest green `#173E32` (primary), deep forest `#0E2A22`, gold `#B98224` (accent for rules, meta lines, active states), pale gold `#E7C46A`, cream `#FAF7F0` (page background), white `#FFFFFF` (surfaces), ink `#202521` (text), muted grey-green `#70756F`, hairline `#E6E0D5`. Soft tints used sparingly: sage `#DCE9DF`, blush `#F6E2DE`, honey `#F6E9CB`, rose `#D99A9A` / deep rose `#A8514D` for urgent or destructive.
-- Type: Playfair Display (semibold for headings, italic for scripture and testimonies), Inter (regular, medium, semibold) for everything else. Telugu text uses Noto Serif Telugu and Noto Sans Telugu.
+- Type: Montserrat only (bold for headings, italic for scripture and testimonies, regular, medium and semibold for everything else). Telugu text uses Noto Serif Telugu and Noto Sans Telugu.
 - Layout rules: 16 pt side margins; lists are hairline-separated rows on cream, not bordered cards; at most one boxed, emphasized element per screen; sentence case labels, no all-caps; no arrows in copy; buttons say what they do ("Post request", "Record contribution").
 - Navigation: bottom tab bar with Home, Prayer, Community, Resources, Funds. Secondary screens open as modals or pushed pages with a serif title in the header. A bell with an unread count and a profile avatar sit in every tab header.
 

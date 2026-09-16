@@ -1,6 +1,6 @@
 import { Text as RNText } from 'react-native';
 
-import { colors } from '../../theme/tokens';
+import { colors, fonts } from '../../theme/tokens';
 import { Text, type TextProps } from '../../ui/Text';
 
 /** Renders `text` with case-insensitive matches of `query` in bold, inline. */
@@ -12,7 +12,7 @@ export function Highlight({ text, query, ...rest }: TextProps & { text: string; 
     <Text {...rest}>
       {parts.map((part, i) =>
         part.toLowerCase() === q.toLowerCase() ? (
-          <RNText key={i} style={{ fontFamily: 'Inter_600SemiBold', color: colors.primary }}>
+          <RNText key={i} style={{ fontFamily: fonts.sansSemiBold, color: colors.primary }}>
             {part}
           </RNText>
         ) : (
