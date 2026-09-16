@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/features/auth';
@@ -17,20 +18,23 @@ import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors, fonts } from '@/theme/tokens';
 import { Avatar, Backdrop, Text } from '@/ui';
 
+const emblem = require('../../assets/logo-emblem.png');
+
 type IconName = keyof typeof Ionicons.glyphMap;
 
-function greetingKey(date: Date): TranslationKey {
+function dayPart(date: Date): 'morning' | 'afternoon' | 'evening' {
   const h = date.getHours();
-  if (h < 12) return 'home.morning';
-  if (h < 17) return 'home.afternoon';
-  return 'home.evening';
+  if (h < 12) return 'morning';
+  if (h < 17) return 'afternoon';
+  return 'evening';
 }
 
-const actions: { label: TranslationKey; icon: IconName; href: Href }[] = [
-  { label: 'home.action.prayer', icon: 'heart-outline', href: '/prayer/new' },
-  { label: 'home.action.call', icon: 'call-outline', href: '/(tabs)/community' },
-  { label: 'home.action.songs', icon: 'musical-notes-outline', href: { pathname: '/resources/new', params: { type: 'song' } } },
-  { label: 'home.action.word', icon: 'book-outline', href: '/bible' },
+/** Each action is a small stamp of paint: a wash colour with an ink icon. */
+const actions: { label: TranslationKey; icon: IconName; wash: string; href: Href }[] = [
+  { label: 'home.action.prayer', icon: 'heart-outline', wash: 'bg-blush/70', href: '/prayer/new' },
+  { label: 'home.action.call', icon: 'call-outline', wash: 'bg-sage/80', href: '/(tabs)/community' },
+  { label: 'home.action.songs', icon: 'musical-notes-outline', wash: 'bg-honey/80', href: { pathname: '/resources/new', params: { type: 'song' } } },
+  { label: 'home.action.word', icon: 'book-outline', wash: 'bg-blush/50', href: '/bible' },
 ];
 
 const resourceIcon: Record<Resource['type'], IconName> = {
@@ -82,6 +86,7 @@ export default function HomeScreen() {
   const name = user?.displayName ?? t('home.friend');
   const firstName = name.split(' ')[0];
   const now = new Date();
+  const part = dayPart(now);
 
   const loadRecent = useCallback(() => {
     resourcesService.listRecent(3).then(setRecent).catch(() => setRecent([]));
@@ -96,12 +101,17 @@ export default function HomeScreen() {
       <Backdrop />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 22, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
         <View className="flex-row items-center justify-between gap-3">
-          <Text variant="caption">{now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}</Text>
+          <View className="flex-row items-center gap-2.5">
+            <Image source={emblem} accessibilityLabel="Prayer Warriors" style={{ width: 28, height: 28 }} resizeMode="contain" />
+            <Text variant="caption">{now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}</Text>
+          </View>
           <HeaderActions />
         </View>
-        {/* The greeting is the one italic line on the page. */}
-        <Text variant="display" className="mt-2 text-[32px] leading-[40px]" numberOfLines={2}>
-          {t(greetingKey(now))}, {firstName}
+        <Text variant="display" className="mt-4 text-[34px] leading-[42px]" numberOfLines={2}>
+          {t(`home.${part}` as TranslationKey)}, {firstName}
+        </Text>
+        <Text variant="muted" className="mt-1.5 text-[15px] leading-[22px]">
+          {t(`home.thought.${part}` as TranslationKey)}
         </Text>
 
         {/* Verse of the day, set on the paper with a fleuron. */}
@@ -110,35 +120,42 @@ export default function HomeScreen() {
           accessibilityLabel="Open today's verse in the Bible"
           disabled={!verse}
           onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
-          className="mt-7 gap-2.5"
+          className="mt-7 active:opacity-90"
         >
-          <View className="flex-row items-center gap-2.5">
-            <Text style={{ fontFamily: fonts.displayBold, fontSize: 18, lineHeight: 22, color: colors.roseDeep }}>❦</Text>
-            <Text variant="label" color="roseDeep" className="text-[12px]">
-              {t('home.verseOfTheDay')}
-            </Text>
-          </View>
-          <Text variant="scripture" className={lang === 'te' ? 'text-[19px] leading-[31px]' : 'text-[21px] leading-[32px]'}>
-            {verse ? verse.text : '…'}
-          </Text>
-          {verse ? (
-            <View className="mt-0.5 flex-row items-center justify-between">
-              <Text variant="caption">{verse.reference}</Text>
-              <View className="flex-row items-center gap-0.5">
-                <Text variant="label" color="primary" className="text-[13px]">
-                  {t('home.readChapter')}
-                </Text>
-                <Ionicons name="chevron-forward" size={14} color={colors.primary} />
-              </View>
+          <LinearGradient
+            colors={['rgba(255,239,201,0.75)', 'rgba(244,214,223,0.55)', 'rgba(255,255,255,0.65)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ borderRadius: 24, padding: 20, gap: 12, borderWidth: 1, borderColor: colors.border }}
+          >
+            <View className="items-center gap-1">
+              <Text style={{ fontFamily: fonts.displayBold, fontSize: 22, lineHeight: 26, color: colors.roseDeep }}>❦</Text>
+              <Text variant="label" color="roseDeep" className="text-[12px]">
+                {t('home.verseOfTheDay')}
+              </Text>
             </View>
-          ) : null}
+            <Text variant="scripture" className={`text-center ${lang === 'te' ? 'text-[19px] leading-[31px]' : 'text-[22px] leading-[33px]'}`}>
+              {verse ? verse.text : '…'}
+            </Text>
+            {verse ? (
+              <View className="items-center gap-3">
+                <Text variant="caption">{verse.reference}</Text>
+                <View className="flex-row items-center gap-1 rounded-full border border-primary/40 bg-surface/70 py-1.5 pl-4 pr-3">
+                  <Text variant="label" color="primary" className="text-[13px]">
+                    {t('home.readChapter')}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={14} color={colors.primary} />
+                </View>
+              </View>
+            ) : null}
+          </LinearGradient>
         </Pressable>
 
         <View className="mt-7 flex-row justify-between px-1">
           {actions.map((a) => (
             <Pressable key={a.label} accessibilityRole="button" onPress={() => router.push(a.href)} className="items-center gap-2 active:opacity-70">
-              <View className="h-[52px] w-[52px] items-center justify-center rounded-full border border-border bg-surface/70">
-                <Ionicons name={a.icon} size={21} color={colors.ink} />
+              <View className={`h-[54px] w-[54px] items-center justify-center rounded-full ${a.wash}`}>
+                <Ionicons name={a.icon} size={22} color={colors.ink} />
               </View>
               <Text variant="caption" color="ink">
                 {t(a.label)}
@@ -210,7 +227,7 @@ export default function HomeScreen() {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push(nextCall ? { pathname: '/calls/[id]', params: { id: nextCall.id } } : '/(tabs)/community')}
-          className="mt-8 flex-row items-center gap-3 rounded-[20px] bg-sage px-4 py-4 active:opacity-80"
+          className="mt-8 flex-row items-center gap-3 rounded-[20px] border border-border bg-sage/70 px-4 py-4 active:opacity-80"
         >
           <View className="h-10 w-10 items-center justify-center rounded-full bg-primary">
             <Ionicons name="people-outline" size={19} color={colors.surface} />
@@ -230,6 +247,9 @@ export default function HomeScreen() {
             {nextCall ? (isJoinable(nextCall, now) ? t('home.join') : t('home.view')) : t('common.seeAll')}
           </Text>
         </Pressable>
+        <Text className="mt-8 text-center" style={{ fontFamily: fonts.displayBold, fontSize: 18, lineHeight: 22, color: colors.muted, opacity: 0.6 }}>
+          ❦
+        </Text>
       </ScrollView>
     </View>
   );
