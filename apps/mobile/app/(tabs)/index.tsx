@@ -3,7 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import Animated, { interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/features/auth';
@@ -84,10 +85,17 @@ export default function HomeScreen() {
   );
 
   const topRequests = requests.slice(0, 3);
+  // A solid band fades in behind the clock as the hero scrolls away, so the greeting never collides with it.
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    scrollY.value = e.contentOffset.y;
+  });
+  const band = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [0, 24], [0, 1], 'clamp') }));
 
   return (
     <View className="flex-1 bg-cream">
-      <ScrollView contentContainerClassName="pb-6" showsVerticalScrollIndicator={false}>
+      <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: 0, left: 0, right: 0, height: insets.top, backgroundColor: gradients.welcome[0], zIndex: 10 }, band]} />
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
         {/* Hero: purple header with the greeting; the verse card hangs over its bottom edge. */}
         <LinearGradient colors={[...gradients.welcome]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ paddingTop: insets.top + 10, paddingHorizontal: 20, paddingBottom: 64, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 }}>
           <View className="flex-row items-center justify-between">
@@ -176,11 +184,15 @@ export default function HomeScreen() {
                 ))}
               </Card>
             ) : (
-              <Card className="items-center gap-2 py-6">
-                <Ionicons name="heart-outline" size={22} color={colors.roseDeep} />
-                <Text variant="muted" className="text-center text-[14px] leading-[21px]">
+              <Card className="flex-row items-center justify-between gap-3 py-3.5">
+                <Text variant="muted" className="flex-1">
                   {loadingRequests ? t('common.loading') : t('home.noRequests')}
                 </Text>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/prayer/new')} hitSlop={8}>
+                  <Text variant="label" color="primary" className="text-[13px]">
+                    {t('home.shareRequest')}
+                  </Text>
+                </Pressable>
               </Card>
             )}
           </View>
@@ -215,46 +227,54 @@ export default function HomeScreen() {
                 })}
               </Card>
             ) : (
-              <Card className="items-center gap-2 py-6">
-                <Ionicons name="musical-notes-outline" size={22} color={colors.primary} />
-                <Text variant="muted" className="text-center text-[14px] leading-[21px]">
+              <Card className="flex-row items-center justify-between gap-3 py-3.5">
+                <Text variant="muted" className="flex-1">
                   {t('home.nothingShared')}
                 </Text>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/resources/new')} hitSlop={8}>
+                  <Text variant="label" color="primary" className="text-[13px]">
+                    {t('home.shareSomething')}
+                  </Text>
+                </Pressable>
               </Card>
             )}
           </View>
 
-          <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 22, padding: 18, overflow: 'hidden' }}>
-            <View style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(255,255,255,0.08)' }} />
-            <View style={{ position: 'absolute', right: 30, bottom: -50, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.06)' }} />
-            <View className="flex-row items-center gap-4">
-              <View className="h-12 w-12 items-center justify-center rounded-full bg-surface/20">
-                <Ionicons name="people" size={22} color={colors.surface} />
-              </View>
-              <View className="flex-1 gap-0.5">
-                <Text variant="caption" color="creamSoft">
-                  {t('home.nextCall')}
-                </Text>
-                <Text variant="label" color="cream" className="text-[16px]">
-                  {nextCall ? nextCall.title : t('home.noCall')}
-                </Text>
-                <Text variant="caption" color="creamSoft">
-                  {nextCall
-                    ? new Date(nextCall.scheduledAt).toLocaleString(locale, { weekday: 'long', hour: 'numeric', minute: '2-digit' })
-                    : t('home.noCallBody')}
-                </Text>
-              </View>
-              {nextCall ? (
+          {nextCall ? (
+            <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 20, padding: 16 }}>
+              <View className="flex-row items-center gap-3">
+                <View className="h-11 w-11 items-center justify-center rounded-full bg-surface/20">
+                  <Ionicons name="people" size={20} color={colors.surface} />
+                </View>
+                <View className="flex-1 gap-0.5">
+                  <Text variant="caption" color="creamSoft">
+                    {t('home.nextCall')}
+                  </Text>
+                  <Text variant="label" color="cream" className="text-[15px]" numberOfLines={1}>
+                    {nextCall.title}
+                  </Text>
+                  <Text variant="caption" color="creamSoft">
+                    {new Date(nextCall.scheduledAt).toLocaleString(locale, { weekday: 'long', hour: 'numeric', minute: '2-digit' })}
+                  </Text>
+                </View>
                 <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/calls/[id]', params: { id: nextCall.id } })} className="rounded-full bg-surface px-4 py-2">
                   <Text variant="label" color="primary" className="text-[13px]">
                     {isJoinable(nextCall, now) ? t('home.join') : t('home.view')}
                   </Text>
                 </Pressable>
-              ) : null}
-            </View>
-          </LinearGradient>
+              </View>
+            </LinearGradient>
+          ) : (
+            <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/community')} className="flex-row items-center gap-3 rounded-[20px] bg-lavender px-4 py-3.5 active:opacity-80">
+              <Ionicons name="people-outline" size={20} color={colors.primary} />
+              <Text variant="label" color="primaryDark" className="flex-1 text-[14px]">
+                {t('home.noCall')}
+              </Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+            </Pressable>
+          )}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }
