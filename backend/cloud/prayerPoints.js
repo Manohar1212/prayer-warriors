@@ -3,7 +3,8 @@
 /**
  * Monthly prayer points: the regular things the group prays for every month (the nation, families…).
  * Each month every member may pick one point to carry, and marks it done after the all-night prayer.
- * Claims are keyed by month, so the list resets itself when a new month begins.
+ * Claims are keyed by month, so the list resets itself when a new month begins. A point keeps
+ * coming back every month until the group marks it answered; then it moves to the answered list.
  */
 
 const MESSAGES = {
@@ -16,6 +17,9 @@ const MESSAGES = {
   alreadyHave: 'You already carry a point this month. Give it back first to pick another.',
   notYours: 'This point is not yours to change.',
   alreadyDone: 'This point is already marked done.',
+  notHolder: 'Only the member carrying this point, or an admin, can mark it answered.',
+  alreadyAnswered: 'This point has already been answered.',
+  testimonyTooLong: 'Keep the testimony under 1000 characters.',
 };
 
 function fail(message) {
@@ -50,6 +54,7 @@ function createPrayerPointHandlers({ memberships, points, claims, now = () => ne
   async function requirePoint(pointId, groupId) {
     const point = pointId ? await points.get(pointId) : null;
     if (!point || point.groupId !== groupId || !point.active) throw fail(MESSAGES.notFound);
+    if (point.answeredAt) throw fail(MESSAGES.alreadyAnswered);
     return point;
   }
 
@@ -122,6 +127,29 @@ function createPrayerPointHandlers({ memberships, points, claims, now = () => ne
       if (claim.doneAt) throw fail(MESSAGES.alreadyDone);
       await claims.remove(claim.id);
       return { pointId: point.id, released: true };
+    },
+
+    async listAnsweredPrayerPoints(_params, { callerId } = {}) {
+      const groupId = await requireGroup(callerId);
+      const list = await points.listAnswered(groupId);
+      return list
+        .slice()
+        .sort((a, b) => String(b.answeredAt).localeCompare(String(a.answeredAt)))
+        .map((p) => ({ id: p.id, title: p.title, answeredAt: p.answeredAt, testimony: p.testimony || '' }));
+    },
+
+    /** The member carrying the point this month, or an admin, closes it: it stops returning. */
+    async markPrayerPointAnswered({ pointId, testimony } = {}, { callerId } = {}) {
+      const groupId = await requireGroup(callerId);
+      const point = await requirePoint(pointId, groupId);
+      const cleanTestimony = text(testimony);
+      if (cleanTestimony.length > 1000) throw fail(MESSAGES.testimonyTooLong);
+      const adminGroupId = await memberships.findAdminGroupId(callerId);
+      if (adminGroupId !== groupId) {
+        const claim = await claims.find(point.id, monthKeyFor(now()));
+        if (!claim || claim.userId !== callerId) throw fail(MESSAGES.notHolder);
+      }
+      return points.update(point.id, { answeredAt: now(), testimony: cleanTestimony });
     },
 
     async markPrayerPointDone({ pointId } = {}, { callerId } = {}) {

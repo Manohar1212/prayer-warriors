@@ -298,6 +298,8 @@ const prayerPointSchema = {
     title: { type: 'String', required: true },
     order: { type: 'Number', defaultValue: 0 },
     active: { type: 'Boolean', defaultValue: true },
+    answeredAt: { type: 'Date' },
+    testimony: { type: 'String' },
   },
   classLevelPermissions: {
     find: authenticated, get: authenticated, count: authenticated,

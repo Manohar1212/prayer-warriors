@@ -28,6 +28,8 @@ describe('createPrayerPointsService', () => {
     await service.add('Our leaders');
     await service.update('p1', 'Our nation and leaders');
     await service.remove('p1');
+    await service.markAnswered('p2', 'God moved');
+    await service.listAnswered();
     expect(cloud.run.mock.calls).toEqual([
       ['claimPrayerPoint', { pointId: 'p3' }],
       ['markPrayerPointDone', { pointId: 'p3' }],
@@ -35,6 +37,8 @@ describe('createPrayerPointsService', () => {
       ['addPrayerPoint', { title: 'Our leaders' }],
       ['updatePrayerPoint', { pointId: 'p1', title: 'Our nation and leaders' }],
       ['removePrayerPoint', { pointId: 'p1' }],
+      ['markPrayerPointAnswered', { pointId: 'p2', testimony: 'God moved' }],
+      ['listAnsweredPrayerPoints'],
     ]);
   });
 });

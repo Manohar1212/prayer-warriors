@@ -5,7 +5,7 @@ const caller = { callerId: 'u1' };
 const admin = { callerId: 'a1' };
 
 function point(overrides = {}) {
-  return { id: 'p1', groupId: 'g1', title: 'Our nation', order: 1, active: true, ...overrides };
+  return { id: 'p1', groupId: 'g1', title: 'Our nation', order: 1, active: true, answeredAt: null, testimony: '', ...overrides };
 }
 
 function claimRow(overrides = {}) {
@@ -19,7 +19,8 @@ function deps({ groupId = 'g1', adminGroupId = null, points = [point()], claims 
       findAdminGroupId: jest.fn(async () => adminGroupId),
     },
     points: {
-      listActive: jest.fn(async () => points),
+      listActive: jest.fn(async () => points.filter((p) => !p.answeredAt)),
+      listAnswered: jest.fn(async () => points.filter((p) => p.answeredAt)),
       get: jest.fn(async (id) => points.find((p) => p.id === id) || null),
       create: jest.fn(async (fields) => ({ id: 'new1', ...fields })),
       update: jest.fn(async (id, patch) => ({ ...points.find((p) => p.id === id), ...patch })),
@@ -137,5 +138,36 @@ describe('releasePrayerPoint and markPrayerPointDone', () => {
     const done = createPrayerPointHandlers(deps({ found: claimRow({ doneAt: '2026-09-10T00:00:00.000Z' }) }));
     await expect(done.markPrayerPointDone({ pointId: 'p1' }, caller)).rejects.toThrow(MESSAGES.alreadyDone);
     await expect(done.releasePrayerPoint({ pointId: 'p1' }, caller)).rejects.toThrow(MESSAGES.alreadyDone);
+  });
+});
+
+describe('answered points', () => {
+  it('lists answered points newest first', async () => {
+    const d = deps({ points: [point({ id: 'p1', answeredAt: '2026-08-01T00:00:00.000Z', testimony: 'Peace came' }), point({ id: 'p2', answeredAt: '2026-09-01T00:00:00.000Z' }), point({ id: 'p3' })] });
+    const result = await createPrayerPointHandlers(d).listAnsweredPrayerPoints({}, caller);
+    expect(result.map((p) => p.id)).toEqual(['p2', 'p1']);
+    expect(result[1].testimony).toBe('Peace came');
+  });
+
+  it('lets the holder mark a point answered with a testimony', async () => {
+    const d = deps({ found: claimRow() });
+    const result = await createPrayerPointHandlers(d).markPrayerPointAnswered({ pointId: 'p1', testimony: ' God moved ' }, caller);
+    expect(d.points.update).toHaveBeenCalledWith('p1', { answeredAt: NOW, testimony: 'God moved' });
+    expect(result.answeredAt).toBe(NOW);
+  });
+
+  it('lets an admin mark any point answered, but refuses other members', async () => {
+    const a = deps({ adminGroupId: 'g1', found: claimRow({ userId: 'u2' }) });
+    await createPrayerPointHandlers(a).markPrayerPointAnswered({ pointId: 'p1' }, admin);
+    expect(a.points.update).toHaveBeenCalled();
+    const m = deps({ found: claimRow({ userId: 'u2' }) });
+    await expect(createPrayerPointHandlers(m).markPrayerPointAnswered({ pointId: 'p1' }, caller)).rejects.toThrow(MESSAGES.notHolder);
+  });
+
+  it('keeps answered points out of the monthly list and refuses further claims', async () => {
+    const d = deps({ points: [point({ answeredAt: '2026-09-01T00:00:00.000Z' })] });
+    const h = createPrayerPointHandlers(d);
+    expect((await h.listPrayerPoints({}, caller)).points).toEqual([]);
+    await expect(h.claimPrayerPoint({ pointId: 'p1' }, caller)).rejects.toThrow(MESSAGES.alreadyAnswered);
   });
 });

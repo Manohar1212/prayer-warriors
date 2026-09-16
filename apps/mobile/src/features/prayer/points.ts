@@ -15,6 +15,9 @@ export type PrayerPoint = {
 
 export type PrayerPointsResult = { month: string; points: PrayerPoint[] };
 
+/** A point the group has seen answered; it no longer returns each month. */
+export type AnsweredPrayerPoint = { id: string; title: string; answeredAt: string; testimony: string };
+
 type RawList = { month: string; points: { id: string; title: string; order: number; claim: { userId: string; userName: string; doneAt: string | null } | null }[] };
 
 type Deps = {
@@ -46,6 +49,8 @@ export function createPrayerPointsService({ cloud, currentUserId }: Deps) {
     claim: (pointId: string) => guarded(() => cloud.run('claimPrayerPoint', { pointId })),
     release: (pointId: string) => guarded(() => cloud.run('releasePrayerPoint', { pointId })),
     markDone: (pointId: string) => guarded(() => cloud.run('markPrayerPointDone', { pointId })),
+    markAnswered: (pointId: string, testimony: string) => guarded(() => cloud.run('markPrayerPointAnswered', { pointId, testimony })),
+    listAnswered: () => guarded(() => cloud.run('listAnsweredPrayerPoints')) as Promise<AnsweredPrayerPoint[]>,
   };
 }
 

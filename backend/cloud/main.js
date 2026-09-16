@@ -223,7 +223,16 @@ const prayerComments = {
 // ---------- monthly prayer points ----------
 
 function prayerPointDto(obj) {
-  return { id: obj.id, groupId: refId(obj.get('group')), title: obj.get('title'), order: obj.get('order') || 0, active: obj.get('active') !== false };
+  const answeredAt = obj.get('answeredAt');
+  return {
+    id: obj.id,
+    groupId: refId(obj.get('group')),
+    title: obj.get('title'),
+    order: obj.get('order') || 0,
+    active: obj.get('active') !== false,
+    answeredAt: answeredAt ? answeredAt.toISOString() : null,
+    testimony: obj.get('testimony') || '',
+  };
 }
 
 const prayerPoints = {
@@ -231,7 +240,18 @@ const prayerPoints = {
     const rows = await new Parse.Query('PrayerPoint')
       .equalTo('group', pointer('Group', groupId))
       .notEqualTo('active', false)
+      .doesNotExist('answeredAt')
       .ascending('order')
+      .limit(200)
+      .find({ useMasterKey: true });
+    return rows.map(prayerPointDto);
+  },
+  async listAnswered(groupId) {
+    const rows = await new Parse.Query('PrayerPoint')
+      .equalTo('group', pointer('Group', groupId))
+      .notEqualTo('active', false)
+      .exists('answeredAt')
+      .descending('answeredAt')
       .limit(200)
       .find({ useMasterKey: true });
     return rows.map(prayerPointDto);
@@ -800,7 +820,7 @@ Parse.Cloud.define('joinCall', async (request) => {
 ['registerPushToken', 'unregisterPushToken', 'markNotificationsRead', 'markAllNotificationsRead', 'updateNotificationPrefs'].forEach((name) =>
   Parse.Cloud.define(name, (request) => notificationHandlers[name](request.params, { callerId: callerId(request) })),
 );
-['listPrayerPoints', 'addPrayerPoint', 'updatePrayerPoint', 'removePrayerPoint', 'claimPrayerPoint', 'releasePrayerPoint', 'markPrayerPointDone'].forEach((name) =>
+['listPrayerPoints', 'listAnsweredPrayerPoints', 'addPrayerPoint', 'updatePrayerPoint', 'removePrayerPoint', 'claimPrayerPoint', 'releasePrayerPoint', 'markPrayerPointDone', 'markPrayerPointAnswered'].forEach((name) =>
   Parse.Cloud.define(name, (request) => prayerPointHandlers[name](request.params, { callerId: callerId(request) })),
 );
 Parse.Cloud.define('ping', () => 'pong');
