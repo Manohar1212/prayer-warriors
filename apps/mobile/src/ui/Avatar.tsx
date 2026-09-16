@@ -3,19 +3,9 @@ import { View } from 'react-native';
 import { colors } from '../theme/tokens';
 import { Text } from './Text';
 
-const palette = [
-  { bg: '#E4DDF8', fg: '#6D4FD1' },
-  { bg: '#FBDDE6', fg: '#C6749A' },
-  { bg: '#FBEBCF', fg: '#C99A3F' },
-  { bg: '#D9F0E4', fg: '#3E9C6E' },
-  { bg: '#DCE9FA', fg: '#4C7DD1' },
-];
-
-/** Stable pastel per person so the same name always gets the same disc. */
-export function avatarTone(name: string): { bg: string; fg: string } {
-  let hash = 0;
-  for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return palette[hash % palette.length];
+/** Everyone gets the same disc: violet initials on lavender. */
+export function avatarTone(_name: string): { bg: string; fg: string } {
+  return { bg: colors.lavender, fg: colors.primary };
 }
 
 type Props = { name: string; size?: number; className?: string };

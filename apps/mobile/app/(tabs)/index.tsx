@@ -27,16 +27,16 @@ function greetingKey(date: Date): TranslationKey {
 }
 
 const actions: { label: TranslationKey; icon: IconName; bg: string; fg: string; href: Href }[] = [
-  { label: 'home.action.prayer', icon: 'heart', bg: 'bg-blush', fg: colors.roseDeep, href: '/prayer/new' },
+  { label: 'home.action.prayer', icon: 'heart', bg: 'bg-lavender', fg: colors.primary, href: '/prayer/new' },
   { label: 'home.action.call', icon: 'call', bg: 'bg-lavender', fg: colors.primary, href: '/(tabs)/community' },
-  { label: 'home.action.songs', icon: 'musical-notes', bg: 'bg-sage', fg: colors.leaf, href: { pathname: '/resources/new', params: { type: 'song' } } },
-  { label: 'home.action.word', icon: 'book', bg: 'bg-honey', fg: colors.gold, href: '/bible' },
+  { label: 'home.action.songs', icon: 'musical-notes', bg: 'bg-lavender', fg: colors.primary, href: { pathname: '/resources/new', params: { type: 'song' } } },
+  { label: 'home.action.word', icon: 'book', bg: 'bg-lavender', fg: colors.primary, href: '/bible' },
 ];
 
 const resourceIcon: Record<Resource['type'], { name: IconName; bg: string; fg: string }> = {
   song: { name: 'musical-notes', bg: 'bg-lavender', fg: colors.primary },
-  scripture: { name: 'book', bg: 'bg-honey', fg: colors.gold },
-  prayer: { name: 'hand-left', bg: 'bg-sage', fg: colors.leaf },
+  scripture: { name: 'book', bg: 'bg-lavender', fg: colors.primary },
+  prayer: { name: 'hand-left', bg: 'bg-lavender', fg: colors.primary },
 };
 
 function SectionHeader({ title, actionLabel, onAction }: { title: string; actionLabel: string; onAction: () => void }) {
@@ -111,7 +111,7 @@ export default function HomeScreen() {
           className="mt-5"
         >
           <Card className="gap-2.5 p-5">
-            <Text variant="label" color="roseDeep" className="text-[12px]">
+            <Text variant="label" color="primary" className="text-[12px]">
               {t('home.verseOfTheDay')}
             </Text>
             <Text variant="scripture" className={lang === 'te' ? 'text-[17px] leading-[28px]' : 'text-[17px] leading-[26px]'}>

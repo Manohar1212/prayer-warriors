@@ -11,8 +11,8 @@ import { Screen, Text } from '@/ui';
 type IconName = keyof typeof Ionicons.glyphMap;
 
 const icons: Record<NotificationType, { name: IconName; bg: string; fg: string }> = {
-  prayerRequest: { name: 'heart', bg: 'bg-blush', fg: colors.roseDeep },
-  praying: { name: 'hand-left', bg: 'bg-blush', fg: colors.roseDeep },
+  prayerRequest: { name: 'heart', bg: 'bg-lavender', fg: colors.primary },
+  praying: { name: 'hand-left', bg: 'bg-lavender', fg: colors.primary },
   answered: { name: 'sparkles', bg: 'bg-honey', fg: colors.gold },
   callScheduled: { name: 'calendar', bg: 'bg-lavender', fg: colors.primary },
   callStarted: { name: 'call', bg: 'bg-lavender', fg: colors.primary },

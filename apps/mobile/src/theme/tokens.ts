@@ -3,8 +3,9 @@ export const colors = {
   primary: '#6D4FD1',
   primaryDark: '#4A3590',
   primaryLight: '#E4DDF8',
-  gold: '#C99A3F',
-  goldLight: '#F3D27A',
+  // Gold, leaf and sky now resolve to the violet family so the app reads as one colour plus rose.
+  gold: '#6D4FD1',
+  goldLight: '#B9A6F0',
   bloom: '#FBE9E1', // top of the page gradient; stack headers match it
   cream: '#FFFFFF',
   surface: '#FFFFFF',
@@ -14,13 +15,13 @@ export const colors = {
   ink: '#2B2440',
   muted: '#7A7090',
   border: '#EEE9F5',
-  sage: '#D9F0E4',
-  leaf: '#3E9C6E',
+  sage: '#E4DDF8',
+  leaf: '#6D4FD1',
   blush: '#FBDDE6',
-  honey: '#FBEBCF',
+  honey: '#E4DDF8',
   lavender: '#E4DDF8',
-  sky: '#DCE9FA',
-  skyDeep: '#4C7DD1',
+  sky: '#E4DDF8',
+  skyDeep: '#6D4FD1',
 } as const;
 
 export const fonts = {
