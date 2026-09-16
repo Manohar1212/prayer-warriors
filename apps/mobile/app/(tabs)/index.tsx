@@ -170,7 +170,16 @@ export default function HomeScreen() {
         </LinearGradient>
         {verse ? (
           <View pointerEvents="none" style={{ position: 'absolute', left: -1000, top: 0 }}>
-            <VerseShareCard ref={shareCard} text={verse.text} reference={verse.reference} telugu={lang === 'te'} />
+            <VerseShareCard
+              ref={shareCard}
+              text={verse.text}
+              reference={verse.reference}
+              title={t('home.dailyBread')}
+              date={now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              prayer={t('home.dailyBreadPrayer')}
+              prayerReference={t('home.dailyBreadPrayerRef')}
+              telugu={lang === 'te'}
+            />
           </View>
         ) : null}
 
