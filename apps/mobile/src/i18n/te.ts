@@ -72,6 +72,7 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'home.friend': 'మిత్రమా',
   'home.verseOfTheDay': 'ఈ రోజు వాక్యం',
   'home.readChapter': 'అధ్యాయం చదవండి',
+  'home.shareVerse': 'పంచుకోండి',
   'home.action.prayer': 'ప్రార్థన',
   'home.action.call': 'కాల్',
   'home.action.songs': 'పాటలు',

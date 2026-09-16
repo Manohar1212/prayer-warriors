@@ -74,6 +74,7 @@ export const en = {
   'home.friend': 'friend',
   'home.verseOfTheDay': 'Verse of the day',
   'home.readChapter': 'Read chapter',
+  'home.shareVerse': 'Share',
   'home.action.prayer': 'Prayer',
   'home.action.call': 'Call',
   'home.action.songs': 'Songs',

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,7 +8,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/features/auth';
 import { useBibleLanguage } from '@/features/bible';
 import { isJoinable, useCalls } from '@/features/calls';
+import { shareVerse } from '@/features/home/shareVerse';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
+import { VerseShareCard } from '@/features/home/VerseShareCard';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { usePrayerRequests } from '@/features/prayer';
 import { type Resource } from '@/features/resources';
@@ -87,6 +89,7 @@ export default function HomeScreen() {
   const firstName = name.split(' ')[0];
   const now = new Date();
   const part = dayPart(now);
+  const shareCard = useRef<View>(null);
 
   const loadRecent = useCallback(() => {
     resourcesService.listRecent(3).then(setRecent).catch(() => setRecent([]));
@@ -115,41 +118,61 @@ export default function HomeScreen() {
         </Text>
 
         {/* Verse of the day, set on the paper with a fleuron. */}
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Open today's verse in the Bible"
-          disabled={!verse}
-          onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
-          className="mt-7 active:opacity-90"
+        {/* Verse of the day: compact, and shareable as a card. */}
+        <LinearGradient
+          colors={['rgba(255,239,201,0.75)', 'rgba(244,214,223,0.55)', 'rgba(255,255,255,0.65)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ marginTop: 24, borderRadius: 20, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 12, gap: 8, borderWidth: 1, borderColor: colors.border }}
         >
-          <LinearGradient
-            colors={['rgba(255,239,201,0.75)', 'rgba(244,214,223,0.55)', 'rgba(255,255,255,0.65)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{ borderRadius: 24, padding: 20, gap: 12, borderWidth: 1, borderColor: colors.border }}
+          <View className="flex-row items-center gap-2">
+            <Text style={{ fontFamily: fonts.displayBold, fontSize: 16, lineHeight: 20, color: colors.roseDeep }}>❦</Text>
+            <Text variant="label" color="roseDeep" className="text-[12px]">
+              {t('home.verseOfTheDay')}
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open today's verse in the Bible"
+            disabled={!verse}
+            onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
           >
-            <View className="items-center gap-1">
-              <Text style={{ fontFamily: fonts.displayBold, fontSize: 22, lineHeight: 26, color: colors.roseDeep }}>❦</Text>
-              <Text variant="label" color="roseDeep" className="text-[12px]">
-                {t('home.verseOfTheDay')}
-              </Text>
-            </View>
-            <Text variant="scripture" className={`text-center ${lang === 'te' ? 'text-[19px] leading-[31px]' : 'text-[22px] leading-[33px]'}`}>
+            <Text variant="scripture" className={lang === 'te' ? 'text-[17px] leading-[28px]' : 'text-[19px] leading-[29px]'}>
               {verse ? verse.text : '…'}
             </Text>
-            {verse ? (
-              <View className="items-center gap-3">
-                <Text variant="caption">{verse.reference}</Text>
-                <View className="flex-row items-center gap-1 rounded-full border border-primary/40 bg-surface/70 py-1.5 pl-4 pr-3">
+          </Pressable>
+          {verse ? (
+            <View className="flex-row items-center justify-between">
+              <Text variant="caption">{verse.reference}</Text>
+              <View className="flex-row items-center gap-2">
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
+                  hitSlop={6}
+                  className="flex-row items-center gap-0.5 py-1"
+                >
                   <Text variant="label" color="primary" className="text-[13px]">
                     {t('home.readChapter')}
                   </Text>
-                  <Ionicons name="chevron-forward" size={14} color={colors.primary} />
-                </View>
+                  <Ionicons name="chevron-forward" size={13} color={colors.primary} />
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('home.shareVerse')}
+                  onPress={() => shareVerse(shareCard.current, verse.text, verse.reference)}
+                  className="h-8 w-8 items-center justify-center rounded-full border border-primary/40 bg-surface/70"
+                >
+                  <Ionicons name="share-social-outline" size={15} color={colors.primary} />
+                </Pressable>
               </View>
-            ) : null}
-          </LinearGradient>
-        </Pressable>
+            </View>
+          ) : null}
+        </LinearGradient>
+        {verse ? (
+          <View pointerEvents="none" style={{ position: 'absolute', left: -1000, top: 0 }}>
+            <VerseShareCard ref={shareCard} text={verse.text} reference={verse.reference} telugu={lang === 'te'} />
+          </View>
+        ) : null}
 
         <View className="mt-7 flex-row justify-between px-1">
           {actions.map((a) => (
