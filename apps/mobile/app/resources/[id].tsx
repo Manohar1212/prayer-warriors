@@ -69,7 +69,7 @@ export default function ResourceScreen() {
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-3">
         <Meta parts={[{ text: typeLabel, dot: resource.type === 'song' ? 'honey' : resource.type === 'scripture' ? 'sage' : 'blush' }, { text: t('resources.sharedBy', { name: resource.sharedBy }) }]} />
-        <Text variant="display" color="primary" className="text-[22px] leading-[28px]">
+        <Text variant="display" className="text-[22px] leading-[28px]">
           {resource.title}
         </Text>
         {resource.reference ? (

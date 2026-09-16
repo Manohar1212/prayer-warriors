@@ -10,7 +10,7 @@ export function TabHeader({ title, subtitle, right }: Props) {
   return (
     <View className="flex-row items-end justify-between gap-3 pb-0.5 pt-1">
       <View className="flex-1 gap-0.5">
-        <Text variant="display" color="primaryDark" className="text-[24px] leading-[30px]">
+        <Text variant="display" className="text-[24px] leading-[30px]">
           {title}
         </Text>
         {subtitle ? <Text variant="caption">{subtitle}</Text> : null}

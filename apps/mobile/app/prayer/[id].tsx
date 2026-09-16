@@ -94,7 +94,7 @@ export default function PrayerRequestScreen() {
           {request.urgency === 'urgent' && !isAnswered ? <Badge label={t('prayer.urgent')} tone="blush" /> : null}
           {isAnswered ? <Badge label={t('prayer.answered')} tone="sage" /> : null}
         </View>
-        <Text variant="display" color="primaryDark" className="text-[22px] leading-[28px]">
+        <Text variant="display" className="text-[22px] leading-[28px]">
           {request.title}
         </Text>
         <View className="flex-row items-center gap-2">
@@ -182,7 +182,7 @@ export default function PrayerRequestScreen() {
         ) : (
           <Text variant="caption">{t('prayer.detail.firstComment')}</Text>
         )}
-        <View className="flex-row items-center gap-2 rounded-full bg-surface py-1 pl-4 pr-1">
+        <View className="flex-row items-center gap-2 rounded-full border border-border bg-surface py-1 pl-4 pr-1">
           <TextInput
             placeholder={t('prayer.detail.addComment')}
             placeholderTextColor={colors.muted}

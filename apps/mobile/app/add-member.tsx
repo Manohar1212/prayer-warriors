@@ -33,7 +33,7 @@ function AddedView({ member, onDone }: { member: AddedMember; onDone: () => void
   return (
     <View className="flex-1 gap-6">
       <View className="gap-2">
-        <Text variant="display" color="primary">
+        <Text variant="display">
           {t('members.added.title', { name: member.displayName })}
         </Text>
         <Text variant="muted" className="text-[15px] leading-[22px]">

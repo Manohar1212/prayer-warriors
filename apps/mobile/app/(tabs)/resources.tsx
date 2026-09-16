@@ -93,7 +93,7 @@ export default function ResourcesScreen() {
           <View className="gap-3 pb-1">
             <TabHeader title={t('resources.title')} subtitle={t('resources.subtitle')} right={<HeaderActions />} />
             <Segments<Tab> options={[...RESOURCE_TYPES.map((r) => ({ value: r.id as Tab, label: t(pluralKey[r.id]) })), { value: 'bible', label: t('resources.bible') }]} value={type} onChange={onTab} />
-            <View className="flex-row items-center gap-2 rounded-full bg-surface px-3.5">
+            <View className="flex-row items-center gap-2 rounded-full border border-border bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
                 placeholder={t('resources.searchIn', { plural: plural.toLowerCase() })}

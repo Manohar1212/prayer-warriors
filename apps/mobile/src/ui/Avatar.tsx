@@ -1,21 +1,11 @@
 import { View } from 'react-native';
 
+import { colors } from '../theme/tokens';
 import { Text } from './Text';
 
-const palette = [
-  { bg: '#EDE7FA', fg: '#5B3FA6' },
-  { bg: '#FCE5E9', fg: '#D63C50' },
-  { bg: '#F9EFD9', fg: '#A9771F' },
-  { bg: '#E3F3E9', fg: '#2E9E5B' },
-  { bg: '#E4EEFB', fg: '#3C6FC9' },
-  { bg: '#E3F2F1', fg: '#1F8A7A' },
-];
-
-/** Stable colour per person so the same name always gets the same disc. */
-export function avatarTone(name: string): { bg: string; fg: string } {
-  let hash = 0;
-  for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return palette[hash % palette.length];
+/** Everyone gets the same quiet disc: plum initials on lavender. */
+export function avatarTone(_name: string): { bg: string; fg: string } {
+  return { bg: colors.lavender, fg: colors.primary };
 }
 
 type Props = { name: string; size?: number; className?: string };
@@ -43,14 +33,14 @@ export function AvatarStack({ names, size = 32, max = 4 }: { names: string[]; si
   return (
     <View className="flex-row items-center">
       {shown.map((n, i) => (
-        <View key={`${n}-${i}`} style={{ marginLeft: i === 0 ? 0 : -size * 0.28, borderRadius: size, borderWidth: 2, borderColor: '#FFFFFF' }}>
+        <View key={`${n}-${i}`} style={{ marginLeft: i === 0 ? 0 : -size * 0.28, borderRadius: size, borderWidth: 2, borderColor: colors.surface }}>
           <Avatar name={n} size={size} />
         </View>
       ))}
       {rest > 0 ? (
         <View
           className="items-center justify-center rounded-full bg-lavender"
-          style={{ width: size, height: size, marginLeft: -size * 0.28, borderWidth: 2, borderColor: '#FFFFFF' }}
+          style={{ width: size, height: size, marginLeft: -size * 0.28, borderWidth: 2, borderColor: colors.surface }}
         >
           <Text variant="label" color="primary" className="text-[12px]">
             +{rest}

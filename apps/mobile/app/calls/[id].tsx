@@ -94,7 +94,7 @@ export default function CallScreen() {
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       {header}
       <View className="gap-1">
-        <Text variant="display" color="primary" className="text-[22px] leading-[28px]">
+        <Text variant="display" className="text-[22px] leading-[28px]">
           {call.title}
         </Text>
         <Text variant="muted">{when(call.scheduledAt, locale)}</Text>

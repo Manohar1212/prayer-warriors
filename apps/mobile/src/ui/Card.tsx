@@ -1,7 +1,5 @@
 import { View, type ViewProps } from 'react-native';
 
-import { cardShadow } from '../theme/tokens';
-
 export type CardTone = 'surface' | 'honey' | 'sage' | 'blush' | 'lavender' | 'forest';
 
 const toneClass: Record<CardTone, string> = {
@@ -13,7 +11,7 @@ const toneClass: Record<CardTone, string> = {
   forest: 'bg-primary',
 };
 
-/** White cards float on a soft shadow; tinted cards sit flat. */
+/** White cards sit on a hairline; tinted cards sit flat. */
 export function Card({ tone = 'surface', className = '', style, ...rest }: ViewProps & { tone?: CardTone; className?: string }) {
-  return <View className={`rounded-[20px] p-4 ${toneClass[tone]} ${className}`} style={[tone === 'surface' ? cardShadow : null, style]} {...rest} />;
+  return <View className={`rounded-[18px] p-4 ${tone === 'surface' ? 'border border-border' : ''} ${toneClass[tone]} ${className}`} style={style} {...rest} />;
 }

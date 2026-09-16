@@ -29,17 +29,17 @@ function greetingKey(date: Date): TranslationKey {
   return 'home.evening';
 }
 
-const actions: { label: TranslationKey; icon: IconName; bg: string; fg: string; href: Href }[] = [
-  { label: 'home.action.prayer', icon: 'heart', bg: 'bg-blush', fg: colors.roseDeep, href: '/prayer/new' },
-  { label: 'home.action.call', icon: 'call', bg: 'bg-lavender', fg: colors.primary, href: '/(tabs)/community' },
-  { label: 'home.action.songs', icon: 'musical-notes', bg: 'bg-sage', fg: colors.leaf, href: { pathname: '/resources/new', params: { type: 'song' } } },
-  { label: 'home.action.word', icon: 'book', bg: 'bg-honey', fg: colors.gold, href: '/bible' },
+const actions: { label: TranslationKey; icon: IconName; href: Href }[] = [
+  { label: 'home.action.prayer', icon: 'heart-outline', href: '/prayer/new' },
+  { label: 'home.action.call', icon: 'call-outline', href: '/(tabs)/community' },
+  { label: 'home.action.songs', icon: 'musical-notes-outline', href: { pathname: '/resources/new', params: { type: 'song' } } },
+  { label: 'home.action.word', icon: 'book-outline', href: '/bible' },
 ];
 
-const resourceIcon: Record<Resource['type'], { name: IconName; bg: string; fg: string }> = {
-  song: { name: 'musical-notes', bg: 'bg-lavender', fg: colors.primary },
-  scripture: { name: 'book', bg: 'bg-sage', fg: colors.leaf },
-  prayer: { name: 'hand-left', bg: 'bg-honey', fg: colors.gold },
+const resourceIcon: Record<Resource['type'], IconName> = {
+  song: 'musical-notes-outline',
+  scripture: 'book-outline',
+  prayer: 'hand-left-outline',
 };
 
 function SectionHeader({ title, actionLabel, onAction }: { title: string; actionLabel: string; onAction: () => void }) {
@@ -118,8 +118,8 @@ export default function HomeScreen() {
           >
             <Card className="gap-2.5">
               <View className="flex-row items-center gap-2">
-                <View className="h-1.5 w-1.5 rounded-full bg-primary" />
-                <Text variant="caption" color="primary">
+                <View className="h-1.5 w-1.5 rounded-full bg-gold" />
+                <Text variant="caption" color="gold">
                   {t('home.verseOfTheDay')}
                 </Text>
               </View>
@@ -128,7 +128,7 @@ export default function HomeScreen() {
               </Text>
               {verse ? (
                 <View className="flex-row items-center justify-between">
-                  <Text variant="label" color="primary" className="text-[13px]">
+                  <Text variant="label" color="gold" className="text-[13px]">
                     {verse.reference}
                   </Text>
                   <View className="flex-row items-center gap-1">
@@ -143,8 +143,8 @@ export default function HomeScreen() {
           <View className="flex-row justify-between px-2">
             {actions.map((a) => (
               <Pressable key={a.label} accessibilityRole="button" onPress={() => router.push(a.href)} className="items-center gap-1.5 active:opacity-80">
-                <View className={`h-12 w-12 items-center justify-center rounded-[16px] ${a.bg}`}>
-                  <Ionicons name={a.icon} size={20} color={a.fg} />
+                <View className="h-[52px] w-[52px] items-center justify-center rounded-full border border-border bg-surface">
+                  <Ionicons name={a.icon} size={21} color={colors.primary} />
                 </View>
                 <Text variant="caption" color="ink">
                   {t(a.label)}
@@ -202,7 +202,6 @@ export default function HomeScreen() {
             {recent.length ? (
               <Card className="py-1">
                 {recent.map((r, i) => {
-                  const icon = resourceIcon[r.type];
                   return (
                     <Pressable
                       key={r.id}
@@ -210,8 +209,8 @@ export default function HomeScreen() {
                       onPress={() => router.push({ pathname: '/resources/[id]', params: { id: r.id } })}
                       className={`flex-row items-center gap-3 py-3 ${i > 0 ? 'border-t border-border' : ''}`}
                     >
-                      <View className={`h-10 w-10 items-center justify-center rounded-[12px] ${icon.bg}`}>
-                        <Ionicons name={icon.name} size={18} color={icon.fg} />
+                      <View className="h-10 w-10 items-center justify-center rounded-full bg-lavender">
+                        <Ionicons name={resourceIcon[r.type]} size={18} color={colors.primary} />
                       </View>
                       <View className="flex-1 gap-0.5">
                         <Text variant="label" className="text-[15px]" numberOfLines={1}>

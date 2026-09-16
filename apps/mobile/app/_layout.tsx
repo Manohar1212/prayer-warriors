@@ -32,7 +32,7 @@ const modalOptions = {
   headerShown: true,
   headerStyle: { backgroundColor: colors.cream },
   headerShadowVisible: false,
-  headerTitleStyle: { fontFamily: fonts.display, fontSize: 20, color: colors.primary },
+  headerTitleStyle: { fontFamily: fonts.display, fontSize: 18, color: colors.ink },
   headerTintColor: colors.primary,
   headerLeft: () => <HeaderBack modal />,
 };
