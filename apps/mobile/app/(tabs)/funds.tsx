@@ -7,7 +7,7 @@ import { formatRupees, useFunds, type Transaction } from '@/features/funds';
 import { useMembers } from '@/features/members';
 import { shortDate } from '@/lib/time';
 import { useLanguage } from '@/i18n';
-import { colors, gradients } from '@/theme/tokens';
+import { colors, fonts, gradients } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Card, Screen, TabHeader, Text } from '@/ui';
 
@@ -58,7 +58,7 @@ export default function FundsScreen() {
               <Text variant="caption" color="creamSoft">
                 {t('funds.balance')}
               </Text>
-              <Text variant="display" color="cream" className="text-[28px] leading-[34px]">
+              <Text color="cream" style={{ fontFamily: fonts.sansSemiBold, fontSize: 28, lineHeight: 34 }}>
                 {formatRupees(balancePaise)}
               </Text>
             </View>

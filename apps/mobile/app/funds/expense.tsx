@@ -8,6 +8,7 @@ import { useMembers } from '@/features/members';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { fundsService } from '@/lib/parse';
+import { fonts } from '@/theme/tokens';
 import { Button, Card, Chip, Input, Screen, Text } from '@/ui';
 
 export default function ExpenseScreen() {
@@ -46,7 +47,7 @@ export default function ExpenseScreen() {
   if (!isAdmin && existing) {
     return (
       <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
-        <Text variant="display" color="roseDeep">
+        <Text color="roseDeep" style={{ fontFamily: fonts.sansSemiBold, fontSize: 26, lineHeight: 32 }}>
           −{formatRupees(existing.amountPaise)}
         </Text>
         <Card className="gap-3">

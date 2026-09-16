@@ -8,6 +8,7 @@ import { useMembers } from '@/features/members';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { fundsService } from '@/lib/parse';
+import { fonts } from '@/theme/tokens';
 import { Button, Card, Chip, Input, Screen, Text } from '@/ui';
 
 export default function ContributionScreen() {
@@ -48,7 +49,7 @@ export default function ContributionScreen() {
   if (!isAdmin && existing) {
     return (
       <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
-        <Text variant="display" color="primary">
+        <Text color="primary" style={{ fontFamily: fonts.sansSemiBold, fontSize: 26, lineHeight: 32 }}>
           {formatRupees(existing.amountPaise)}
         </Text>
         <Card className="gap-3">
