@@ -16,3 +16,4 @@ export type { MetaPart } from './Meta';
 export { Avatar, AvatarStack, avatarTone } from './Avatar';
 export { TabHeader } from './TabHeader';
 export { EmptyState } from './EmptyState';
+export { HeaderBack } from './HeaderBack';

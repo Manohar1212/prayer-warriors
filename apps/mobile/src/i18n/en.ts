@@ -187,7 +187,7 @@ export const en = {
   'calls.noOneJoined': 'No one has joined yet.',
   'calls.countJoined': '{count} joined.',
   'calls.join': 'Join call',
-  'calls.opensBefore': 'Opens 15 minutes before {when}',
+  'calls.opensBefore': 'Opens 15 minutes before the start',
   'calls.endForEveryone': 'End call for everyone',
   'calls.cancelThis': 'Cancel this call',
   'calls.joinFailed': 'Could not join the call.',

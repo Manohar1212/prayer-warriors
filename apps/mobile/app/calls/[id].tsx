@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
@@ -9,7 +9,7 @@ import { useMembers } from '@/features/members';
 import { goBackOr } from '@/lib/navigation';
 import { useLanguage } from '@/i18n';
 import { callsService } from '@/lib/parse';
-import { Button, Screen, Text } from '@/ui';
+import { Button, HeaderBack, Screen, Text } from '@/ui';
 
 function when(iso: string, locale: string): string {
   const d = new Date(iso);
@@ -60,9 +60,15 @@ export default function CallScreen() {
     await refresh();
   }
 
+  // The header back control disappears while on a call, so leaving is always the explicit Leave button.
+  const header = (
+    <Stack.Screen options={{ headerLeft: credentials ? () => null : () => <HeaderBack fallback="/(tabs)/community" />, gestureEnabled: !credentials }} />
+  );
+
   if (!call) {
     return (
       <Screen edges={['bottom']} backdrop className="justify-center gap-4">
+        {header}
         <Text variant="muted">{loading ? t('common.loading') : t('calls.notAvailable')}</Text>
         <Button title={t('common.back')} variant="ghost" onPress={() => goBackOr(router, '/(tabs)/community')} className="self-start px-0" />
       </Screen>
@@ -72,6 +78,7 @@ export default function CallScreen() {
   if (credentials) {
     return (
       <Screen edges={['bottom']} className="pt-4">
+        {header}
         <Text variant="title" className="mb-3">
           {call.title}
         </Text>
@@ -85,6 +92,7 @@ export default function CallScreen() {
 
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
+      {header}
       <View className="gap-1">
         <Text variant="display" color="primary" className="text-[22px] leading-[28px]">
           {call.title}
@@ -105,12 +113,11 @@ export default function CallScreen() {
         </Text>
       ) : null}
       {!over ? (
-        <Button title={joinable ? t('calls.join') : t('calls.opensBefore', { when: when(call.scheduledAt, locale) })} onPress={join} loading={busy} disabled={!joinable} />
+        <Button title={joinable ? t('calls.join') : t('calls.opensBefore')} onPress={join} loading={busy} disabled={!joinable} />
       ) : null}
       {isAdmin && !over ? (
         <Button title={call.status === 'live' ? t('calls.endForEveryone') : t('calls.cancelThis')} variant="secondary" onPress={call.status === 'live' ? end : () => callsService.cancel(call.id).then(refresh).catch((err) => setError(err instanceof Error ? err.message : t('calls.cancelFailed')))} />
       ) : null}
-      <Button title={t('common.back')} variant="ghost" onPress={() => goBackOr(router, '/(tabs)/community')} className="self-start px-0" />
     </Screen>
   );
 }

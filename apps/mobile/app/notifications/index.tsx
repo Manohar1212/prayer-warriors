@@ -65,8 +65,8 @@ export default function NotificationsScreen() {
   return (
     <Screen edges={['bottom']} backdrop className="px-0 pt-0">
       <ScrollView contentContainerClassName="px-4 pb-8 pt-3" showsVerticalScrollIndicator={false}>
-        <View className="flex-row items-center justify-between border-b border-border pb-3">
-          <Text variant="muted">{unread === 0 ? t('notifications.nothingNew') : unread === 1 ? t('notifications.oneNew') : t('notifications.new', { count: unread })}</Text>
+        <View className={`flex-row items-center justify-between pb-3 ${items.length ? 'border-b border-border' : ''}`}>
+          <Text variant="muted">{items.length === 0 ? '' : unread === 0 ? t('notifications.nothingNew') : unread === 1 ? t('notifications.oneNew') : t('notifications.new', { count: unread })}</Text>
           <View className="flex-row items-center gap-5">
             {unread > 0 ? (
               <Pressable accessibilityRole="button" onPress={markAllRead} hitSlop={8}>

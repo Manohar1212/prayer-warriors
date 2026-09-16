@@ -181,7 +181,7 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'calls.noOneJoined': 'ఇంకా ఎవరూ చేరలేదు.',
   'calls.countJoined': '{count} చేరారు.',
   'calls.join': 'కాల్‌లో చేరండి',
-  'calls.opensBefore': '{when}కు 15 నిమిషాల ముందు తెరుచుకుంటుంది',
+  'calls.opensBefore': 'ప్రారంభానికి 15 నిమిషాల ముందు తెరుచుకుంటుంది',
   'calls.endForEveryone': 'అందరికీ కాల్ ముగించు',
   'calls.cancelThis': 'ఈ కాల్ రద్దు చేయి',
   'calls.joinFailed': 'కాల్‌లో చేరలేకపోయాము.',
