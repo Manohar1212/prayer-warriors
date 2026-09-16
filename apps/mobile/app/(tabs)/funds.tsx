@@ -58,7 +58,7 @@ export default function FundsScreen() {
               <Text variant="caption" color="creamSoft">
                 {t('funds.balance')}
               </Text>
-              <Text variant="display" color="cream" className="text-[38px] leading-[44px]">
+              <Text variant="display" color="cream" className="text-[28px] leading-[34px]">
                 {formatRupees(balancePaise)}
               </Text>
             </View>
@@ -121,7 +121,7 @@ export default function FundsScreen() {
           </Text>
         ) : null}
 
-        <Text variant="title" className="text-[20px]">
+        <Text variant="title" className="text-[17px]">
           {t('funds.recent')}
         </Text>
         {loading && !transactions.length ? (

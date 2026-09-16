@@ -29,7 +29,7 @@ export default function CallHistoryScreen() {
                     {when(c.scheduledAt, locale)}
                   </Text>
                 </View>
-                <Text variant="title" className="text-[18px]">
+                <Text variant="title" className="text-[16px]">
                   {c.title}
                 </Text>
                 <Text variant="muted" className="text-[13px]">

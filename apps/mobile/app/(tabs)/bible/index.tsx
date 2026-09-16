@@ -67,7 +67,7 @@ export default function BibleScreen() {
                 <Text variant="label" color="gold" className="text-[12px]">
                   {t('bible.continueReading')}
                 </Text>
-                <Text variant="title" className="text-[20px]">
+                <Text variant="title" className="text-[17px]">
                   {bookName(lastBook, lang, true)} {lastRead.chapter}
                 </Text>
               </View>

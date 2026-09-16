@@ -45,7 +45,7 @@ function ResourceCard({ resource, onOpen }: { resource: Resource; onOpen: () => 
       <Card className="flex-row items-center gap-3">
         <Thumb type={resource.type} />
         <View className="flex-1 gap-0.5">
-          <Text variant="label" className="text-[16px]" numberOfLines={1}>
+          <Text variant="label" className="text-[15px]" numberOfLines={1}>
             {resource.title}
           </Text>
           {resource.reference ? (

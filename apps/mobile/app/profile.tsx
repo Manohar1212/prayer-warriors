@@ -38,12 +38,12 @@ export default function ProfileScreen() {
       <View className="items-center gap-3">
         <Avatar name={name} size={96} />
         <View className="items-center gap-1">
-          <Text variant="display" className="text-[28px] leading-[34px]">
+          <Text variant="display" className="text-[22px] leading-[28px]">
             {name}
           </Text>
           <Text variant="caption">{user?.email}</Text>
         </View>
-        <Text variant="scripture" color="muted" className="max-w-[280px] text-center text-[17px] leading-[26px]">
+        <Text variant="scripture" color="muted" className="max-w-[280px] text-center text-[15px] leading-[23px]">
           {t('profile.verse')}
         </Text>
         <Text variant="caption">{t('profile.verseRef')}</Text>

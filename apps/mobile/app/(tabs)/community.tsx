@@ -85,7 +85,7 @@ export default function CommunityScreen() {
         {tab === 'calls' ? (
           <View className="gap-4">
             <View className="flex-row items-center justify-between">
-              <Text variant="title" className="text-[20px]">
+              <Text variant="title" className="text-[17px]">
                 {live ? t('community.happeningNow') : t('community.nextCall')}
               </Text>
               <View className="flex-row items-center gap-3">
@@ -155,7 +155,7 @@ export default function CommunityScreen() {
         ) : (
           <View className="gap-3">
             <View className="flex-row items-center justify-between">
-              <Text variant="title" className="text-[20px]">
+              <Text variant="title" className="text-[17px]">
                 {members.length === 1 ? t('community.member') : t('community.members', { count: members.length })}
               </Text>
               {isAdmin ? <Button title={t('community.addMember')} size="compact" icon="add" onPress={() => router.push('/add-member')} /> : null}

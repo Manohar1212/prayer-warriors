@@ -19,7 +19,7 @@ function EntryCard({ entry, onOpen }: { entry: JournalEntry; onOpen: () => void 
         <Meta parts={entry.answered ? [{ text: t(`prayer.category.${entry.category}` as TranslationKey), dot: 'gold' }, { text: t('journal.entry.answered'), color: 'gold' }] : [{ text: t(`prayer.category.${entry.category}` as TranslationKey), dot: 'sage' }]} />
         <Text variant="caption">{shortDate(entry.answered && entry.answeredAt ? entry.answeredAt : entry.createdAt, locale)}</Text>
       </View>
-      <Text variant="title" className="text-[19px] leading-[25px]">
+      <Text variant="title" className="text-[17px] leading-[23px]">
         {entry.title}
       </Text>
       {entry.body ? (

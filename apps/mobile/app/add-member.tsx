@@ -53,7 +53,7 @@ function AddedView({ member, onDone }: { member: AddedMember; onDone: () => void
         ) : null}
         <View className="gap-0.5">
           <Text variant="muted">{t('members.added.password')}</Text>
-          <Text className="font-semibold text-[22px] leading-[30px] tracking-[2px]" selectable>
+          <Text className="font-semibold text-[19px] leading-[26px] tracking-[2px]" selectable>
             {member.startingPassword}
           </Text>
         </View>

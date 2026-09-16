@@ -44,7 +44,7 @@ const resourceIcon: Record<Resource['type'], { name: IconName; bg: string; fg: s
 function SectionHeader({ title, actionLabel, onAction }: { title: string; actionLabel: string; onAction: () => void }) {
   return (
     <View className="flex-row items-center justify-between px-1">
-      <Text variant="title" className="text-[20px]">
+      <Text variant="title" className="text-[17px]">
         {title}
       </Text>
       <Pressable accessibilityRole="button" onPress={onAction} hitSlop={8} className="py-1">
@@ -89,35 +89,33 @@ export default function HomeScreen() {
     <View className="flex-1 bg-cream">
       <ScrollView contentContainerClassName="pb-32" showsVerticalScrollIndicator={false}>
         {/* Hero: purple header with the greeting; the verse card hangs over its bottom edge. */}
-        <LinearGradient colors={[...gradients.welcome]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: 72, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 }}>
+        <LinearGradient colors={[...gradients.welcome]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ paddingTop: insets.top + 10, paddingHorizontal: 20, paddingBottom: 64, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 }}>
           <View className="flex-row items-center justify-between">
-            <View className="flex-1 gap-1 pr-3">
-              <Text variant="caption" color="creamSoft">
-                {now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}
-              </Text>
-              <Text variant="display" color="cream" className="text-[30px] leading-[36px]">
-                {t(greetingKey(now))}, {firstName}
-              </Text>
-            </View>
+            <Text variant="caption" color="creamSoft">
+              {now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}
+            </Text>
             <HeaderActions onDark />
           </View>
+          <Text variant="display" color="cream" className="mt-1 text-[24px] leading-[30px]" numberOfLines={2}>
+            {t(greetingKey(now))}, {firstName}
+          </Text>
         </LinearGradient>
 
-        <View className="-mt-14 gap-6 px-4">
+        <View className="-mt-12 gap-5 px-4">
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Open today's verse in the Bible"
             disabled={!verse}
             onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
           >
-            <Card className="gap-3 p-5">
+            <Card className="gap-2.5">
               <View className="flex-row items-center gap-2">
                 <View className="h-1.5 w-1.5 rounded-full bg-primary" />
                 <Text variant="caption" color="primary">
                   {t('home.verseOfTheDay')}
                 </Text>
               </View>
-              <Text variant="scripture" className={lang === 'te' ? 'text-[19px] leading-[32px]' : 'text-[21px] leading-[32px]'}>
+              <Text variant="scripture" className={lang === 'te' ? 'text-[16px] leading-[28px]' : 'text-[16px] leading-[25px]'}>
                 {verse ? verse.text : '…'}
               </Text>
               {verse ? (
@@ -136,9 +134,9 @@ export default function HomeScreen() {
 
           <View className="flex-row justify-between px-2">
             {actions.map((a) => (
-              <Pressable key={a.label} accessibilityRole="button" onPress={() => router.push(a.href)} className="items-center gap-2 active:opacity-80">
-                <View className={`h-14 w-14 items-center justify-center rounded-[20px] ${a.bg}`}>
-                  <Ionicons name={a.icon} size={22} color={a.fg} />
+              <Pressable key={a.label} accessibilityRole="button" onPress={() => router.push(a.href)} className="items-center gap-1.5 active:opacity-80">
+                <View className={`h-12 w-12 items-center justify-center rounded-[16px] ${a.bg}`}>
+                  <Ionicons name={a.icon} size={20} color={a.fg} />
                 </View>
                 <Text variant="caption" color="ink">
                   {t(a.label)}

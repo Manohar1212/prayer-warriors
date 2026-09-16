@@ -18,10 +18,10 @@ export function EmptyState({ icon, tone = 'lavender', title, body }: { icon: Ico
   const t = tones[tone];
   return (
     <View className="items-center gap-3 px-6 py-10">
-      <View className={`h-16 w-16 items-center justify-center rounded-full ${t.bg}`}>
-        <Ionicons name={icon} size={26} color={t.fg} />
+      <View className={`h-14 w-14 items-center justify-center rounded-full ${t.bg}`}>
+        <Ionicons name={icon} size={24} color={t.fg} />
       </View>
-      <Text variant="title" className="text-center text-[20px]">
+      <Text variant="title" className="text-center text-[17px]">
         {title}
       </Text>
       <Text variant="muted" className="max-w-[280px] text-center text-[15px] leading-[22px]">

@@ -65,7 +65,7 @@ export function AuthShell({ title, subtitle, footer, backTo, children }: Props) 
                 <Image source={emblem} accessibilityLabel="Prayer Warriors" style={{ width: 96, height: 94 }} resizeMode="contain" />
               </Animated.View>
               <View className="items-center gap-1.5">
-                <Text variant="display" color="cream" className="text-center text-[30px] leading-[36px]">
+                <Text variant="display" color="cream" className="text-center text-[24px] leading-[30px]">
                   {title}
                 </Text>
                 {subtitle ? (

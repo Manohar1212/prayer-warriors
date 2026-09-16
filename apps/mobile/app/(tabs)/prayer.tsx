@@ -21,7 +21,7 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
         <View className="flex-row items-center gap-3">
           <Avatar name={request.authorName} size={40} />
           <View className="flex-1 gap-0.5">
-            <Text variant="label" className="text-[16px]" numberOfLines={2}>
+            <Text variant="label" className="text-[15px]" numberOfLines={2}>
               {request.title}
             </Text>
             <Text variant="caption">

@@ -18,10 +18,10 @@ export type TextColor =
   | 'leaf';
 
 const variantClass: Record<TextVariant, string> = {
-  display: 'font-display text-[32px] leading-[38px]',
-  title: 'font-display text-[22px] leading-[28px]',
-  scripture: 'font-display-italic text-[20px] leading-[30px]',
-  body: 'font-sans text-base leading-6',
+  display: 'font-display text-[26px] leading-[32px]',
+  title: 'font-display text-[19px] leading-[24px]',
+  scripture: 'font-display-italic text-[18px] leading-[27px]',
+  body: 'font-sans text-[15px] leading-[22px]',
   label: 'font-medium text-sm leading-5',
   caption: 'font-sans text-[13px] leading-[18px]',
   muted: 'font-sans text-sm leading-5',

@@ -94,7 +94,7 @@ export default function PrayerRequestScreen() {
           {request.urgency === 'urgent' && !isAnswered ? <Badge label={t('prayer.urgent')} tone="blush" /> : null}
           {isAnswered ? <Badge label={t('prayer.answered')} tone="sage" /> : null}
         </View>
-        <Text variant="display" color="primaryDark" className="text-[28px] leading-[34px]">
+        <Text variant="display" color="primaryDark" className="text-[22px] leading-[28px]">
           {request.title}
         </Text>
         <View className="flex-row items-center gap-2">
@@ -105,14 +105,14 @@ export default function PrayerRequestScreen() {
         </View>
       </View>
 
-      {request.description ? <Text className="text-[16px] leading-[26px]">{request.description}</Text> : null}
+      {request.description ? <Text className="text-[15px] leading-[23px]">{request.description}</Text> : null}
 
       {isAnswered ? (
         <Card tone="honey" className="gap-2">
           <Text variant="label" color="gold" className="text-[13px]">
             {t('prayer.detail.answeredOn', { date: request.answeredAt ? longDate(request.answeredAt, locale) : '' })}
           </Text>
-          {request.testimony ? <Text variant="scripture" className="text-[18px] leading-[28px]">{request.testimony}</Text> : null}
+          {request.testimony ? <Text variant="scripture" className="text-[16px] leading-[25px]">{request.testimony}</Text> : null}
         </Card>
       ) : (
         <Button
@@ -124,7 +124,7 @@ export default function PrayerRequestScreen() {
       )}
 
       <View className="gap-3">
-        <Text variant="title" className="text-[20px]">
+        <Text variant="title" className="text-[17px]">
           {request.prayingCount === 0 ? t('prayer.detail.noOnePraying') : request.prayingCount === 1 ? t('prayer.detail.onePraying') : t('prayer.detail.manyPraying', { count: request.prayingCount })}
         </Text>
         {names.length ? <AvatarStack names={names} size={36} max={5} /> : null}
@@ -157,7 +157,7 @@ export default function PrayerRequestScreen() {
       ) : null}
 
       <View className="gap-3">
-        <Text variant="title" className="text-[20px]">
+        <Text variant="title" className="text-[17px]">
           {t('prayer.detail.comments')}
         </Text>
         {comments.length ? (

@@ -50,11 +50,11 @@ export default function WelcomeScreen() {
               <Glow size={520} strength={0.42} />
               <Image source={logo} accessibilityLabel="Prayer Warriors" style={{ width: 280, height: 280 }} resizeMode="contain" />
             </Animated.View>
-            <Text variant="body" color="creamSoft" className="max-w-[260px] text-center text-[16px] leading-[24px]">
+            <Text variant="body" color="creamSoft" className="max-w-[260px] text-center text-[15px] leading-[22px]">
               {t('welcome.tagline')}
             </Text>
             <View className="items-center gap-2">
-              <Text variant="scripture" color="creamSoft" className="max-w-[280px] text-center text-[18px] leading-[28px]">
+              <Text variant="scripture" color="creamSoft" className="max-w-[280px] text-center text-[16px] leading-[25px]">
                 {t('welcome.verse')}
               </Text>
               <Text variant="caption" color="creamFaint">

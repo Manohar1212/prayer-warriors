@@ -49,7 +49,7 @@ export default function ForgotPasswordScreen() {
           <View className="h-14 w-14 items-center justify-center rounded-full bg-surface/15">
             <Ionicons name="mail-open-outline" size={24} color={colors.goldLight} />
           </View>
-          <Text variant="title" color="cream" className="text-center text-[20px]">
+          <Text variant="title" color="cream" className="text-center text-[17px]">
             {t('forgot.sentTitle')}
           </Text>
           <Text variant="body" color="creamSoft" className="text-center text-[15px] leading-[22px]">
