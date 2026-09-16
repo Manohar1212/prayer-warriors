@@ -3,7 +3,7 @@ import { View, type ViewProps } from 'react-native';
 export type CardTone = 'surface' | 'honey' | 'sage' | 'blush' | 'lavender' | 'forest';
 
 const toneClass: Record<CardTone, string> = {
-  surface: 'bg-surface',
+  surface: 'bg-panel',
   honey: 'bg-honey',
   sage: 'bg-sage',
   blush: 'bg-blush',
@@ -11,7 +11,7 @@ const toneClass: Record<CardTone, string> = {
   forest: 'bg-primary',
 };
 
-/** White cards sit on a hairline; tinted cards sit flat. */
+/** Soft ivory panels on the white page; tinted panels for the few emphasised states. */
 export function Card({ tone = 'surface', className = '', style, ...rest }: ViewProps & { tone?: CardTone; className?: string }) {
-  return <View className={`rounded-[18px] p-4 ${tone === 'surface' ? 'border border-border' : ''} ${toneClass[tone]} ${className}`} style={style} {...rest} />;
+  return <View className={`rounded-[18px] p-4 ${toneClass[tone]} ${className}`} style={style} {...rest} />;
 }

@@ -9,7 +9,7 @@ type Props<T extends string> = { options: Option<T>[]; value: T; onChange: (valu
 /** Pill tabs: a lavender track with the active choice lifted on a white pill. */
 export function Segments<T extends string>({ options, value, onChange }: Props<T>) {
   return (
-    <View className="flex-row rounded-full bg-lavender p-1">
+    <View className="flex-row rounded-full bg-panel p-1">
       {options.map((o) => {
         const active = o.value === value;
         return (

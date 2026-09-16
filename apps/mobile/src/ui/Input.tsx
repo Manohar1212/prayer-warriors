@@ -27,7 +27,7 @@ export function Input({ label, error, className = '', variant = 'line', right, m
     : glass
       ? `h-[54px] rounded-[16px] border bg-surface/15 px-4 py-0 text-[16px] text-cream ${edge} ${right ? 'pr-12' : ''}`
       : variant === 'filled'
-        ? `h-[52px] rounded-[14px] border bg-cream px-4 py-0 text-[16px] ${edge} ${right ? 'pr-12' : ''}`
+        ? `h-[52px] rounded-[14px] border bg-panel px-4 py-0 text-[16px] ${edge} ${right ? 'pr-12' : ''}`
         : `border-b bg-transparent px-0 pb-2.5 pt-2 text-[16px] ${edge}`;
   return (
     <View className={`gap-1.5 ${className}`}>

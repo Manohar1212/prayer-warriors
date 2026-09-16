@@ -55,7 +55,7 @@ export function Screen({
   const body = scroll ? (
     <KeyboardScroll
       bottomOffset={140}
-      contentContainerClassName={`flex-grow ${withDefaultPadding(className, ['px-4', 'pb-8', 'pt-4'])}`}
+      contentContainerClassName={`flex-grow ${withDefaultPadding(className, ['px-5', 'pb-8', 'pt-4'])}`}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       showsVerticalScrollIndicator={false}
@@ -64,7 +64,7 @@ export function Screen({
     </KeyboardScroll>
   ) : (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'web' ? undefined : 'padding'}>
-      <View className={`flex-1 ${withDefaultPadding(className, ['px-4', 'pb-8', 'pt-4'])}`}>{children}</View>
+      <View className={`flex-1 ${withDefaultPadding(className, ['px-5', 'pb-8', 'pt-4'])}`}>{children}</View>
     </KeyboardAvoidingView>
   );
   return (

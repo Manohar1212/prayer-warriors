@@ -9,8 +9,9 @@ module.exports = {
       colors: {
         primary: { DEFAULT: '#4A3590', dark: '#2A1C5C', light: '#EFEBF7' },
         gold: { DEFAULT: '#B08A3E', light: '#DCC07A' },
-        cream: '#F8F6F3',
+        cream: '#FFFFFF',
         surface: '#FFFFFF',
+        panel: '#F7F5F2',
         rose: { DEFAULT: '#E8B4BC', deep: '#B3475C' },
         sage: '#EDF2EE',
         leaf: '#4F7D63',
@@ -20,7 +21,7 @@ module.exports = {
         sky: { DEFAULT: '#ECEFF6', deep: '#4C5F93' },
         ink: '#1E1A2B',
         muted: '#7A7488',
-        border: '#E7E2EC',
+        border: '#ECE8E3',
       },
       fontFamily: {
         display: ['Montserrat_600SemiBold'],

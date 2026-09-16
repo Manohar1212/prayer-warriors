@@ -5,13 +5,14 @@ export const colors = {
   primaryLight: '#EFEBF7',
   gold: '#B08A3E',
   goldLight: '#DCC07A',
-  cream: '#F8F6F3', // page background: warm ivory
+  cream: '#FFFFFF', // page background: white, so the type and the ivory panels carry the look
   surface: '#FFFFFF',
+  panel: '#F7F5F2', // soft ivory panels that group content without a border
   rose: '#E8B4BC',
   roseDeep: '#B3475C',
   ink: '#1E1A2B',
   muted: '#7A7488',
-  border: '#E7E2EC',
+  border: '#ECE8E3',
   // Quiet tinted surfaces; the deep partners are muted so nothing shouts.
   sage: '#EDF2EE',
   leaf: '#4F7D63',
