@@ -46,10 +46,10 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
             accessibilityState={{ selected: focused }}
             accessibilityLabel={label}
             onPress={onPress}
-            className="flex-1 items-center gap-1 pb-1 pt-3"
+            className="flex-1 items-center gap-1 px-0.5 pb-1 pt-2.5"
           >
             <Ionicons name={focused ? icon.active : icon.icon} size={23} color={focused ? colors.primary : colors.muted} />
-            <Text variant="label" color={focused ? 'primary' : 'muted'} className="text-[10px] leading-[13px]" style={{ letterSpacing: -0.1 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+            <Text variant="label" color={focused ? 'primary' : 'muted'} style={{ fontSize: 10, lineHeight: 13 }} numberOfLines={1}>
               {label}
             </Text>
           </Pressable>

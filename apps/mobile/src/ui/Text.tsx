@@ -20,15 +20,29 @@ export type TextColor =
   | 'roseDeep'
   | 'leaf';
 
-const variantClass: Record<TextVariant, string> = {
-  display: 'font-display text-[24px] leading-[30px]',
-  title: 'font-display text-[18px] leading-[24px]',
-  scripture: 'font-display-italic text-[17px] leading-[26px]',
-  body: 'font-sans text-[15px] leading-[22px]',
-  label: 'font-medium text-[14px] leading-[20px]',
-  caption: 'font-sans text-[13px] leading-[18px]',
-  muted: 'font-sans text-[14px] leading-[20px]',
+/** Each variant's face, size and line height, kept apart so a caller's own size can replace the variant's. */
+const variantParts: Record<TextVariant, { font: string; size: string; leading: string }> = {
+  display: { font: 'font-display', size: 'text-[24px]', leading: 'leading-[30px]' },
+  title: { font: 'font-display', size: 'text-[18px]', leading: 'leading-[24px]' },
+  scripture: { font: 'font-display-italic', size: 'text-[17px]', leading: 'leading-[26px]' },
+  body: { font: 'font-sans', size: 'text-[15px]', leading: 'leading-[22px]' },
+  label: { font: 'font-medium', size: 'text-[14px]', leading: 'leading-[20px]' },
+  caption: { font: 'font-sans', size: 'text-[13px]', leading: 'leading-[18px]' },
+  muted: { font: 'font-sans', size: 'text-[14px]', leading: 'leading-[20px]' },
 };
+
+const SIZE_CLASS = /(^|\s)text-(\[\d+px\]|xs|sm|base|lg|xl|\dxl)(\s|$)/;
+const LEADING_CLASS = /(^|\s)leading-/;
+
+/**
+ * Two arbitrary Tailwind sizes on one element resolve by stylesheet order, not class order, so a
+ * caller's `text-[12px]` could lose to the variant's `text-[14px]`. Dropping the variant's size
+ * whenever the caller sets one makes overrides reliable on web and native alike.
+ */
+function variantClassFor(variant: TextVariant, className: string): string {
+  const v = variantParts[variant];
+  return [v.font, SIZE_CLASS.test(className) ? '' : v.size, LEADING_CLASS.test(className) ? '' : v.leading].filter(Boolean).join(' ');
+}
 
 const defaultColor: Record<TextVariant, TextColor> = {
   display: 'ink',
@@ -98,7 +112,7 @@ export function Text({ variant = 'body', color, className = '', style, children,
   const telugu = containsTelugu(children);
   return (
     <RNText
-      className={`${variantClass[variant]} ${className}`}
+      className={`${variantClassFor(variant, className)} ${className}`}
       style={[{ color: colorValue[color ?? defaultColor[variant]] }, telugu ? { fontFamily: teluguFamily[variant] } : null, style]}
       {...rest}
     >
