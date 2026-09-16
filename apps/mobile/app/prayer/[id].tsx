@@ -9,7 +9,7 @@ import { usePrayerRequests, type PrayerComment } from '@/features/prayer';
 import { prayerService } from '@/lib/parse';
 import { timeAgo } from '@/lib/time';
 import { useLanguage, type TranslationKey } from '@/i18n';
-import { cardShadow, colors } from '@/theme/tokens';
+import { colors } from '@/theme/tokens';
 import { Avatar, AvatarStack, Badge, Button, Card, Input, Screen, Text } from '@/ui';
 
 function longDate(iso: string, locale: string): string {
@@ -182,7 +182,7 @@ export default function PrayerRequestScreen() {
         ) : (
           <Text variant="caption">{t('prayer.detail.firstComment')}</Text>
         )}
-        <View className="flex-row items-center gap-2 rounded-full bg-surface py-1 pl-4 pr-1" style={cardShadow}>
+        <View className="flex-row items-center gap-2 rounded-full border border-border bg-surface/80 py-1 pl-4 pr-1">
           <TextInput
             placeholder={t('prayer.detail.addComment')}
             placeholderTextColor={colors.muted}

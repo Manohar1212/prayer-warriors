@@ -6,7 +6,6 @@ import { CATEGORIES, usePrayerRequests, type PrayerCategory } from '@/features/p
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { Button, Chip, Input, Screen, Text } from '@/ui';
-import { cardShadow } from '@/theme/tokens';
 
 export default function NewPrayerRequestScreen() {
   const router = useRouter();
@@ -63,8 +62,7 @@ export default function NewPrayerRequestScreen() {
           accessibilityRole="switch"
           accessibilityState={{ checked: urgent }}
           onPress={() => setUrgent((u) => !u)}
-          className="flex-row items-center justify-between rounded-[20px] bg-surface px-4 py-3"
-          style={cardShadow}
+          className="flex-row items-center justify-between rounded-[20px] border border-border bg-surface/70 px-4 py-3"
         >
           <View className="gap-0.5">
             <Text variant="label">{t('prayer.new.urgent')}</Text>

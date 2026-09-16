@@ -1,7 +1,8 @@
 import '../global.css';
 import '@/lib/livekitGlobals';
 
-import { Nunito_400Regular, Nunito_600SemiBold, Nunito_600SemiBold_Italic, Nunito_700Bold, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
+import { Karla_400Regular, Karla_500Medium, Karla_700Bold } from '@expo-google-fonts/karla';
+import { PlayfairDisplay_400Regular_Italic, PlayfairDisplay_500Medium, PlayfairDisplay_600SemiBold } from '@expo-google-fonts/playfair-display';
 import { NotoSansTelugu_400Regular, NotoSansTelugu_500Medium, NotoSansTelugu_700Bold } from '@expo-google-fonts/noto-sans-telugu';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -88,11 +89,12 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Nunito_400Regular,
-    Nunito_600SemiBold,
-    Nunito_600SemiBold_Italic,
-    Nunito_700Bold,
-    Nunito_800ExtraBold,
+    Karla_400Regular,
+    Karla_500Medium,
+    Karla_700Bold,
+    PlayfairDisplay_400Regular_Italic,
+    PlayfairDisplay_500Medium,
+    PlayfairDisplay_600SemiBold,
     NotoSansTelugu_400Regular,
     NotoSansTelugu_500Medium,
     NotoSansTelugu_700Bold,

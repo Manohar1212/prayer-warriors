@@ -1,11 +1,10 @@
 import { View, type ViewProps } from 'react-native';
 
-import { cardShadow } from '../theme/tokens';
 
 export type CardTone = 'surface' | 'honey' | 'sage' | 'blush' | 'lavender' | 'forest';
 
 const toneClass: Record<CardTone, string> = {
-  surface: 'bg-surface',
+  surface: 'bg-surface/70',
   honey: 'bg-honey',
   sage: 'bg-sage',
   blush: 'bg-blush',
@@ -13,7 +12,7 @@ const toneClass: Record<CardTone, string> = {
   forest: 'bg-primary',
 };
 
-/** White cards float on a soft lift; tinted cards sit flat. */
+/** Translucent panels on the paper, edged with a hairline; tinted panels for emphasised states. */
 export function Card({ tone = 'surface', className = '', style, ...rest }: ViewProps & { tone?: CardTone; className?: string }) {
-  return <View className={`rounded-[24px] p-4 ${toneClass[tone]} ${className}`} style={[tone === 'surface' ? cardShadow : null, style]} {...rest} />;
+  return <View className={`rounded-[20px] p-4 ${tone === 'surface' ? 'border border-border' : ''} ${toneClass[tone]} ${className}`} style={style} {...rest} />;
 }

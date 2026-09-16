@@ -6,7 +6,6 @@ import { CATEGORIES, useJournal, type PrayerCategory } from '@/features/prayer';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { Button, Chip, Input, Screen, Text } from '@/ui';
-import { cardShadow } from '@/theme/tokens';
 
 export default function JournalEntryScreen() {
   const { t } = useLanguage();
@@ -90,8 +89,7 @@ export default function JournalEntryScreen() {
           accessibilityRole="switch"
           accessibilityState={{ checked: isAnswered }}
           onPress={() => setIsAnswered((a) => !a)}
-          className="flex-row items-center justify-between rounded-[20px] bg-surface px-4 py-3"
-          style={cardShadow}
+          className="flex-row items-center justify-between rounded-[20px] border border-border bg-surface/70 px-4 py-3"
         >
           <View className="gap-0.5">
             <Text variant="label">{t('journal.entry.answered')}</Text>

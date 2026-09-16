@@ -6,7 +6,7 @@ import { bookName, useAttribution, useBibleLanguage, useBooks, useLastRead, type
 import { HeaderHome } from '@/features/bible/BibleNav';
 import { LanguageToggle } from '@/features/bible/LanguageToggle';
 import { useT } from '@/i18n';
-import { cardShadow, colors } from '@/theme/tokens';
+import { colors } from '@/theme/tokens';
 import { Card, Screen, Text } from '@/ui';
 
 function BookGrid({ books, lang, onOpen }: { books: BibleBook[]; lang: 'en' | 'te'; onOpen: (b: BibleBook) => void }) {
@@ -47,8 +47,7 @@ export default function BibleScreen() {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push('/bible/search')}
-          className="flex-row items-center gap-3 rounded-full bg-surface px-4 py-2.5"
-          style={cardShadow}
+          className="flex-row items-center gap-3 rounded-full border border-border bg-surface/80 px-4 py-2.5"
         >
           <Ionicons name="search-outline" size={18} color={colors.muted} />
           <Text variant="muted">{t('bible.search')}</Text>

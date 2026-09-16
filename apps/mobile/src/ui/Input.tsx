@@ -3,8 +3,6 @@ import { Platform, TextInput, View, type TextInputProps } from 'react-native';
 
 import { colors } from '../theme/tokens';
 
-/** A lighter lift than cards, so stacked fields do not pile up shadow. */
-const fieldShadow = { boxShadow: '0 4px 14px rgba(80, 60, 140, 0.07)' } as const;
 import { Text } from './Text';
 
 export type InputVariant = 'line' | 'filled' | 'glass';
@@ -24,13 +22,13 @@ export function Input({ label, error, className = '', variant = 'filled', right,
   const glass = variant === 'glass';
   const edge = glass
     ? error ? 'border-rose' : focused ? 'border-surface/70' : 'border-surface/20'
-    : error ? 'border-rose-deep' : focused ? 'border-primary' : variant === 'line' ? 'border-border' : 'border-surface';
+    : error ? 'border-rose-deep' : focused ? 'border-primary' : 'border-border';
   const field = multiline
-    ? `rounded-[16px] border bg-surface px-4 py-3 text-[15px] leading-[22px] ${edge}`
+    ? `rounded-[14px] border bg-surface/80 px-4 py-3 text-[15px] leading-[22px] ${edge}`
     : glass
       ? `h-[54px] rounded-[16px] border bg-surface/15 px-4 py-0 text-[16px] text-cream ${edge} ${right ? 'pr-12' : ''}`
       : variant === 'filled'
-        ? `h-[52px] rounded-[16px] border bg-surface px-4 py-0 text-[16px] ${edge} ${right ? 'pr-12' : ''}`
+        ? `h-[52px] rounded-[14px] border bg-surface/80 px-4 py-0 text-[16px] ${edge} ${right ? 'pr-12' : ''}`
         : `border-b bg-transparent px-0 pb-2.5 pt-2 text-[16px] ${edge}`;
   return (
     <View className={`gap-1.5 ${className}`}>
@@ -53,7 +51,7 @@ export function Input({ label, error, className = '', variant = 'filled', right,
             onBlur?.(e);
           }}
           className={`min-h-[48px] font-sans ${glass ? '' : 'text-ink'} ${field}`}
-          style={[multiline ? { minHeight: 96, textAlignVertical: 'top' } : { textAlignVertical: 'center' }, variant === 'line' || glass ? null : fieldShadow, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null, style]}
+          style={[multiline ? { minHeight: 96, textAlignVertical: 'top' } : { textAlignVertical: 'center' }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null, style]}
           {...rest}
         />
         {right ? <View className="absolute bottom-0 right-3 top-0 justify-center">{right}</View> : null}

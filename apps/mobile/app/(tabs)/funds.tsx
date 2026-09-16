@@ -7,7 +7,7 @@ import { formatRupees, useFunds, type Transaction } from '@/features/funds';
 import { useMembers } from '@/features/members';
 import { shortDate } from '@/lib/time';
 import { useLanguage } from '@/i18n';
-import { cardShadow, colors, fonts, gradients } from '@/theme/tokens';
+import { colors, fonts, gradients } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Card, Screen, TabHeader, Text } from '@/ui';
 
@@ -50,7 +50,7 @@ export default function FundsScreen() {
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
       >
         <TabHeader title={t('funds.title')} subtitle={t('funds.subtitle')} right={<HeaderActions />} />
-        <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 24, padding: 20, gap: 14, overflow: 'hidden', ...cardShadow }}>
+        <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 22, padding: 20, gap: 14, overflow: 'hidden' }}>
           <View style={{ position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.10)' }} />
           <View>
             <View className="gap-1">

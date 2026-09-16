@@ -3,9 +3,17 @@ import { View } from 'react-native';
 import { colors } from '../theme/tokens';
 import { Text } from './Text';
 
-/** Everyone gets the same disc: violet initials on lavender. */
-export function avatarTone(_name: string): { bg: string; fg: string } {
-  return { bg: colors.lavender, fg: colors.primary };
+const palette = [
+  { bg: '#F4D6DF', fg: '#9A4D68' },
+  { bg: '#D6E8DE', fg: '#3F6E56' },
+  { bg: '#FFEFC9', fg: '#B8892E' },
+];
+
+/** A rose, sage or honey disc, stable per person. */
+export function avatarTone(name: string): { bg: string; fg: string } {
+  let hash = 0;
+  for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return palette[hash % palette.length];
 }
 
 type Props = { name: string; size?: number; className?: string };

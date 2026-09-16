@@ -1,53 +1,52 @@
 export const colors = {
-  // Soft bloom: a friendly violet for actions, rose for warmth, pastel tiles, and a peach-to-lavender page.
-  primary: '#6D4FD1',
-  primaryDark: '#4A3590',
-  primaryLight: '#E4DDF8',
-  // Gold, leaf and sky now resolve to the violet family so the app reads as one colour plus rose.
-  gold: '#6D4FD1',
-  goldLight: '#B9A6F0',
-  bloom: '#FBE9E1', // top of the page gradient; stack headers match it
-  cream: '#FFFFFF',
+  // Watercolour: warm paper, charcoal ink, sage for actions, rose for warmth, honey for a touch of light.
+  primary: '#5E8A74',
+  primaryDark: '#3F6E56',
+  primaryLight: '#D6E8DE',
+  gold: '#B8892E',
+  goldLight: '#FFE0AA',
+  bloom: '#FFFDF9', // the paper; stack headers match it
+  cream: '#FFFDF9',
   surface: '#FFFFFF',
-  panel: '#F4F0F9',
-  rose: '#F4B8C8',
-  roseDeep: '#C6749A',
-  ink: '#2B2440',
-  muted: '#7A7090',
-  border: '#EEE9F5',
-  sage: '#E4DDF8',
-  leaf: '#6D4FD1',
-  blush: '#FBDDE6',
-  honey: '#E4DDF8',
-  lavender: '#E4DDF8',
-  sky: '#E4DDF8',
-  skyDeep: '#6D4FD1',
+  panel: '#F6F2EC',
+  rose: '#F4B4C8',
+  roseDeep: '#9A4D68',
+  ink: '#3A3330',
+  muted: '#8C817B',
+  border: '#E6DFD8',
+  sage: '#D6E8DE',
+  leaf: '#5E8A74',
+  blush: '#F4D6DF',
+  honey: '#FFEFC9',
+  lavender: '#D6E8DE',
+  sky: '#D6E8DE',
+  skyDeep: '#5E8A74',
 } as const;
 
 export const fonts = {
-  // Nunito: rounded and friendly, extra-bold for headings, regular for reading.
-  display: 'Nunito_800ExtraBold',
-  displayBold: 'Nunito_800ExtraBold',
-  displayItalic: 'Nunito_600SemiBold_Italic',
-  light: 'Nunito_400Regular',
-  sans: 'Nunito_400Regular',
-  sansMedium: 'Nunito_600SemiBold',
-  sansSemiBold: 'Nunito_700Bold',
-  numeric: 'Nunito_800ExtraBold',
-  numericBold: 'Nunito_800ExtraBold',
-  // Telugu: Nunito has no Telugu glyphs, so Telugu text gets Noto Sans Telugu in matching weights.
-  teluguBold: 'NotoSansTelugu_700Bold',
+  // Playfair Display for the greeting, verse and headings; Karla for everything you read and tap.
+  display: 'PlayfairDisplay_500Medium',
+  displayBold: 'PlayfairDisplay_600SemiBold',
+  displayItalic: 'PlayfairDisplay_400Regular_Italic',
+  light: 'Karla_400Regular',
+  sans: 'Karla_400Regular',
+  sansMedium: 'Karla_500Medium',
+  sansSemiBold: 'Karla_700Bold',
+  numeric: 'Karla_700Bold',
+  numericBold: 'Karla_700Bold',
+  // Telugu: neither face has Telugu glyphs, so Telugu text gets Noto Sans Telugu in matching weights.
+  teluguBold: 'NotoSansTelugu_600SemiBold',
   teluguSans: 'NotoSansTelugu_400Regular',
   teluguSansMedium: 'NotoSansTelugu_500Medium',
 } as const;
 
-/** The soft lift under white cards and floating controls. */
-export const cardShadow = { boxShadow: '0 10px 30px rgba(80, 60, 140, 0.10)' } as const;
+/** A whisper of lift for floating controls; panels rely on a hairline instead. */
+export const cardShadow = { boxShadow: '0 2px 10px rgba(58, 51, 48, 0.06)' } as const;
 
 /** Gradient stops used by the hero cards. */
 export const gradients = {
-  purple: ['#6D4FD1', '#9B7BE8'] as const,
-  verse: ['#E4DDF8', '#FBDDE6', '#FBEBCF'] as const,
-  welcome: ['#FBE9E1', '#EEE6FA', '#FFFFFF'] as const,
-  song: ['#6D4FD1', '#C6749A'] as const,
+  purple: ['#5E8A74', '#7FA98F'] as const,
+  verse: ['#F4D6DF', '#D6E8DE', '#FFEFC9'] as const,
+  welcome: ['#FFFDF9', '#FFFDF9', '#FFFDF9'] as const,
+  song: ['#5E8A74', '#C98AA0'] as const,
 } as const;

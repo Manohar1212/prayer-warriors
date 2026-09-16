@@ -41,7 +41,7 @@ export function AuthShell({ title, subtitle, footer, backTo, children }: Props) 
   }));
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#FBE9E1' }}>
+    <View style={{ flex: 1, backgroundColor: '#FFFDF9' }}>
       <StatusBar style="dark" />
       <Backdrop />
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
