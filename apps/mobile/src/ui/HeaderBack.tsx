@@ -3,7 +3,7 @@ import { useRouter, type Href } from 'expo-router';
 import { Pressable } from 'react-native';
 
 import { goBackOr } from '../lib/navigation';
-import { colors } from '../theme/tokens';
+import { cardShadow, colors } from '../theme/tokens';
 
 type Props = {
   /** Modals close downwards; pushed screens go back leftwards. */
@@ -23,8 +23,8 @@ export function HeaderBack({ modal = false, fallback = '/(tabs)', onDark = false
       accessibilityLabel={modal ? 'Close' : 'Back'}
       onPress={() => goBackOr(router, fallback)}
       hitSlop={10}
-      className={`h-9 w-9 items-center justify-center rounded-full ${onDark ? 'bg-surface/15' : 'bg-lavender'}`}
-      style={{ marginLeft: onDark ? 0 : 4 }}
+      className={`h-9 w-9 items-center justify-center rounded-full ${onDark ? 'bg-surface/15' : 'bg-surface'}`}
+      style={onDark ? { marginLeft: 0 } : { marginLeft: 4, ...cardShadow }}
     >
       <Ionicons name={modal ? 'close' : 'chevron-back'} size={20} color={onDark ? colors.surface : colors.primary} />
     </Pressable>

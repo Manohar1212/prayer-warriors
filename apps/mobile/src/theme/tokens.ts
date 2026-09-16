@@ -1,52 +1,52 @@
 export const colors = {
-  // One deep plum for the brand, one soft gold for emphasis, warm ivory underneath.
-  primary: '#4A3590',
-  primaryDark: '#2A1C5C',
-  primaryLight: '#EFEBF7',
-  gold: '#B08A3E',
-  goldLight: '#DCC07A',
-  cream: '#FFFFFF', // page background: white, so the type and the ivory panels carry the look
+  // Soft bloom: a friendly violet for actions, rose for warmth, pastel tiles, and a peach-to-lavender page.
+  primary: '#6D4FD1',
+  primaryDark: '#4A3590',
+  primaryLight: '#E4DDF8',
+  gold: '#C99A3F',
+  goldLight: '#F3D27A',
+  bloom: '#FBE9E1', // top of the page gradient; stack headers match it
+  cream: '#FFFFFF',
   surface: '#FFFFFF',
-  panel: '#F7F5F2', // soft ivory panels that group content without a border
-  rose: '#E8B4BC',
-  roseDeep: '#B3475C',
-  ink: '#1E1A2B',
-  muted: '#7A7488',
-  border: '#ECE8E3',
-  // Quiet tinted surfaces; the deep partners are muted so nothing shouts.
-  sage: '#EDF2EE',
-  leaf: '#4F7D63',
-  blush: '#F7ECEF',
-  honey: '#F6F0E4',
-  lavender: '#EFEBF7',
-  sky: '#ECEFF6',
-  skyDeep: '#4C5F93',
+  panel: '#F4F0F9',
+  rose: '#F4B8C8',
+  roseDeep: '#C6749A',
+  ink: '#2B2440',
+  muted: '#7A7090',
+  border: '#EEE9F5',
+  sage: '#D9F0E4',
+  leaf: '#3E9C6E',
+  blush: '#FBDDE6',
+  honey: '#FBEBCF',
+  lavender: '#E4DDF8',
+  sky: '#DCE9FA',
+  skyDeep: '#4C7DD1',
 } as const;
 
 export const fonts = {
-  // One Latin family for the whole app: Montserrat, semibold for headings and regular for reading.
-  display: 'Montserrat_600SemiBold',
-  displayBold: 'Montserrat_700Bold',
-  displayItalic: 'Montserrat_400Regular_Italic',
-  light: 'Montserrat_300Light',
-  sans: 'Montserrat_400Regular',
-  sansMedium: 'Montserrat_500Medium',
-  sansSemiBold: 'Montserrat_600SemiBold',
-  numeric: 'Montserrat_600SemiBold',
-  numericBold: 'Montserrat_700Bold',
-  // Telugu: Montserrat has no Telugu glyphs, so Telugu text gets Noto Sans Telugu in matching weights.
-  teluguBold: 'NotoSansTelugu_600SemiBold',
+  // Nunito: rounded and friendly, extra-bold for headings, regular for reading.
+  display: 'Nunito_800ExtraBold',
+  displayBold: 'Nunito_800ExtraBold',
+  displayItalic: 'Nunito_600SemiBold_Italic',
+  light: 'Nunito_400Regular',
+  sans: 'Nunito_400Regular',
+  sansMedium: 'Nunito_600SemiBold',
+  sansSemiBold: 'Nunito_700Bold',
+  numeric: 'Nunito_800ExtraBold',
+  numericBold: 'Nunito_800ExtraBold',
+  // Telugu: Nunito has no Telugu glyphs, so Telugu text gets Noto Sans Telugu in matching weights.
+  teluguBold: 'NotoSansTelugu_700Bold',
   teluguSans: 'NotoSansTelugu_400Regular',
   teluguSansMedium: 'NotoSansTelugu_500Medium',
 } as const;
 
-/** Barely-there lift for floating controls; cards use a hairline border instead. */
-export const cardShadow = { boxShadow: '0 1px 2px rgba(30, 26, 43, 0.05)' } as const;
+/** The soft lift under white cards and floating controls. */
+export const cardShadow = { boxShadow: '0 10px 30px rgba(80, 60, 140, 0.10)' } as const;
 
 /** Gradient stops used by the hero cards. */
 export const gradients = {
-  purple: ['#3A2A78', '#4A3590'] as const,
-  verse: ['#EFEBF7', '#F7ECEF', '#F6F0E4'] as const,
-  welcome: ['#241848', '#3A2A78'] as const,
-  song: ['#3A2A78', '#6E4C8A'] as const,
+  purple: ['#6D4FD1', '#9B7BE8'] as const,
+  verse: ['#E4DDF8', '#FBDDE6', '#FBEBCF'] as const,
+  welcome: ['#FBE9E1', '#EEE6FA', '#FFFFFF'] as const,
+  song: ['#6D4FD1', '#C6749A'] as const,
 } as const;

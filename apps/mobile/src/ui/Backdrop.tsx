@@ -1,14 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet } from 'react-native';
 
-/** A soft lavender-to-white wash behind the top of the page, so screens have depth without blocks. */
+import { gradients } from '../theme/tokens';
+
+/** The page itself: peach at the top melting through lavender into white. */
 export function Backdrop() {
-  return (
-    <LinearGradient
-      pointerEvents="none"
-      colors={['#F1ECF8', '#FFFFFF']}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280 }}
-    />
-  );
+  return <LinearGradient pointerEvents="none" colors={[...gradients.welcome]} locations={[0, 0.45, 1]} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={StyleSheet.absoluteFill} />;
 }

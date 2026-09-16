@@ -1,14 +1,11 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
-import { AccessibilityInfo, Animated, Easing, Image, Platform, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, Image, Platform, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useT } from '@/i18n';
-import { gradients } from '@/theme/tokens';
-import { Button, Text } from '@/ui';
-import { Aurora } from '@/ui/Aurora';
-import { Glow } from '@/ui/Glow';
+import { Backdrop, Button, Text } from '@/ui';
 
 const logo = require('../../assets/logo.png');
 
@@ -40,31 +37,30 @@ export default function WelcomeScreen() {
   const scale = settle.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] });
 
   return (
-    <View style={{ flex: 1, backgroundColor: gradients.welcome[0] }}>
-      <StatusBar style="light" />
-      <Aurora palette="dusk" style={StyleSheet.absoluteFill} />
+    <View style={{ flex: 1, backgroundColor: '#FBE9E1' }}>
+      <StatusBar style="dark" />
+      <Backdrop />
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <View className="flex-1 justify-between px-6 pb-6 pt-4">
           <View className="flex-1 items-center justify-center gap-8">
             <Animated.View style={{ opacity: settle, transform: [{ scale }], alignItems: 'center', justifyContent: 'center' }}>
-              <Glow size={520} strength={0.42} />
               <Image source={logo} accessibilityLabel="Prayer Warriors" style={{ width: 280, height: 280 }} resizeMode="contain" />
             </Animated.View>
-            <Text variant="body" color="creamSoft" className="max-w-[260px] text-center text-[15px] leading-[22px]">
+            <Text variant="body" color="muted" className="max-w-[260px] text-center text-[15px] leading-[22px]">
               {t('welcome.tagline')}
             </Text>
             <View className="items-center gap-2">
-              <Text variant="scripture" color="creamSoft" className="max-w-[280px] text-center text-[16px] leading-[25px]">
+              <Text variant="scripture" className="max-w-[280px] text-center text-[16px] leading-[25px]">
                 {t('welcome.verse')}
               </Text>
-              <Text variant="caption" color="creamFaint">
+              <Text variant="caption">
                 {t('welcome.verseRef')}
               </Text>
             </View>
           </View>
           <View className="gap-4">
-            <Button title={t('welcome.signIn')} variant="inverse" onPress={() => router.push('/(auth)/login')} />
-            <Text variant="caption" color="creamFaint" className="text-center">
+            <Button title={t('welcome.signIn')} onPress={() => router.push('/(auth)/login')} />
+            <Text variant="caption" className="text-center">
               {t('welcome.invitation')}
             </Text>
           </View>

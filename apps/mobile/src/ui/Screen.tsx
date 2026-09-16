@@ -69,7 +69,7 @@ export function Screen({
   );
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: background[tone] }} edges={edges}>
-      {backdrop ? <Backdrop /> : null}
+      {tone === 'cream' ? <Backdrop /> : null}
       {body}
     </SafeAreaView>
   );

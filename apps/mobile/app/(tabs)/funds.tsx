@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
@@ -6,9 +7,9 @@ import { formatRupees, useFunds, type Transaction } from '@/features/funds';
 import { useMembers } from '@/features/members';
 import { shortDate } from '@/lib/time';
 import { useLanguage } from '@/i18n';
-import { colors, fonts } from '@/theme/tokens';
+import { cardShadow, colors, fonts, gradients } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
-import { Aurora, Card, Screen, TabHeader, Text } from '@/ui';
+import { Card, Screen, TabHeader, Text } from '@/ui';
 
 function TransactionRow({ tx, onPress, last }: { tx: Transaction; onPress: () => void; last: boolean }) {
   const { locale } = useLanguage();
@@ -49,8 +50,8 @@ export default function FundsScreen() {
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
       >
         <TabHeader title={t('funds.title')} subtitle={t('funds.subtitle')} right={<HeaderActions />} />
-        <View style={{ borderRadius: 22, padding: 20, gap: 14, overflow: 'hidden' }}>
-          <Aurora palette="plum" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+        <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 24, padding: 20, gap: 14, overflow: 'hidden', ...cardShadow }}>
+          <View style={{ position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.10)' }} />
           <View>
             <View className="gap-1">
               <Text variant="caption" color="creamSoft">
@@ -93,7 +94,7 @@ export default function FundsScreen() {
               </Pressable>
             </View>
           ) : null}
-        </View>
+        </LinearGradient>
 
         <View className="flex-row gap-5 px-1">
           <Pressable accessibilityRole="button" onPress={() => router.push('/funds/report')} className="flex-row items-center gap-1.5 py-1">

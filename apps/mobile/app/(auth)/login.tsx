@@ -5,6 +5,7 @@ import { Pressable } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { useT } from '@/i18n';
+import { colors } from '@/theme/tokens';
 import { Button, Input, Text } from '@/ui';
 import { AuthShell } from '@/ui/AuthShell';
 
@@ -35,14 +36,14 @@ export default function LoginScreen() {
       title={t('login.title')}
       subtitle={t('login.subtitle')}
       footer={
-        <Text variant="caption" color="creamFaint" className="text-center">
+        <Text variant="caption" color="muted" className="text-center">
           {t('welcome.invitation')}
         </Text>
       }
     >
       <Input
         label={t('common.email')}
-        variant="glass"
+        variant="filled"
         placeholder={t('login.emailPlaceholder')}
         autoCapitalize="none"
         autoComplete="email"
@@ -54,7 +55,7 @@ export default function LoginScreen() {
       />
       <Input
         label={t('login.password')}
-        variant="glass"
+        variant="filled"
         placeholder={t('login.passwordPlaceholder')}
         secureTextEntry={!show}
         autoComplete="password"
@@ -66,14 +67,14 @@ export default function LoginScreen() {
         error={error}
         right={
           <Pressable accessibilityRole="button" accessibilityLabel={show ? t('login.hidePassword') : t('login.showPassword')} onPress={() => setShow((s) => !s)} hitSlop={8}>
-            <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color="rgba(250, 247, 240, 0.7)" />
+            <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.muted} />
           </Pressable>
         }
       />
-      <Button title={t('welcome.signIn')} variant="inverse" onPress={submit} loading={busy} disabled={!email.trim() || !password} className="mt-1" />
+      <Button title={t('welcome.signIn')} variant="primary" onPress={submit} loading={busy} disabled={!email.trim() || !password} className="mt-1" />
       <Link href="/(auth)/forgot-password" asChild>
         <Pressable accessibilityRole="link" className="self-center py-1">
-          <Text variant="label" color="creamSoft" className="text-[14px]">
+          <Text variant="label" color="muted" className="text-[14px]">
             {t('login.forgot')}
           </Text>
         </Pressable>

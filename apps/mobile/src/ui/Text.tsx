@@ -20,7 +20,7 @@ export type TextColor =
 const variantClass: Record<TextVariant, string> = {
   display: 'font-display text-[26px] leading-[32px]',
   title: 'font-display text-[19px] leading-[24px]',
-  scripture: 'font-display-italic text-[18px] leading-[27px]',
+  scripture: 'font-medium text-[17px] leading-[26px]',
   body: 'font-sans text-[15px] leading-[22px]',
   label: 'font-medium text-sm leading-5',
   caption: 'font-sans text-[13px] leading-[18px]',
@@ -51,7 +51,7 @@ const colorValue: Record<TextColor, string> = {
   leaf: colors.leaf,
 };
 
-/** Telugu faces that stand in for Montserrat, which has no Telugu glyphs. */
+/** Telugu faces that stand in for Nunito, which has no Telugu glyphs. */
 const teluguFamily: Record<TextVariant, string> = {
   display: fonts.teluguBold,
   title: fonts.teluguBold,

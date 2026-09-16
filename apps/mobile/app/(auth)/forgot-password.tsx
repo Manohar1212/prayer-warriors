@@ -38,7 +38,7 @@ export default function ForgotPasswordScreen() {
       subtitle={sent ? undefined : t('forgot.subtitle')}
       footer={
         <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8} className="py-1">
-          <Text variant="label" color="creamSoft" className="text-[14px]">
+          <Text variant="label" color="muted" className="text-[14px]">
             {sent ? t('forgot.backToSignIn') : t('common.cancel')}
           </Text>
         </Pressable>
@@ -46,13 +46,13 @@ export default function ForgotPasswordScreen() {
     >
       {sent ? (
         <View className="items-center gap-3 py-2">
-          <View className="h-14 w-14 items-center justify-center rounded-full bg-surface/15">
-            <Ionicons name="mail-open-outline" size={24} color={colors.goldLight} />
+          <View className="h-14 w-14 items-center justify-center rounded-full bg-lavender">
+            <Ionicons name="mail-open-outline" size={24} color={colors.primary} />
           </View>
-          <Text variant="title" color="cream" className="text-center text-[17px]">
+          <Text variant="title" className="text-center text-[17px]">
             {t('forgot.sentTitle')}
           </Text>
-          <Text variant="body" color="creamSoft" className="text-center text-[15px] leading-[22px]">
+          <Text variant="body" color="muted" className="text-center text-[15px] leading-[22px]">
             {t('forgot.sentBody', { email: email.trim() })}
           </Text>
         </View>
@@ -60,7 +60,7 @@ export default function ForgotPasswordScreen() {
         <>
           <Input
             label={t('common.email')}
-            variant="glass"
+            variant="filled"
             placeholder={t('login.emailPlaceholder')}
             autoCapitalize="none"
             keyboardType="email-address"
@@ -71,7 +71,7 @@ export default function ForgotPasswordScreen() {
             onSubmitEditing={submit}
             error={error}
           />
-          <Button title={t('forgot.send')} variant="inverse" onPress={submit} loading={busy} disabled={!email.trim()} className="mt-1" />
+          <Button title={t('forgot.send')} variant="primary" onPress={submit} loading={busy} disabled={!email.trim()} className="mt-1" />
         </>
       )}
     </AuthShell>

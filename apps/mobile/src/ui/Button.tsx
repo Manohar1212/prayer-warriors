@@ -50,8 +50,8 @@ const iconColor: Record<ButtonVariant, string> = {
 };
 
 const sizing: Record<ButtonSize, { box: string; text: string; icon: number }> = {
-  regular: { box: 'min-h-[52px] rounded-[14px] px-6', text: 'text-[15px]', icon: 18 },
-  compact: { box: 'min-h-[38px] rounded-[10px] px-4', text: 'text-[13px]', icon: 15 },
+  regular: { box: 'min-h-[52px] rounded-full px-6', text: 'text-[15px]', icon: 18 },
+  compact: { box: 'min-h-[38px] rounded-full px-4', text: 'text-[13px]', icon: 15 },
 };
 
 export function Button({ title, variant = 'primary', size = 'regular', icon, loading = false, disabled, className = '', ...rest }: Props) {

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { colors } from '../../theme/tokens';
+import { cardShadow, colors } from '../../theme/tokens';
 import { Avatar } from '../../ui/Avatar';
 import { Text } from '../../ui/Text';
 import { useT } from '../../i18n';
@@ -23,7 +23,8 @@ export function HeaderActions({ onDark = false }: { onDark?: boolean }) {
         accessibilityLabel={unread ? t('home.notificationsUnread', { count: unread }) : t('home.notifications')}
         onPress={() => router.push('/notifications')}
         hitSlop={8}
-        className={`h-10 w-10 items-center justify-center rounded-full ${onDark ? 'bg-surface/20' : 'border border-border bg-surface'}`}
+        className={`h-10 w-10 items-center justify-center rounded-full ${onDark ? 'bg-surface/20' : 'bg-surface'}`}
+        style={onDark ? null : cardShadow}
       >
         <Ionicons name={unread ? 'notifications' : 'notifications-outline'} size={20} color={onDark ? colors.surface : colors.primary} />
         {unread ? (

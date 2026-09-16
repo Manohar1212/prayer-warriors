@@ -31,14 +31,14 @@ export default function AccountSetupScreen() {
       subtitle={t('setup.subtitle')}
       footer={
         <Pressable accessibilityRole="button" onPress={signOut} hitSlop={8} className="py-1">
-          <Text variant="label" color="creamSoft" className="text-[14px]">
+          <Text variant="label" color="muted" className="text-[14px]">
             {t('setup.signOut')}
           </Text>
         </Pressable>
       }
     >
-      <Input label={t('setup.name')} variant="glass" placeholder={t('setup.namePlaceholder')} value={displayName} onChangeText={setDisplayName} onSubmitEditing={submit} maxLength={40} autoFocus error={error} />
-      <Button title={t('setup.continue')} variant="inverse" onPress={submit} loading={busy} disabled={displayName.trim().length === 0} className="mt-1" />
+      <Input label={t('setup.name')} variant="filled" placeholder={t('setup.namePlaceholder')} value={displayName} onChangeText={setDisplayName} onSubmitEditing={submit} maxLength={40} autoFocus error={error} />
+      <Button title={t('setup.continue')} variant="primary" onPress={submit} loading={busy} disabled={displayName.trim().length === 0} className="mt-1" />
     </AuthShell>
   );
 }

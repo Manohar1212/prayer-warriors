@@ -8,7 +8,7 @@ export default function BibleLayout() {
     <Stack
       screenOptions={{
         headerShown: true,
-        headerStyle: { backgroundColor: colors.cream },
+        headerStyle: { backgroundColor: colors.bloom },
         headerShadowVisible: false,
         headerTitleStyle: { fontFamily: fonts.display, fontSize: 18, color: colors.ink },
         headerTintColor: colors.primary,

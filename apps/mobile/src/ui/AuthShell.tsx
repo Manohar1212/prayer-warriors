@@ -1,14 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
 import type { Href } from 'expo-router';
 import type { PropsWithChildren, ReactNode } from 'react';
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, ScrollView, View } from 'react-native';
 import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
 import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { gradients } from '../theme/tokens';
-import { Aurora } from './Aurora';
-import { Glow } from './Glow';
+import { Backdrop } from './Backdrop';
 import { HeaderBack } from './HeaderBack';
 import { Text } from './Text';
 
@@ -24,7 +22,7 @@ type Props = PropsWithChildren<{
 }>;
 
 /**
- * The signed-out frame: brand purple, the emblem, a heading, and a white card that holds the form.
+ * The signed-out frame: the bloom page, the emblem, a heading, and the form.
  * The keyboard drives one continuous motion: the block lifts with the keyboard's own frames while
  * the emblem and footer fold away, so nothing scrolls or jumps.
  */
@@ -43,13 +41,13 @@ export function AuthShell({ title, subtitle, footer, backTo, children }: Props) 
   }));
 
   return (
-    <View style={{ flex: 1, backgroundColor: gradients.welcome[0] }}>
-      <StatusBar style="light" />
-      <Aurora palette="dusk" style={StyleSheet.absoluteFill} />
+    <View style={{ flex: 1, backgroundColor: '#FBE9E1' }}>
+      <StatusBar style="dark" />
+      <Backdrop />
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         {backTo ? (
           <View style={{ position: 'absolute', top: insets.top + 8, left: 16, zIndex: 1 }}>
-            <HeaderBack fallback={backTo} onDark />
+            <HeaderBack fallback={backTo} />
           </View>
         ) : null}
         <Animated.View style={[{ flex: 1 }, lift]}>
@@ -61,15 +59,14 @@ export function AuthShell({ title, subtitle, footer, backTo, children }: Props) 
           >
             <View className="items-center">
               <Animated.View style={[{ alignItems: 'center', justifyContent: 'center' }, fold]}>
-                <Glow size={260} strength={0.4} />
                 <Image source={emblem} accessibilityLabel="Prayer Warriors" style={{ width: 96, height: 94 }} resizeMode="contain" />
               </Animated.View>
               <View className="items-center gap-1.5">
-                <Text variant="display" color="cream" className="text-center text-[24px] leading-[30px]">
+                <Text variant="display" className="text-center text-[24px] leading-[30px]">
                   {title}
                 </Text>
                 {subtitle ? (
-                  <Text variant="body" color="creamSoft" className="max-w-[300px] text-center text-[15px] leading-[22px]">
+                  <Text variant="body" color="muted" className="max-w-[300px] text-center text-[15px] leading-[22px]">
                     {subtitle}
                   </Text>
                 ) : null}

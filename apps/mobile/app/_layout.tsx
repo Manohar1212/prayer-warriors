@@ -1,14 +1,7 @@
 import '../global.css';
 import '@/lib/livekitGlobals';
 
-import {
-  Montserrat_300Light,
-  Montserrat_400Regular,
-  Montserrat_400Regular_Italic,
-  Montserrat_500Medium,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
-} from '@expo-google-fonts/montserrat';
+import { Nunito_400Regular, Nunito_600SemiBold, Nunito_600SemiBold_Italic, Nunito_700Bold, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
 import { NotoSansTelugu_400Regular, NotoSansTelugu_500Medium, NotoSansTelugu_700Bold } from '@expo-google-fonts/noto-sans-telugu';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -31,7 +24,7 @@ SplashScreen.preventAutoHideAsync();
 const modalOptions = {
   presentation: 'modal' as const,
   headerShown: true,
-  headerStyle: { backgroundColor: colors.cream },
+  headerStyle: { backgroundColor: colors.bloom },
   headerShadowVisible: false,
   headerTitleStyle: { fontFamily: fonts.display, fontSize: 18, color: colors.ink },
   headerTintColor: colors.primary,
@@ -95,12 +88,11 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Montserrat_300Light,
-    Montserrat_400Regular,
-    Montserrat_400Regular_Italic,
-    Montserrat_500Medium,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
+    Nunito_400Regular,
+    Nunito_600SemiBold,
+    Nunito_600SemiBold_Italic,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
     NotoSansTelugu_400Regular,
     NotoSansTelugu_500Medium,
     NotoSansTelugu_700Bold,
