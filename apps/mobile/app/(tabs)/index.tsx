@@ -110,7 +110,7 @@ export default function HomeScreen() {
           </View>
           <HeaderActions />
         </View>
-        <Text variant="display" className="mt-4 text-[34px] leading-[42px]" numberOfLines={2}>
+        <Text variant="display" className="mt-4 text-[32px] leading-[40px]" style={{ fontFamily: fonts.displayItalic }} numberOfLines={2}>
           {t(`home.${part}` as TranslationKey)}, {firstName}
         </Text>
         <Text variant="muted" className="mt-1.5 text-[15px] leading-[22px]">
@@ -137,7 +137,7 @@ export default function HomeScreen() {
             disabled={!verse}
             onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
           >
-            <Text variant="scripture" className={lang === 'te' ? 'text-[17px] leading-[28px]' : 'text-[19px] leading-[29px]'}>
+            <Text variant="scripture" className={lang === 'te' ? 'text-[18px] leading-[29px]' : 'text-[20px] leading-[30px]'}>
               {verse ? verse.text : '…'}
             </Text>
           </Pressable>

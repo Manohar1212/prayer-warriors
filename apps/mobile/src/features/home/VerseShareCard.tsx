@@ -54,8 +54,8 @@ function CrossWithRays() {
  */
 export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function VerseShareCard({ text, reference, title, date, prayer, prayerReference, telugu = false }, ref) {
   const long = text.length > 170;
-  const verseSize = telugu ? (long ? 17 : 20) : long ? 19 : 23;
-  const verseLine = telugu ? (long ? 28 : 33) : long ? 29 : 34;
+  const verseSize = telugu ? (long ? 18 : 21) : long ? 20 : 24;
+  const verseLine = telugu ? (long ? 30 : 34) : long ? 30 : 35;
   return (
     <View ref={ref} collapsable={false} style={{ width: W, height: H, backgroundColor: '#FFFDF9', overflow: 'hidden' }}>
       {/* Washes: soft radial gradients, like colour bleeding into wet paper. */}
@@ -88,8 +88,8 @@ export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function Ver
       <View style={{ flex: 1, paddingHorizontal: 34, paddingTop: 30, paddingBottom: 26, alignItems: 'center', justifyContent: 'space-between' }}>
         <View style={{ alignItems: 'center', gap: 2 }}>
           <CrossWithRays />
-          <Text style={{ fontFamily: fonts.displayItalic, fontSize: 24, lineHeight: 30, color: colors.ink, textAlign: 'center' }}>{title}</Text>
-          <Text variant="caption" style={{ fontSize: 12, textAlign: 'center' }}>
+          <Text style={{ fontFamily: fonts.display, fontSize: 24, lineHeight: 30, color: colors.ink, textAlign: 'center' }}>{title}</Text>
+          <Text variant="caption" style={{ fontSize: 13, textAlign: 'center' }}>
             {date}
           </Text>
         </View>
@@ -98,22 +98,22 @@ export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function Ver
           <Text variant="scripture" style={{ textAlign: 'center', fontSize: verseSize, lineHeight: verseLine }}>
             {text}
           </Text>
-          <Text variant="label" color="primary" style={{ fontSize: 14, textAlign: 'center' }}>
+          <Text variant="label" color="primary" style={{ fontSize: 15, textAlign: 'center' }}>
             {reference}
           </Text>
         </View>
 
         <View style={{ alignItems: 'center', gap: 8 }}>
           <Text style={{ fontFamily: fonts.displayBold, fontSize: 16, lineHeight: 20, color: colors.roseDeep }}>❦</Text>
-          <Text variant="caption" style={{ fontSize: 12, lineHeight: 18, textAlign: 'center' }}>
+          <Text variant="caption" style={{ fontSize: 13, lineHeight: 19, textAlign: 'center' }}>
             {prayer}
           </Text>
-          <Text variant="caption" style={{ fontSize: 11, textAlign: 'center', marginTop: -4 }}>
+          <Text variant="caption" style={{ fontSize: 12, textAlign: 'center', marginTop: -4 }}>
             {prayerReference}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 2 }}>
             <Image source={emblem} style={{ width: 20, height: 20 }} resizeMode="contain" />
-            <Text variant="label" style={{ fontSize: 12 }}>
+            <Text variant="label" style={{ fontSize: 13 }}>
               Prayer Warriors
             </Text>
           </View>

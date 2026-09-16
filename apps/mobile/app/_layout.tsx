@@ -1,7 +1,7 @@
 import '../global.css';
 import '@/lib/livekitGlobals';
 
-import { Karla_400Regular, Karla_500Medium, Karla_700Bold } from '@expo-google-fonts/karla';
+import { Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato';
 import { PlayfairDisplay_400Regular_Italic, PlayfairDisplay_500Medium, PlayfairDisplay_600SemiBold } from '@expo-google-fonts/playfair-display';
 import { NotoSansTelugu_400Regular, NotoSansTelugu_500Medium, NotoSansTelugu_700Bold } from '@expo-google-fonts/noto-sans-telugu';
 import { useFonts } from 'expo-font';
@@ -89,9 +89,8 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Karla_400Regular,
-    Karla_500Medium,
-    Karla_700Bold,
+    Lato_400Regular,
+    Lato_700Bold,
     PlayfairDisplay_400Regular_Italic,
     PlayfairDisplay_500Medium,
     PlayfairDisplay_600SemiBold,

@@ -24,16 +24,16 @@ export const colors = {
 } as const;
 
 export const fonts = {
-  // Playfair Display for the greeting, verse and headings; Karla for everything you read and tap.
-  display: 'PlayfairDisplay_400Regular_Italic',
+  // Playfair Display upright for headings, italic only for the greeting and the verse; Lato for everything you read and tap.
+  display: 'PlayfairDisplay_600SemiBold',
   displayBold: 'PlayfairDisplay_600SemiBold',
   displayItalic: 'PlayfairDisplay_400Regular_Italic',
-  light: 'Karla_400Regular',
-  sans: 'Karla_400Regular',
-  sansMedium: 'Karla_500Medium',
-  sansSemiBold: 'Karla_700Bold',
-  numeric: 'Karla_700Bold',
-  numericBold: 'Karla_700Bold',
+  light: 'Lato_400Regular',
+  sans: 'Lato_400Regular',
+  sansMedium: 'Lato_700Bold',
+  sansSemiBold: 'Lato_700Bold',
+  numeric: 'Lato_700Bold',
+  numericBold: 'Lato_700Bold',
   // Telugu: neither face has Telugu glyphs, so Telugu text gets Noto Sans Telugu in matching weights.
   teluguBold: 'NotoSansTelugu_600SemiBold',
   teluguSans: 'NotoSansTelugu_400Regular',

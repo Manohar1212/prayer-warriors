@@ -19,12 +19,12 @@ export type TextColor =
 
 const variantClass: Record<TextVariant, string> = {
   display: 'font-display text-[26px] leading-[32px]',
-  title: 'font-display-italic text-[20px] leading-[26px]',
-  scripture: 'font-display-italic text-[18px] leading-[28px]',
-  body: 'font-sans text-[15px] leading-[22px]',
-  label: 'font-medium text-sm leading-5',
-  caption: 'font-sans text-[13px] leading-[18px]',
-  muted: 'font-sans text-sm leading-5',
+  title: 'font-display text-[20px] leading-[26px]',
+  scripture: 'font-display-italic text-[19px] leading-[29px]',
+  body: 'font-sans text-[16px] leading-[24px]',
+  label: 'font-medium text-[15px] leading-[20px]',
+  caption: 'font-sans text-[14px] leading-[19px]',
+  muted: 'font-sans text-[15px] leading-[22px]',
 };
 
 const defaultColor: Record<TextVariant, TextColor> = {
@@ -51,7 +51,7 @@ const colorValue: Record<TextColor, string> = {
   leaf: colors.leaf,
 };
 
-/** Telugu faces that stand in for Playfair and Karla, which have no Telugu glyphs. */
+/** Telugu faces that stand in for Playfair and Lato, which have no Telugu glyphs. */
 const teluguFamily: Record<TextVariant, string> = {
   display: fonts.teluguBold,
   title: fonts.teluguBold,
