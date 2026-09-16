@@ -18,6 +18,7 @@ import type { RawNotification } from '../features/notifications/types';
 import { createResourcesService } from '../features/resources/service';
 import type { RawResource } from '../features/resources/types';
 import type { JournalInput, PrayerStatus, RawJournalEntry, RawPrayerComment, RawPrayerRequest } from '../features/prayer/types';
+import { createPrayerPointsService } from '../features/prayer/points';
 
 const config = loadParseConfig();
 
@@ -52,6 +53,8 @@ function currentUserPointer() {
   const user = Parse.User.current();
   return user ? Parse.User.createWithoutData(user.id ?? '') : null;
 }
+
+export const prayerPointsService = createPrayerPointsService({ cloud: Parse.Cloud, currentUserId: () => Parse.User.current()?.id ?? null });
 
 export const prayerService = createPrayerService({
   fetchRequests: async (status: PrayerStatus): Promise<RawPrayerRequest[]> => {

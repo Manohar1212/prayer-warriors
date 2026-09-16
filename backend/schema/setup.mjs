@@ -291,6 +291,35 @@ const prayerCommentSchema = {
   },
 };
 
+const prayerPointSchema = {
+  className: 'PrayerPoint',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    title: { type: 'String', required: true },
+    order: { type: 'Number', defaultValue: 0 },
+    active: { type: 'Boolean', defaultValue: true },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
+const prayerPointClaimSchema = {
+  className: 'PrayerPointClaim',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    prayerPoint: { type: 'Pointer', targetClass: 'PrayerPoint', required: true },
+    user: { type: 'Pointer', targetClass: '_User', required: true },
+    month: { type: 'String', required: true },
+    doneAt: { type: 'Date' },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
 const notificationSchema = {
   className: 'Notification',
   fields: {
@@ -410,6 +439,8 @@ await upsertSchema(groupMemberSchema);
 await upsertSchema(prayerRequestSchema);
 await upsertSchema(prayerResponseSchema);
 await upsertSchema(prayerCommentSchema);
+await upsertSchema(prayerPointSchema);
+await upsertSchema(prayerPointClaimSchema);
 await upsertSchema(journalSchema);
 await upsertSchema(resourceSchema);
 await upsertSchema(contributionSchema);

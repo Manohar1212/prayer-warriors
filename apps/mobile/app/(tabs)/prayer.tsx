@@ -3,14 +3,17 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
 
-import { CATEGORIES, usePrayerRequests, type PrayerCategory, type PrayerRequest, type PrayerStatus } from '@/features/prayer';
+import { CATEGORIES, usePrayerPoints, usePrayerRequests, type PrayerCategory, type PrayerPoint, type PrayerRequest, type PrayerStatus } from '@/features/prayer';
+import { useMembers } from '@/features/members';
+import { useLanguage } from '@/i18n';
+import { prayerPointsService } from '@/lib/parse';
 import { timeAgoShort } from '@/lib/time';
 import { useT, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Badge, Button, Card, Chip, EmptyState, Screen, Segments, TabHeader, Text } from '@/ui';
 
-type Tab = PrayerStatus | 'journal';
+type Tab = 'active' | 'monthly' | 'answered';
 
 function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPray: () => void; onOpen: () => void }) {
   const t = useT();
@@ -68,10 +71,92 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
   );
 }
 
+function PointRow({ point, canEdit, onClaim, onRelease, onDone, onEdit }: { point: PrayerPoint; canEdit: boolean; onClaim: () => void; onRelease: () => void; onDone: () => void; onEdit: () => void }) {
+  const t = useT();
+  const done = Boolean(point.claim?.doneAt);
+  const taken = Boolean(point.claim) && !point.mine;
+  return (
+    <Card className="gap-3">
+      <View className="flex-row items-center gap-3">
+        <View className={`h-11 w-11 items-center justify-center rounded-full ${done ? 'bg-sage' : point.mine ? 'bg-sky' : 'bg-honey'}`}>
+          <Ionicons name={done ? 'checkmark' : 'hand-left'} size={20} color={done ? colors.leaf : point.mine ? colors.skyDeep : colors.gold} />
+        </View>
+        <View className="flex-1 gap-0.5">
+          <Text variant="label" className="text-[15px]">
+            {point.title}
+          </Text>
+          <Text variant="caption">
+            {point.claim
+              ? done
+                ? point.mine
+                  ? t('prayer.points.done')
+                  : t('prayer.points.doneBy', { name: point.claim.userName })
+                : point.mine
+                  ? t('prayer.points.yourPick')
+                  : t('prayer.points.takenBy', { name: point.claim.userName })
+              : ' '}
+          </Text>
+        </View>
+        {point.mine && !done ? <Badge label={t('prayer.points.yours')} tone="sage" /> : null}
+        {canEdit ? (
+          <Pressable accessibilityRole="button" accessibilityLabel={t('prayer.points.editTitle')} onPress={onEdit} hitSlop={8} className="p-1">
+            <Ionicons name="create-outline" size={18} color={colors.muted} />
+          </Pressable>
+        ) : null}
+      </View>
+      {!point.claim ? <Button title={t('prayer.points.pick')} size="compact" variant="secondary" onPress={onClaim} className="self-end" /> : null}
+      {point.mine && !done ? (
+        <View className="flex-row items-center justify-end gap-3">
+          <Pressable accessibilityRole="button" onPress={onRelease} hitSlop={8} className="py-1">
+            <Text variant="label" color="muted" className="text-[13px]">
+              {t('prayer.points.release')}
+            </Text>
+          </Pressable>
+          <Button title={t('prayer.points.markDone')} size="compact" icon="checkmark" onPress={onDone} />
+        </View>
+      ) : null}
+      {taken ? null : null}
+    </Card>
+  );
+}
+
+function MonthlyPoints() {
+  const router = useRouter();
+  const { t, locale } = useLanguage();
+  const { isAdmin } = useMembers();
+  const { points, loading, error, claim, release, markDone } = usePrayerPoints(prayerPointsService);
+  const monthName = new Date().toLocaleDateString(locale, { month: 'long' });
+  return (
+    <View className="gap-3">
+      <View className="flex-row items-start justify-between gap-3">
+        <Text variant="muted" className="flex-1 text-[13px] leading-[19px]">
+          {t('prayer.points.intro', { month: monthName })}
+        </Text>
+        {isAdmin ? <Button title={t('prayer.points.add')} size="compact" variant="secondary" icon="add" onPress={() => router.push('/prayer/point')} /> : null}
+      </View>
+      {error ? (
+        <Text variant="caption" color="roseDeep">
+          {error}
+        </Text>
+      ) : null}
+      {loading && !points.length ? (
+        <ActivityIndicator color={colors.primary} className="mt-6" />
+      ) : points.length ? (
+        points.map((p) => (
+          <PointRow key={p.id} point={p} canEdit={isAdmin} onClaim={() => claim(p.id)} onRelease={() => release(p.id)} onDone={() => markDone(p.id)} onEdit={() => router.push({ pathname: '/prayer/point', params: { id: p.id, title: p.title } })} />
+        ))
+      ) : (
+        <EmptyState icon="calendar-outline" tone="honey" title={t('prayer.points.empty')} body={isAdmin ? t('prayer.points.emptyAdmin') : ''} />
+      )}
+    </View>
+  );
+}
+
 export default function PrayerScreen() {
   const router = useRouter();
   const t = useT();
-  const [status, setStatus] = useState<PrayerStatus>('active');
+  const [tab, setTab] = useState<Tab>('active');
+  const status: PrayerStatus = tab === 'answered' ? 'answered' : 'active';
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<PrayerCategory | 'all'>('all');
   const { requests, loading, error, refresh, togglePraying } = usePrayerRequests(status);
@@ -81,15 +166,11 @@ export default function PrayerScreen() {
     return requests.filter((r) => (category === 'all' || r.category === category) && (!q || r.title.toLowerCase().includes(q) || r.description.toLowerCase().includes(q)));
   }, [requests, query, category]);
 
-  const onTab = (tab: Tab) => {
-    if (tab === 'journal') router.push('/journal');
-    else setStatus(tab);
-  };
 
   return (
     <Screen edges={['top']} backdrop className="px-0 pt-0 pb-0">
       <FlatList
-        data={visible}
+        data={tab === 'monthly' ? [] : visible}
         keyExtractor={(r) => r.id}
         contentContainerClassName="flex-grow gap-3 px-4 pb-6 pt-1"
         keyboardShouldPersistTaps="handled"
@@ -99,13 +180,16 @@ export default function PrayerScreen() {
             <TabHeader title={t('prayer.title')} subtitle={status === 'active' ? (requests.length === 1 ? t('prayer.openRequest') : t('prayer.openRequests', { count: requests.length })) : t('prayer.answeredCount', { count: requests.length })} right={<HeaderActions />} />
             <Segments<Tab>
               options={[
-                { value: 'active', label: t('prayer.active') },
+                { value: 'active', label: t('prayer.requestsTab') },
+                { value: 'monthly', label: t('prayer.monthly') },
                 { value: 'answered', label: t('prayer.answered') },
-                { value: 'journal', label: t('prayer.journal') },
               ]}
-              value={status}
-              onChange={onTab}
+              value={tab}
+              onChange={setTab}
             />
+            {tab === 'monthly' ? <MonthlyPoints /> : null}
+            {tab === 'monthly' ? null : (
+            <>
             <View className="flex-row items-center gap-2 rounded-[12px] border border-border bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
@@ -124,6 +208,8 @@ export default function PrayerScreen() {
                 <Chip key={c.id} label={t(`prayer.category.${c.id}` as TranslationKey)} selected={category === c.id} onPress={() => setCategory(c.id)} />
               ))}
             </ScrollView>
+            </>
+            )}
             {error ? (
               <Text variant="caption" color="roseDeep">
                 {error}
@@ -132,7 +218,7 @@ export default function PrayerScreen() {
           </View>
         }
         ListEmptyComponent={
-          loading ? (
+          tab === 'monthly' ? null : loading ? (
             <ActivityIndicator color={colors.primary} className="mt-10" />
           ) : (
             <EmptyState
@@ -147,9 +233,11 @@ export default function PrayerScreen() {
           <RequestCard request={item} onPray={() => togglePraying(item.id)} onOpen={() => router.push({ pathname: '/prayer/[id]', params: { id: item.id } })} />
         )}
       />
-      <View className="border-t border-border bg-surface px-4 pb-3 pt-3">
-        <Button title={t('prayer.newRequest')} icon="add" onPress={() => router.push('/prayer/new')} />
-      </View>
+      {tab === 'monthly' ? null : (
+        <View className="border-t border-border bg-surface px-4 pb-3 pt-3">
+          <Button title={t('prayer.newRequest')} icon="add" onPress={() => router.push('/prayer/new')} />
+        </View>
+      )}
     </Screen>
   );
 }
