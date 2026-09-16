@@ -58,7 +58,7 @@ export default function FundsScreen() {
               <Text variant="caption" color="creamSoft">
                 {t('funds.balance')}
               </Text>
-              <Text color="cream" style={{ fontFamily: fonts.sansSemiBold, fontSize: 28, lineHeight: 34 }}>
+              <Text color="cream" style={{ fontFamily: fonts.numeric, fontSize: 28, lineHeight: 34 }}>
                 {formatRupees(balancePaise)}
               </Text>
             </View>

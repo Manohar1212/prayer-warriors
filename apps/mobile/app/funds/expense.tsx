@@ -47,7 +47,7 @@ export default function ExpenseScreen() {
   if (!isAdmin && existing) {
     return (
       <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
-        <Text color="roseDeep" style={{ fontFamily: fonts.sansSemiBold, fontSize: 26, lineHeight: 32 }}>
+        <Text color="roseDeep" style={{ fontFamily: fonts.numeric, fontSize: 26, lineHeight: 32 }}>
           −{formatRupees(existing.amountPaise)}
         </Text>
         <Card className="gap-3">

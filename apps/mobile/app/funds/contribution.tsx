@@ -49,7 +49,7 @@ export default function ContributionScreen() {
   if (!isAdmin && existing) {
     return (
       <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
-        <Text color="primary" style={{ fontFamily: fonts.sansSemiBold, fontSize: 26, lineHeight: 32 }}>
+        <Text color="primary" style={{ fontFamily: fonts.numeric, fontSize: 26, lineHeight: 32 }}>
           {formatRupees(existing.amountPaise)}
         </Text>
         <Card className="gap-3">

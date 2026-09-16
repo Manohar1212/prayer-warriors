@@ -28,6 +28,9 @@ export const fonts = {
   sans: 'Inter_400Regular',
   sansMedium: 'Inter_500Medium',
   sansSemiBold: 'Inter_600SemiBold',
+  // Money: Montserrat's even, geometric figures read better than the serif's old-style numerals.
+  numeric: 'Montserrat_600SemiBold',
+  numericBold: 'Montserrat_700Bold',
   // Telugu: Playfair and Inter have no Telugu glyphs, so Telugu text gets matching Noto faces.
   teluguSerif: 'NotoSerifTelugu_600SemiBold',
   teluguSerifRegular: 'NotoSerifTelugu_400Regular',
