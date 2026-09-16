@@ -28,6 +28,7 @@ export const fonts = {
   display: 'Montserrat_600SemiBold',
   displayBold: 'Montserrat_700Bold',
   displayItalic: 'Montserrat_400Regular_Italic',
+  light: 'Montserrat_300Light',
   sans: 'Montserrat_400Regular',
   sansMedium: 'Montserrat_500Medium',
   sansSemiBold: 'Montserrat_600SemiBold',

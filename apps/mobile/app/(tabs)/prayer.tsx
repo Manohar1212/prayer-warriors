@@ -85,7 +85,7 @@ export default function PrayerScreen() {
   };
 
   return (
-    <Screen edges={['top']} className="px-0 pt-0 pb-0">
+    <Screen edges={['top']} backdrop className="px-0 pt-0 pb-0">
       <FlatList
         data={visible}
         keyExtractor={(r) => r.id}

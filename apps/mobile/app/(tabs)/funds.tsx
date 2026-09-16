@@ -43,7 +43,7 @@ export default function FundsScreen() {
   const monthName = new Date().toLocaleDateString(locale, { month: 'long' });
 
   return (
-    <Screen edges={['top']} className="px-0 pt-0">
+    <Screen edges={['top']} backdrop className="px-0 pt-0">
       <ScrollView
         contentContainerClassName="gap-4 px-4 pb-24 pt-1"
         showsVerticalScrollIndicator={false}

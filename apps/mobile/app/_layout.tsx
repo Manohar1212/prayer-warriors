@@ -2,6 +2,7 @@ import '../global.css';
 import '@/lib/livekitGlobals';
 
 import {
+  Montserrat_300Light,
   Montserrat_400Regular,
   Montserrat_400Regular_Italic,
   Montserrat_500Medium,
@@ -94,6 +95,7 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
+    Montserrat_300Light,
     Montserrat_400Regular,
     Montserrat_400Regular_Italic,
     Montserrat_500Medium,

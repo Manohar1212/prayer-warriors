@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/features/auth';
@@ -14,8 +15,10 @@ import { type Resource } from '@/features/resources';
 import { resourcesService } from '@/lib/parse';
 import { timeAgoShort } from '@/lib/time';
 import { useLanguage, type TranslationKey } from '@/i18n';
-import { colors } from '@/theme/tokens';
-import { Avatar, Text } from '@/ui';
+import { colors, fonts, gradients } from '@/theme/tokens';
+import { Avatar, Backdrop, Text } from '@/ui';
+
+const emblem = require('../../assets/logo-emblem.png');
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -99,14 +102,21 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-cream">
+      <Backdrop />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
-        {/* Greeting */}
+        {/* Greeting: the emblem and date, then a light greeting with the name in semibold. */}
         <View className="flex-row items-center justify-between">
-          <Text variant="caption">{now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}</Text>
+          <View className="flex-row items-center gap-2.5">
+            <Image source={emblem} accessibilityLabel="Prayer Warriors" style={{ width: 30, height: 30 }} resizeMode="contain" />
+            <Text variant="caption">{now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}</Text>
+          </View>
           <HeaderActions />
         </View>
-        <Text variant="display" className="mt-1 text-[28px] leading-[34px]" numberOfLines={2}>
-          {t(greetingKey(now))}, {firstName}
+        <Text variant="display" className="mt-4 text-[30px] leading-[38px]" style={{ fontFamily: fonts.light }} numberOfLines={2}>
+          {t(greetingKey(now))},{' '}
+          <Text variant="display" className="text-[30px] leading-[38px]">
+            {firstName}
+          </Text>
         </Text>
 
         {/* Verse of the day: the centrepiece, set on the page itself. */}
@@ -115,8 +125,11 @@ export default function HomeScreen() {
           accessibilityLabel="Open today's verse in the Bible"
           disabled={!verse}
           onPress={() => verse && router.push({ pathname: '/bible/[book]/[chapter]', params: { book: String(verse.bookId), chapter: String(verse.chapter) } })}
-          className="mt-8 gap-3"
+          className="mt-7 gap-3 overflow-hidden rounded-[22px] bg-panel px-5 pb-5 pt-6"
         >
+          <Text style={{ position: 'absolute', right: 14, top: -6, fontFamily: fonts.displayBold, fontSize: 110, lineHeight: 120, color: colors.gold, opacity: 0.12 }}>
+            “
+          </Text>
           <GoldRule />
           <Text variant="caption" color="gold">
             {t('home.verseOfTheDay')}
@@ -125,8 +138,8 @@ export default function HomeScreen() {
             {verse ? verse.text : '…'}
           </Text>
           {verse ? (
-            <View className="flex-row items-center justify-between">
-              <Text variant="label" className="text-[13px]">
+            <View className="mt-1 flex-row items-center justify-between">
+              <Text variant="label" color="gold" className="text-[13px]">
                 {verse.reference}
               </Text>
               <View className="flex-row items-center gap-1">
@@ -143,10 +156,10 @@ export default function HomeScreen() {
         <View className="mt-8 flex-row justify-between">
           {actions.map((a) => (
             <Pressable key={a.label} accessibilityRole="button" onPress={() => router.push(a.href)} className="items-center gap-2 active:opacity-70">
-              <View className="h-14 w-14 items-center justify-center rounded-full bg-panel">
+              <View className="h-14 w-14 items-center justify-center rounded-full bg-surface" style={{ boxShadow: '0 2px 10px rgba(42, 28, 92, 0.08)' }}>
                 <Ionicons name={a.icon} size={22} color={colors.primary} />
               </View>
-              <Text variant="caption" color="ink">
+              <Text variant="label" color="ink" className="text-[12px]">
                 {t(a.label)}
               </Text>
             </Pressable>
@@ -219,33 +232,38 @@ export default function HomeScreen() {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push(nextCall ? { pathname: '/calls/[id]', params: { id: nextCall.id } } : '/(tabs)/community')}
-          className="mt-8 flex-row items-center gap-3 rounded-[18px] bg-primary-dark px-4 py-4 active:opacity-90"
+          className="mt-8 active:opacity-90"
         >
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-surface/15">
-            <Ionicons name="people-outline" size={20} color={colors.surface} />
-          </View>
-          <View className="flex-1 gap-0.5">
-            <Text variant="caption" color="creamSoft">
-              {t('home.nextCall')}
-            </Text>
-            <Text variant="label" color="cream" className="text-[15px]" numberOfLines={1}>
-              {nextCall ? nextCall.title : t('home.noCall')}
-            </Text>
-            {nextCall ? (
-              <Text variant="caption" color="creamSoft">
-                {new Date(nextCall.scheduledAt).toLocaleString(locale, { weekday: 'long', hour: 'numeric', minute: '2-digit' })}
-              </Text>
-            ) : null}
-          </View>
-          {nextCall ? (
-            <View className="rounded-full bg-surface px-3.5 py-2">
-              <Text variant="label" color="primaryDark" className="text-[13px]">
-                {isJoinable(nextCall, now) ? t('home.join') : t('home.view')}
-              </Text>
+          <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 20, padding: 16, overflow: 'hidden' }}>
+            <View style={{ position: 'absolute', right: -24, top: -34, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.07)' }} />
+            <View className="flex-row items-center gap-3">
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-surface/15">
+                <Ionicons name="people-outline" size={20} color={colors.surface} />
+              </View>
+              <View className="flex-1 gap-0.5">
+                <Text variant="caption" color="creamSoft">
+                  {t('home.nextCall')}
+                </Text>
+                <Text variant="label" color="cream" className="text-[15px]" numberOfLines={1}>
+                  {nextCall ? nextCall.title : t('home.noCall')}
+                </Text>
+                {nextCall ? (
+                  <Text variant="caption" color="creamSoft">
+                    {new Date(nextCall.scheduledAt).toLocaleString(locale, { weekday: 'long', hour: 'numeric', minute: '2-digit' })}
+                  </Text>
+                ) : null}
+              </View>
+              {nextCall ? (
+                <View className="rounded-full bg-surface px-3.5 py-2">
+                  <Text variant="label" color="primaryDark" className="text-[13px]">
+                    {isJoinable(nextCall, now) ? t('home.join') : t('home.view')}
+                  </Text>
+                </View>
+              ) : (
+                <Ionicons name="chevron-forward" size={16} color={colors.surface} />
+              )}
             </View>
-          ) : (
-            <Ionicons name="chevron-forward" size={16} color={colors.surface} />
-          )}
+          </LinearGradient>
         </Pressable>
       </ScrollView>
     </View>
