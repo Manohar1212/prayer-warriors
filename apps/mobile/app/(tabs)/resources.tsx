@@ -4,12 +4,12 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 
-import { firstLine, matchesQuery, matchesSong, numberSongs, RESOURCE_TYPES, useResources, type Resource, type ResourceType, type Song } from '@/features/resources';
+import { firstLine, HYMN_BOOKS, loadHymnBook, matchesHymn, matchesQuery, matchesSong, numberSongs, RESOURCE_TYPES, useResources, useSongBook, type Hymn, type Resource, type ResourceType, type Song } from '@/features/resources';
 import { shortDate } from '@/lib/time';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors, gradients } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
-import { Card, Chip, EmptyState, Fab, Screen, TabHeader, Text } from '@/ui';
+import { Card, Chip, EmptyState, Fab, Screen, Segments, TabHeader, Text } from '@/ui';
 
 type Tab = ResourceType | 'bible';
 
@@ -38,22 +38,22 @@ function Thumb({ type }: { type: ResourceType }) {
   );
 }
 
-/** A line in the songbook: number, title, opening line. */
-function SongRow({ song, onOpen }: { song: Song; onOpen: () => void }) {
+/** A line in a songbook: number, title, opening line. */
+function SongRow({ number, title, line, onOpen }: { number: number; title: string; line: string; onOpen: () => void }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${song.number}. ${song.title}`} onPress={onOpen} className="active:opacity-80">
+    <Pressable accessibilityRole="button" accessibilityLabel={`${number}. ${title}`} onPress={onOpen} className="active:opacity-80">
       <Card className="flex-row items-center gap-3 py-3.5">
         <View className="h-11 w-11 items-center justify-center rounded-full bg-honey">
-          <Text variant="label" color="gold" className="text-[15px]">
-            {song.number}
+          <Text variant="label" color="gold" className={number >= 100 ? 'text-[13px]' : 'text-[15px]'}>
+            {number}
           </Text>
         </View>
         <View className="flex-1 gap-0.5">
           <Text variant="label" className="text-[16px]" numberOfLines={1}>
-            {song.title}
+            {title}
           </Text>
           <Text variant="caption" numberOfLines={1}>
-            {song.body ? firstLine(song.body) : song.reference || '—'}
+            {line}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.muted} />
@@ -61,6 +61,10 @@ function SongRow({ song, onOpen }: { song: Song; onOpen: () => void }) {
     </Pressable>
   );
 }
+
+type Row = Resource | Song | Hymn;
+const isHymn = (r: Row): r is Hymn => 'n' in r;
+const isSong = (r: Row): r is Song => 'number' in r;
 
 function ResourceCard({ resource, onOpen }: { resource: Resource; onOpen: () => void }) {
   const { t, locale } = useLanguage();
@@ -95,9 +99,16 @@ export default function ResourcesScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const [type, setType] = useState<ResourceType>('song');
+  const [book, setBook] = useSongBook();
   const [query, setQuery] = useState('');
   const { resources, loading, error, refresh } = useResources(type);
-  const visible = useMemo<(Resource | Song)[]>(() => (type === 'song' ? numberSongs(resources).filter((s) => matchesSong(s, query)) : resources.filter((r) => matchesQuery(r, query))), [resources, query, type]);
+  const visible = useMemo<Row[]>(() => {
+    if (type !== 'song') return resources.filter((r) => matchesQuery(r, query));
+    if (book === 'group') return numberSongs(resources).filter((s) => matchesSong(s, query));
+    return loadHymnBook(book).filter((h) => matchesHymn(h, query));
+  }, [resources, query, type, book]);
+  const bookOptions = [{ value: 'group' as const, label: t('resources.book.group') }, ...HYMN_BOOKS.map((b) => ({ value: b.id, label: t(b.label) }))];
+  const songLike = type === 'song';
   const plural = t(pluralKey[type]);
 
   const onTab = (tab: Tab) => {
@@ -109,7 +120,9 @@ export default function ResourcesScreen() {
     <Screen edges={['top']} backdrop className="px-0 pt-0 pb-0">
       <FlatList
         data={visible}
-        keyExtractor={(r) => r.id}
+        keyExtractor={(r) => (isHymn(r) ? `${book}-${r.n}` : r.id)}
+        initialNumToRender={12}
+        windowSize={7}
         contentContainerClassName="flex-grow gap-3 px-4 pb-24 pt-1"
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
@@ -121,6 +134,15 @@ export default function ResourcesScreen() {
                 <Chip key={o.value} label={o.label} selected={type === o.value} onPress={() => onTab(o.value)} />
               ))}
             </View>
+            {songLike ? (
+              <View className="gap-1.5">
+                <Segments options={bookOptions} value={book} onChange={setBook} />
+                <Text variant="caption" color="muted" className="px-1">
+                  {book === 'akk' ? `${t('resources.book.akkFull')} · ` : ''}
+                  {t('resources.book.count', { n: book === 'group' ? numberSongs(resources).length : loadHymnBook(book).length })}
+                </Text>
+              </View>
+            ) : null}
             <View className="flex-row items-center gap-2 rounded-[12px] border border-border bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
@@ -145,21 +167,23 @@ export default function ResourcesScreen() {
             <ActivityIndicator color={colors.primary} className="mt-10" />
           ) : query ? (
             <Text variant="muted" className="mt-8">
-              {t('resources.noMatch', { query })}
+              {songLike ? t('resources.book.noMatch', { query }) : t('resources.noMatch', { query })}
             </Text>
           ) : (
             <EmptyState icon={type === 'song' ? 'musical-notes-outline' : type === 'scripture' ? 'book-outline' : 'hand-left-outline'} tone={type === 'song' ? 'lavender' : type === 'scripture' ? 'sage' : 'honey'} title={t(emptyCopy[type].title)} body={t(emptyCopy[type].body)} />
           )
         }
         renderItem={({ item }) =>
-          'number' in item ? (
-            <SongRow song={item} onOpen={() => router.push({ pathname: '/resources/song', params: { id: item.id } })} />
+          isHymn(item) ? (
+            <SongRow number={item.n} title={item.title} line={firstLine(item.body)} onOpen={() => router.push({ pathname: '/resources/hymn', params: { book, n: String(item.n) } })} />
+          ) : isSong(item) ? (
+            <SongRow number={item.number} title={item.title} line={item.body ? firstLine(item.body) : item.reference || '—'} onOpen={() => router.push({ pathname: '/resources/song', params: { id: item.id } })} />
           ) : (
             <ResourceCard resource={item} onOpen={() => router.push({ pathname: '/resources/[id]', params: { id: item.id } })} />
           )
         }
       />
-      <Fab label={t('resources.share')} onPress={() => router.push({ pathname: '/resources/new', params: { type } })} />
+      {songLike && book !== 'group' ? null : <Fab label={t('resources.share')} onPress={() => router.push({ pathname: '/resources/new', params: { type } })} />}
     </Screen>
   );
 }
