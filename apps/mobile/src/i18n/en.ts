@@ -352,7 +352,7 @@ export const en = {
   'resources.song.larger': 'Larger text',
   'resources.song.previous': 'Previous',
   'resources.song.next': 'Next',
-  'resources.song.searchPlaceholder': 'Search by number, title or a line',
+  'resources.song.searchPlaceholder': 'Number, or a word in Telugu or English letters',
   'resources.edit.title': 'Edit song',
   'resources.edit.submit': 'Save changes',
   'resources.edit.failed': 'Could not save the changes.',

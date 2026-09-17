@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 
+import { looseIncludes, searchKey } from './transliterate';
 import type { Resource } from './types';
 
 /** A song with its place in the book. Numbers follow the order songs were added, like a hymnal. */
@@ -33,12 +34,12 @@ export function verses(body: string): string[] {
     .filter((v) => v.length > 0);
 }
 
-/** Number, title, artist, or any line of the lyrics; an empty query matches everything. */
+/** Number, title, artist, or any lyric words in Telugu or English letters; an empty query matches everything. */
 export function matchesSong(song: Song, query: string): boolean {
-  const q = query.trim().toLowerCase();
+  const q = query.trim();
   if (!q) return true;
   if (/^\d+$/.test(q)) return song.number === Number(q);
-  return [song.title, song.reference, song.body].some((s) => s.toLowerCase().includes(q));
+  return looseIncludes(searchKey(`${song.title} ${song.reference} ${song.body}`), q);
 }
 
 export type SongTextSize = 'small' | 'medium' | 'large' | 'xlarge';

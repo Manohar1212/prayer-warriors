@@ -33,3 +33,17 @@ describe('bundled hymn books', () => {
     expect(matchesHymn(hymn, '')).toBe(true);
   });
 });
+
+describe('search in English letters', () => {
+  it('finds hymns by transliterated words and stays fast', () => {
+    const akk = loadHymnBook('akk');
+    const started = Date.now();
+    const yesu = akk.filter((h) => matchesHymn(h, 'yesu'));
+    const first = akk.filter((h) => matchesHymn(h, 'anni kalambula'));
+    const elapsed = Date.now() - started;
+    expect(yesu.length).toBeGreaterThan(50);
+    expect(first.map((h) => h.n)).toContain(1);
+    expect(akk.filter((h) => matchesHymn(h, 'యెహోవా')).length).toBeGreaterThan(50);
+    expect(elapsed).toBeLessThan(3000);
+  });
+});
