@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 
-import { looseIncludes, searchKey } from './transliterate';
+import { indexFor, rankBySearch, scoreFor } from './songSearch';
 import type { Resource } from './types';
 
 /** A song with its place in the book. Numbers follow the order songs were added, like a hymnal. */
@@ -34,12 +34,21 @@ export function verses(body: string): string[] {
     .filter((v) => v.length > 0);
 }
 
+const textOf = (song: Song) => ({ title: song.title, body: song.body, extra: song.reference });
+
 /** Number, title, artist, or any lyric words in Telugu or English letters; an empty query matches everything. */
 export function matchesSong(song: Song, query: string): boolean {
   const q = query.trim();
   if (!q) return true;
   if (/^\d+$/.test(q)) return song.number === Number(q);
-  return looseIncludes(searchKey(`${song.title} ${song.reference} ${song.body}`), q);
+  return scoreFor(indexFor(song, textOf(song)), q) > 0;
+}
+
+/** The group's songs filtered and ranked for a query. */
+export function searchSongs(songs: Song[], query: string): Song[] {
+  const q = query.trim();
+  if (/^\d+$/.test(q)) return songs.filter((s) => s.number === Number(q));
+  return rankBySearch(songs, q, textOf);
 }
 
 export type SongTextSize = 'small' | 'medium' | 'large' | 'xlarge';

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 
 import type { TranslationKey } from '../../i18n';
-import { looseIncludes, searchKey } from './transliterate';
+import { indexFor, rankBySearch, scoreFor } from './songSearch';
 
 /**
  * Books bundled with the app: the classic Andhra Kraisthava Keerthanalu hymnal and a
@@ -37,27 +37,25 @@ export function findHymn(book: HymnBook, n: number): { hymn: Hymn; previous: Hym
   return { hymn: hymns[index], previous: index > 0 ? hymns[index - 1] : null, next: index < hymns.length - 1 ? hymns[index + 1] : null };
 }
 
-const keys = new WeakMap<Hymn, string>();
-
-/** The hymn's text as a loose search key, computed once per hymn. */
-function keyOf(hymn: Hymn): string {
-  let key = keys.get(hymn);
-  if (key === undefined) {
-    key = searchKey(`${hymn.title} ${hymn.body}`);
-    keys.set(hymn, key);
-  }
-  return key;
-}
+const textOf = (hymn: Hymn) => ({ title: hymn.title, body: hymn.body });
 
 /**
- * Number, or any words of the lyrics typed in Telugu or in English letters ("yesu" finds యేసు);
- * an empty query matches everything.
+ * Number, or any words of the lyrics typed in Telugu or in English letters ("yesu" finds యేసు),
+ * in any order and forgiving of typos; an empty query matches everything.
  */
 export function matchesHymn(hymn: Hymn, query: string): boolean {
   const q = query.trim();
   if (!q) return true;
   if (/^\d+$/.test(q)) return hymn.n === Number(q);
-  return looseIncludes(keyOf(hymn), q);
+  return scoreFor(indexFor(hymn, textOf(hymn)), q) > 0;
+}
+
+/** The book filtered and ranked for a query: an exact number first, else best matches first. */
+export function searchHymns(book: HymnBook, query: string): Hymn[] {
+  const hymns = loadHymnBook(book);
+  const q = query.trim();
+  if (/^\d+$/.test(q)) return hymns.filter((h) => h.n === Number(q));
+  return rankBySearch(hymns, q, textOf);
 }
 
 const BOOK_KEY = 'songbook.book';

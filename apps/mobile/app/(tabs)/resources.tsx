@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 
-import { firstLine, HYMN_BOOKS, loadHymnBook, matchesHymn, matchesQuery, matchesSong, numberSongs, RESOURCE_TYPES, useResources, useSongBook, type Hymn, type Resource, type ResourceType, type Song } from '@/features/resources';
+import { firstLine, HYMN_BOOKS, loadHymnBook, matchesQuery, numberSongs, RESOURCE_TYPES, searchHymns, searchSongs, useResources, useSongBook, type Hymn, type Resource, type ResourceType, type Song } from '@/features/resources';
 import { shortDate } from '@/lib/time';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors, gradients } from '@/theme/tokens';
@@ -104,8 +104,8 @@ export default function ResourcesScreen() {
   const { resources, loading, error, refresh } = useResources(type);
   const visible = useMemo<Row[]>(() => {
     if (type !== 'song') return resources.filter((r) => matchesQuery(r, query));
-    if (book === 'group') return numberSongs(resources).filter((s) => matchesSong(s, query));
-    return loadHymnBook(book).filter((h) => matchesHymn(h, query));
+    if (book === 'group') return searchSongs(numberSongs(resources), query);
+    return searchHymns(book, query);
   }, [resources, query, type, book]);
   const bookOptions = [{ value: 'group' as const, label: t('resources.book.group') }, ...HYMN_BOOKS.map((b) => ({ value: b.id, label: t(b.label) }))];
   const songLike = type === 'song';

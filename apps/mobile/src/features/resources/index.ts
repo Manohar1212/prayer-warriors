@@ -1,9 +1,9 @@
 export { useResources } from './useResources';
 export { matchesQuery } from './service';
 export { lyricsSearchUrl, youtubeSearchUrl } from './lyricsSearch';
-export { firstLine, matchesSong, numberSongs, songTextStyle, SONG_TEXT_SIZES, useSongTextSize, verses } from './songbook';
+export { firstLine, matchesSong, numberSongs, searchSongs, songTextStyle, SONG_TEXT_SIZES, useSongTextSize, verses } from './songbook';
 export type { Song, SongTextSize } from './songbook';
-export { findHymn, HYMN_BOOKS, loadHymnBook, matchesHymn, useSongBook } from './hymnal';
+export { findHymn, HYMN_BOOKS, loadHymnBook, matchesHymn, searchHymns, useSongBook } from './hymnal';
 export type { Hymn, HymnBook, SongBook } from './hymnal';
 export { SongReader, ToolButton } from './SongReader';
 export { searchKey, transliterate } from './transliterate';

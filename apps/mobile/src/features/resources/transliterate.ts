@@ -5,10 +5,10 @@
  */
 
 const VOWELS: Record<string, string> = {
-  అ: 'a', ఆ: 'aa', ఇ: 'i', ఈ: 'ii', ఉ: 'u', ఊ: 'uu', ఋ: 'ru', ౠ: 'ruu', ఎ: 'e', ఏ: 'ee', ఐ: 'ai', ఒ: 'o', ఓ: 'oo', ఔ: 'au',
+  అ: 'a', ఆ: 'aa', ఇ: 'i', ఈ: 'ii', ఉ: 'u', ఊ: 'uu', ఋ: 'ru', ౠ: 'ruu', ఎ: 'e', ఏ: 'e', ఐ: 'ai', ఒ: 'o', ఓ: 'o', ఔ: 'au',
 };
 const MATRAS: Record<string, string> = {
-  'ా': 'aa', 'ి': 'i', 'ీ': 'ii', 'ు': 'u', 'ూ': 'uu', 'ృ': 'ru', 'ౄ': 'ruu', 'ె': 'e', 'ే': 'ee', 'ై': 'ai', 'ొ': 'o', 'ో': 'oo', 'ౌ': 'au',
+  'ా': 'aa', 'ి': 'i', 'ీ': 'ii', 'ు': 'u', 'ూ': 'uu', 'ృ': 'ru', 'ౄ': 'ruu', 'ె': 'e', 'ే': 'e', 'ై': 'ai', 'ొ': 'o', 'ో': 'o', 'ౌ': 'au',
 };
 const CONSONANTS: Record<string, string> = {
   క: 'k', ఖ: 'kh', గ: 'g', ఘ: 'gh', ఙ: 'ng', చ: 'ch', ఛ: 'chh', జ: 'j', ఝ: 'jh', ఞ: 'ny',
@@ -64,18 +64,26 @@ export function transliterate(text: string): string {
   return out;
 }
 
-/** Forgiving key used on both sides of a search: lower-case ASCII with the usual spelling variations folded away. */
+/**
+ * Forgiving key used on both sides of a search: lower-case ASCII with the usual spelling
+ * variations folded away. People write long vowels as "aa/ee/oo", aspirates as "th/dh/bh",
+ * క as "k" or "c", చ as "ch", ృ as "ri" or "ru", and doubled letters inconsistently.
+ */
 export function searchKey(text: string): string {
   return transliterate(text)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/aa|ee|ii|oo|uu/g, (m) => ({ aa: 'a', ee: 'e', ii: 'i', oo: 'o', uu: 'u' })[m] as string)
-    .replace(/ee|ea/g, 'e')
+    .replace(/aa/g, 'a')
+    .replace(/ee|ii|ea/g, 'i')
+    .replace(/oo|uu/g, 'u')
     .replace(/w/g, 'v')
     .replace(/z/g, 'j')
-    .replace(/ph/g, 'p')
-    .replace(/(k|g|ch|j|t|d|b|s)h/g, '$1')
-    .replace(/c(?!h)/g, 'k')
+    .replace(/jah\b/g, 'ya')
+    .replace(/ph|f/g, 'p')
+    .replace(/(k|g|c|j|t|d|b|s)h/g, '$1')
+    .replace(/c/g, 'k')
+    .replace(/x/g, 'ks')
+    .replace(/([bdghjklmnprstvy])ri/g, '$1ru')
     .replace(/([a-z])\1+/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
