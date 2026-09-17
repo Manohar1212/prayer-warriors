@@ -94,3 +94,18 @@ export function looseIncludes(textKey: string, query: string): boolean {
   const q = searchKey(query);
   return q.length === 0 || textKey.includes(q);
 }
+
+/** Plain key for Latin-script text: lower-case letters and digits with single spaces, no phonetic folding. */
+export function plainKey(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[’']/g, '')
+    .replace(/[^a-z0-9ఀ-౿]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** The search key stored for a Bible verse: phonetic for Telugu, plain for English. */
+export function verseKey(text: string, lang: 'en' | 'te'): string {
+  return lang === 'te' ? searchKey(text) : plainKey(text);
+}

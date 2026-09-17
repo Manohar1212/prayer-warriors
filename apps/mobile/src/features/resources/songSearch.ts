@@ -68,6 +68,11 @@ function wordScore(q: string, w: string): number {
   return 0;
 }
 
+/** True when `token` is within typo distance of any of the words (the same rule as song search). */
+export function fuzzyWordMatch(token: string, words: string[]): boolean {
+  return words.some((w) => wordScore(token, w) > 0);
+}
+
 /** Relevance of a song for a query; 0 means no match. */
 export function scoreFor(index: Index, query: string): number {
   const q = searchKey(query);

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Builds apps/mobile/assets/bible/bible-v2.db from public-domain sources.
+// Builds apps/mobile/assets/bible/bible-v3.db from public-domain sources.
 //   English: Berean Standard Bible (eBible.org id engbsb, USFM) — public domain
 //   Telugu:  పరిశుద్ధ గ్రంథము, the 1880 Telugu Old Version — public domain text, JSON data from
 //            github.com/aruljohn/Bible-telugu (MIT)
@@ -12,9 +12,11 @@ import { dirname, join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 
+import { verseKey } from '../../apps/mobile/src/features/resources/transliterate.ts';
+
 const here = dirname(fileURLToPath(import.meta.url));
 const cache = join(here, '.cache');
-const out = join(here, '..', '..', 'apps', 'mobile', 'assets', 'bible', 'bible-v2.db');
+const out = join(here, '..', '..', 'apps', 'mobile', 'assets', 'bible', 'bible-v3.db');
 
 const EN = { id: 'engbsb', url: 'https://ebible.org/Scriptures/engbsb_usfm.zip' };
 const TE_RAW = 'https://raw.githubusercontent.com/aruljohn/Bible-telugu/master/';
@@ -175,11 +177,11 @@ db.exec(`
   PRAGMA journal_mode = OFF;
   PRAGMA synchronous = OFF;
   CREATE TABLE books (id INTEGER PRIMARY KEY, code TEXT NOT NULL, testament TEXT NOT NULL, name_en TEXT NOT NULL, name_te TEXT NOT NULL, short_te TEXT NOT NULL, chapters_en INTEGER NOT NULL, chapters_te INTEGER NOT NULL);
-  CREATE TABLE verses (lang TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL, label TEXT NOT NULL, text TEXT NOT NULL, PRIMARY KEY (lang, book, chapter, verse)) WITHOUT ROWID;
+  CREATE TABLE verses (lang TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL, label TEXT NOT NULL, text TEXT NOT NULL, key TEXT NOT NULL DEFAULT '', PRIMARY KEY (lang, book, chapter, verse)) WITHOUT ROWID;
   CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 `);
 const insertBook = db.prepare('INSERT INTO books VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-const insertVerse = db.prepare('INSERT INTO verses VALUES (?, ?, ?, ?, ?, ?)');
+const insertVerse = db.prepare('INSERT INTO verses VALUES (?, ?, ?, ?, ?, ?, ?)');
 const counts = { en: 0, te: 0, empty: 0 };
 db.exec('BEGIN');
 CANON.forEach(([code, nameEn], i) => {
@@ -194,7 +196,8 @@ CANON.forEach(([code, nameEn], i) => {
         counts.empty += 1;
         continue;
       }
-      insertVerse.run(lang, id, v.chapter, v.verse, v.label, v.text);
+      // Telugu verses carry a phonetic search key so members can type them in English letters.
+      insertVerse.run(lang, id, v.chapter, v.verse, v.label, v.text, lang === 'te' ? verseKey(v.text, 'te') : '');
       counts[lang] += 1;
     }
   }

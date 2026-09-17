@@ -5,7 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const dbPath = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'apps', 'mobile', 'assets', 'bible', 'bible-v2.db');
+const dbPath = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'apps', 'mobile', 'assets', 'bible', 'bible-v3.db');
 
 test('bible database is complete in both languages', () => {
   assert.ok(existsSync(dbPath), 'run node scripts/bible/build.mjs first');
@@ -22,6 +22,9 @@ test('bible database is complete in both languages', () => {
   assert.ok(one("SELECT COUNT(*) AS n FROM verses WHERE lang = 'en'").n >= 31000, 'English verse count');
   assert.ok(one("SELECT COUNT(*) AS n FROM verses WHERE lang = 'te'").n >= 30900, 'Telugu verse count');
   assert.equal(one("SELECT COUNT(*) AS n FROM verses WHERE text = ''").n, 0);
+  // Amos 7:1 in the Telugu source is Hindi text (a defect upstream), so it has no Telugu key.
+  assert.ok(one("SELECT COUNT(*) AS n FROM verses WHERE lang = 'te' AND key = ''").n <= 1, 'every Telugu verse has a search key');
+  assert.match(one("SELECT key FROM verses WHERE lang = 'te' AND book = 43 AND chapter = 3 AND verse = 16").key, /^devudu lokamunu/, 'Telugu key is transliterated');
   assert.equal(one("SELECT COUNT(*) AS n FROM verses WHERE text LIKE '%\\%'").n, 0, 'no USFM markers left');
   assert.equal(one("SELECT COUNT(*) AS n FROM verses WHERE text LIKE '%strong=%'").n, 0, 'no Strong attributes left');
 

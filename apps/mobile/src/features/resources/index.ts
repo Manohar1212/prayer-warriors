@@ -6,6 +6,6 @@ export type { Song, SongTextSize } from './songbook';
 export { findHymn, HYMN_BOOKS, loadHymnBook, matchesHymn, searchHymns, useSongBook } from './hymnal';
 export type { Hymn, HymnBook, SongBook } from './hymnal';
 export { SongReader, ToolButton } from './SongReader';
-export { searchKey, transliterate } from './transliterate';
+export { plainKey, searchKey, transliterate, verseKey } from './transliterate';
 export { RESOURCE_TYPES } from './types';
 export type { NewResource, Resource, ResourceType } from './types';

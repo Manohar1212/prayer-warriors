@@ -363,7 +363,7 @@ export const te: Partial<Record<TranslationKey, string>> = {
 
   'bible.title': 'బైబిల్',
   'bible.search': 'బైబిల్‌లో వెతకండి',
-  'bible.searchPlaceholder': 'పదం లేదా వాక్యం',
+  'bible.searchPlaceholder': 'తెలుగు లేదా ఇంగ్లీష్ అక్షరాలలో పదాలు',
   'bible.continueReading': 'చదవడం కొనసాగించండి',
   'bible.oldTestament': 'పాత నిబంధన',
   'bible.newTestament': 'కొత్త నిబంధన',

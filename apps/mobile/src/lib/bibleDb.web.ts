@@ -10,7 +10,7 @@ export function getBibleDb(): Promise<BibleDb> {
   if (!opening) {
     opening = (async () => {
       const wasm = Asset.fromModule(require('sql.js/dist/sql-wasm-browser.wasm'));
-      const data = Asset.fromModule(require('../../assets/bible/bible-v2.db'));
+      const data = Asset.fromModule(require('../../assets/bible/bible-v3.db'));
       await Promise.all([wasm.downloadAsync(), data.downloadAsync()]);
       const SQL = await initSqlJs({ locateFile: () => wasm.localUri ?? wasm.uri });
       const bytes = new Uint8Array(await (await fetch(data.localUri ?? data.uri)).arrayBuffer());

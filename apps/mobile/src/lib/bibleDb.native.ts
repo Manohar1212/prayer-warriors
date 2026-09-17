@@ -4,7 +4,7 @@ import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
 
 import type { BibleDb } from './bibleDb.types';
 
-const DB_NAME = 'bible-v2.db';
+const DB_NAME = 'bible-v3.db';
 let opening: Promise<SQLiteDatabase> | null = null;
 
 /** Copies the bundled database into the SQLite directory on first use, then opens it read-only. */
@@ -13,7 +13,7 @@ async function ensureCopied(): Promise<void> {
   if (!dir.exists) dir.create({ intermediates: true });
   const target = new File(dir, DB_NAME);
   if (target.exists && target.size && target.size > 1_000_000) return;
-  const asset = Asset.fromModule(require('../../assets/bible/bible-v2.db'));
+  const asset = Asset.fromModule(require('../../assets/bible/bible-v3.db'));
   await asset.downloadAsync();
   if (!asset.localUri) throw new Error('Bible data is not available.');
   if (target.exists) target.delete();

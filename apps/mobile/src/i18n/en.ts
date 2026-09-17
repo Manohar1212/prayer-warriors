@@ -370,7 +370,7 @@ export const en = {
   // ---- bible
   'bible.title': 'Bible',
   'bible.search': 'Search the Bible',
-  'bible.searchPlaceholder': 'A word or phrase',
+  'bible.searchPlaceholder': 'Words in Telugu or English letters',
   'bible.continueReading': 'Continue reading',
   'bible.oldTestament': 'Old Testament',
   'bible.newTestament': 'New Testament',
