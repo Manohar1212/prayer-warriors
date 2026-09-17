@@ -18,25 +18,38 @@ export default function PromiseScreen() {
   const { t, locale } = useLanguage();
   const [lang] = useBibleLanguage();
   const verse = useVerseOfTheDay(lang);
+  // The other language, so the card and the shared image read in both English and Telugu.
+  const other = useVerseOfTheDay(lang === 'te' ? 'en' : 'te');
   const shareCard = useRef<View>(null);
   const now = new Date();
   const [sky] = useState(randomSceneVariant);
 
   return (
     <Screen edges={['bottom']} scroll className="gap-6 pt-4">
-      <View className="overflow-hidden rounded-[16px]" style={{ height: 380 }}>
+      <View className="overflow-hidden rounded-[16px]" style={{ height: 440 }}>
         <Scene variant={sky} shape="tall" dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
         <View className="flex-1 items-center justify-center gap-4 px-7">
           <Text variant="caption" color="cream" style={{ letterSpacing: 2.5 }}>
             {t('promise.today').toUpperCase()}
           </Text>
-          <Text variant="scripture" color="cream" className={`text-center ${lang === 'te' ? 'text-[19px] leading-[31px]' : 'text-[21px] leading-[32px]'}`}>
+          <Text variant="scripture" color="cream" className={`text-center ${lang === 'te' ? 'text-[17px] leading-[28px]' : 'text-[18px] leading-[27px]'}`}>
             {verse ? `“${verse.text}”` : '…'}
           </Text>
           {verse ? (
-            <Text variant="label" color="creamSoft" className="text-[14px]">
+            <Text variant="label" color="creamSoft" className="text-[13px]">
               {verse.reference}
             </Text>
+          ) : null}
+          {other ? (
+            <>
+              <View className="h-px w-8 bg-surface/50" />
+              <Text variant="scripture" color="cream" className={`text-center ${lang === 'te' ? 'text-[17px] leading-[26px]' : 'text-[17px] leading-[28px]'}`}>
+                {`“${other.text}”`}
+              </Text>
+              <Text variant="label" color="creamSoft" className="text-[13px]">
+                {other.reference}
+              </Text>
+            </>
           ) : null}
         </View>
       </View>
@@ -62,6 +75,7 @@ export default function PromiseScreen() {
             prayer={t('home.dailyBreadPrayer')}
             prayerReference={t('home.dailyBreadPrayerRef')}
             sky={sky}
+            second={other ? { text: other.text, reference: other.reference } : null}
             telugu={lang === 'te'}
           />
         </View>

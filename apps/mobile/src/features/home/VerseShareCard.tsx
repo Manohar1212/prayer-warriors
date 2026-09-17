@@ -20,20 +20,23 @@ export type VerseShareCardProps = {
   prayerReference: string;
   /** The same sky as the card on screen, so what goes out matches what you saw. */
   sky: SceneVariant;
+  /** The verse in the other language, so the card reads in both English and Telugu. */
+  second?: { text: string; reference: string } | null;
   telugu?: boolean;
 };
 
 const W = 360;
-const H = 450;
+const H = 500;
 
 /**
  * The card that goes out on WhatsApp: the verse set on the sky over the mountains, with the
  * title and day above and the Lord's Prayer line and emblem below. 360×450pt, captured at 3×.
  */
-export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function VerseShareCard({ text, reference, title, date, prayer, prayerReference, sky, telugu = false }, ref) {
+export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function VerseShareCard({ text, reference, title, date, prayer, prayerReference, sky, second = null, telugu = false }, ref) {
+  const both = Boolean(second);
   const long = text.length > 170;
-  const verseSize = telugu ? (long ? 18 : 21) : long ? 20 : 24;
-  const verseLine = telugu ? (long ? 30 : 34) : long ? 30 : 35;
+  const verseSize = both ? (telugu ? 16 : 18) : telugu ? (long ? 18 : 21) : long ? 20 : 24;
+  const verseLine = both ? (telugu ? 26 : 26) : telugu ? (long ? 30 : 34) : long ? 30 : 35;
   return (
     <View ref={ref} collapsable={false} style={{ width: W, height: H, backgroundColor: '#1E2D42', overflow: 'hidden' }}>
       <Scene variant={sky} shape="tall" dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
@@ -54,9 +57,20 @@ export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function Ver
           <Text variant="scripture" color="cream" style={{ textAlign: 'center', fontSize: verseSize, lineHeight: verseLine }}>
             {`“${text}”`}
           </Text>
-          <Text variant="label" color="cream" style={{ fontSize: 15, textAlign: 'center' }}>
+          <Text variant="label" color="cream" style={{ fontSize: 14, textAlign: 'center' }}>
             {reference}
           </Text>
+          {second ? (
+            <>
+              <View style={{ width: 28, height: 1, backgroundColor: 'rgba(255,255,255,0.5)', marginVertical: 2 }} />
+              <Text variant="scripture" color="cream" style={{ textAlign: 'center', fontSize: telugu ? 18 : 16, lineHeight: telugu ? 26 : 27 }}>
+                {`“${second.text}”`}
+              </Text>
+              <Text variant="label" color="cream" style={{ fontSize: 14, textAlign: 'center' }}>
+                {second.reference}
+              </Text>
+            </>
+          ) : null}
         </View>
 
         <View style={{ alignItems: 'center', gap: 6 }}>
