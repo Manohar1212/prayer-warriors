@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
@@ -208,7 +208,8 @@ function AnsweredPoints() {
 export default function PrayerScreen() {
   const router = useRouter();
   const t = useT();
-  const [tab, setTab] = useState<Tab>('active');
+  const { tab: initialTab } = useLocalSearchParams<{ tab?: string }>();
+  const [tab, setTab] = useState<Tab>(initialTab === 'monthly' || initialTab === 'answered' ? initialTab : 'active');
   const status: PrayerStatus = tab === 'answered' ? 'answered' : 'active';
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<PrayerCategory | 'all'>('all');

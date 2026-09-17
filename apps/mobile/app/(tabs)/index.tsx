@@ -92,7 +92,7 @@ export default function HomeScreen() {
 
       <View className="gap-3">
         <ActionCard icon="hand-left" bg="bg-sky" fg={colors.skyDeep} title={t('home.prayerRequest')} body={t('home.prayerRequestBody')} onPress={() => router.push('/prayer/new')} />
-        <ActionCard icon="book" bg="bg-lavender" fg={colors.violet} title={t('home.dailyPromise')} body={t('home.dailyPromiseBody')} onPress={() => router.push('/promise')} />
+        <ActionCard icon="calendar" bg="bg-lavender" fg={colors.violet} title={t('home.monthlyPrayer')} body={t('home.monthlyPrayerBody')} onPress={() => router.push({ pathname: '/(tabs)/prayer', params: { tab: 'monthly' } })} />
       </View>
 
       <View className="flex-row justify-between">

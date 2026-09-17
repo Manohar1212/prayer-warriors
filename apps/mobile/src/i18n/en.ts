@@ -83,6 +83,8 @@ export const en = {
   'home.dailyBread': 'Daily Bread',
   'home.dailyPromise': 'Daily Promise',
   'home.dailyPromiseBody': "Be encouraged with God's Word",
+  'home.monthlyPrayer': 'Monthly Prayer',
+  'home.monthlyPrayerBody': 'Pick a point to carry this month',
   'home.prayerRequest': 'Prayer Request',
   'home.prayerRequestBody': 'Share your prayer needs or pray for others',
   'promise.today': "Today's promise",
