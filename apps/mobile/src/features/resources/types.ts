@@ -49,5 +49,6 @@ export type ResourcesService = {
   list(type: ResourceType): Promise<Resource[]>;
   listRecent(limit: number): Promise<Resource[]>;
   create(input: NewResource): Promise<Resource>;
+  update(id: string, input: NewResource): Promise<Resource>;
   remove(id: string): Promise<void>;
 };

@@ -444,6 +444,12 @@ const resources = {
     const obj = await new Parse.Query('Resource').get(id, { useMasterKey: true }).catch(() => null);
     return obj ? resourceDto(obj) : null;
   },
+  async update(id, patch) {
+    const obj = await new Parse.Query('Resource').get(id, { useMasterKey: true });
+    Object.entries(patch).forEach(([key, value]) => obj.set(key, value));
+    await obj.save(null, { useMasterKey: true });
+    return resourceDto(obj);
+  },
   async remove(id) {
     const obj = await new Parse.Query('Resource').get(id, { useMasterKey: true });
     await obj.destroy({ useMasterKey: true });
@@ -844,6 +850,9 @@ Parse.Cloud.define(
   withNotify(resourceHandlers.createResource, (dto, _params, { callerId: actorId }) =>
     notifier.notify({ type: 'resource', groupId: dto.groupId, actorId, resourceId: dto.id, resourceType: dto.type, title: dto.title }),
   ),
+);
+Parse.Cloud.define('updateResource', (request) =>
+  resourceHandlers.updateResource(request.params, { callerId: callerId(request) }),
 );
 Parse.Cloud.define('deleteResource', (request) =>
   resourceHandlers.deleteResource(request.params, { callerId: callerId(request) }),

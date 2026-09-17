@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 
-import { matchesQuery, RESOURCE_TYPES, useResources, type Resource, type ResourceType } from '@/features/resources';
+import { firstLine, matchesQuery, matchesSong, numberSongs, RESOURCE_TYPES, useResources, type Resource, type ResourceType, type Song } from '@/features/resources';
 import { shortDate } from '@/lib/time';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors, gradients } from '@/theme/tokens';
@@ -35,6 +35,30 @@ function Thumb({ type }: { type: ResourceType }) {
     <View className={`h-[60px] w-[60px] items-center justify-center rounded-[14px] ${scripture ? 'bg-sage' : 'bg-honey'}`}>
       <Ionicons name={scripture ? 'book' : 'hand-left'} size={22} color={scripture ? colors.leaf : colors.gold} />
     </View>
+  );
+}
+
+/** A line in the songbook: number, title, opening line. */
+function SongRow({ song, onOpen }: { song: Song; onOpen: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={`${song.number}. ${song.title}`} onPress={onOpen} className="active:opacity-80">
+      <Card className="flex-row items-center gap-3 py-3.5">
+        <View className="h-11 w-11 items-center justify-center rounded-full bg-honey">
+          <Text variant="label" color="gold" className="text-[15px]">
+            {song.number}
+          </Text>
+        </View>
+        <View className="flex-1 gap-0.5">
+          <Text variant="label" className="text-[16px]" numberOfLines={1}>
+            {song.title}
+          </Text>
+          <Text variant="caption" numberOfLines={1}>
+            {song.body ? firstLine(song.body) : song.reference || '—'}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+      </Card>
+    </Pressable>
   );
 }
 
@@ -73,7 +97,7 @@ export default function ResourcesScreen() {
   const [type, setType] = useState<ResourceType>('song');
   const [query, setQuery] = useState('');
   const { resources, loading, error, refresh } = useResources(type);
-  const visible = useMemo(() => resources.filter((r) => matchesQuery(r, query)), [resources, query]);
+  const visible = useMemo<(Resource | Song)[]>(() => (type === 'song' ? numberSongs(resources).filter((s) => matchesSong(s, query)) : resources.filter((r) => matchesQuery(r, query))), [resources, query, type]);
   const plural = t(pluralKey[type]);
 
   const onTab = (tab: Tab) => {
@@ -100,7 +124,7 @@ export default function ResourcesScreen() {
             <View className="flex-row items-center gap-2 rounded-[12px] border border-border bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
               <TextInput
-                placeholder={t('resources.searchIn', { plural: plural.toLowerCase() })}
+                placeholder={type === 'song' ? t('resources.song.searchPlaceholder') : t('resources.searchIn', { plural: plural.toLowerCase() })}
                 placeholderTextColor={colors.muted}
                 selectionColor={colors.primary}
                 value={query}
@@ -127,7 +151,13 @@ export default function ResourcesScreen() {
             <EmptyState icon={type === 'song' ? 'musical-notes-outline' : type === 'scripture' ? 'book-outline' : 'hand-left-outline'} tone={type === 'song' ? 'lavender' : type === 'scripture' ? 'sage' : 'honey'} title={t(emptyCopy[type].title)} body={t(emptyCopy[type].body)} />
           )
         }
-        renderItem={({ item }) => <ResourceCard resource={item} onOpen={() => router.push({ pathname: '/resources/[id]', params: { id: item.id } })} />}
+        renderItem={({ item }) =>
+          'number' in item ? (
+            <SongRow song={item} onOpen={() => router.push({ pathname: '/resources/song', params: { id: item.id } })} />
+          ) : (
+            <ResourceCard resource={item} onOpen={() => router.push({ pathname: '/resources/[id]', params: { id: item.id } })} />
+          )
+        }
       />
       <Fab label={t('resources.share')} onPress={() => router.push({ pathname: '/resources/new', params: { type } })} />
     </Screen>

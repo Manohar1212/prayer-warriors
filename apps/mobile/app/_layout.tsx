@@ -76,6 +76,7 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
         <Stack.Screen name="journal/entry" options={{ ...modalOptions, title: t('journal.entry.title') }} />
         <Stack.Screen name="resources/new" options={{ ...modalOptions, title: t('resources.new.title') }} />
         <Stack.Screen name="resources/[id]" options={{ ...cardOptions, title: t('resources.detail.title') }} />
+        <Stack.Screen name="resources/song" options={{ ...cardOptions, title: t('resources.song.title') }} />
         <Stack.Screen name="funds/contribution" options={{ ...modalOptions, title: t('funds.contribution.title') }} />
         <Stack.Screen name="funds/expense" options={{ ...modalOptions, title: t('funds.expense.title') }} />
         <Stack.Screen name="funds/report" options={{ ...cardOptions, title: t('funds.report.title') }} />

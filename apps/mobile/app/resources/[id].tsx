@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { useMembers } from '@/features/members';
-import { lyricsSearchUrl, useResources, type Resource } from '@/features/resources';
+import { useResources, type Resource } from '@/features/resources';
 import { goBackOr } from '@/lib/navigation';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
@@ -49,6 +49,8 @@ export default function ResourceScreen() {
     );
   }
 
+  if (resource.type === 'song') return <Redirect href={{ pathname: '/resources/song', params: { id: resource.id } }} />;
+
   const typeLabel = t(`resources.type.${resource.type}` as TranslationKey);
   const canRemove = resource.createdById === user?.id || isAdmin;
 
@@ -68,7 +70,7 @@ export default function ResourceScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="gap-3">
-        <Meta parts={[{ text: typeLabel, dot: resource.type === 'song' ? 'honey' : resource.type === 'scripture' ? 'sage' : 'blush' }, { text: t('resources.sharedBy', { name: resource.sharedBy }) }]} />
+        <Meta parts={[{ text: typeLabel, dot: resource.type === 'scripture' ? 'sage' : 'blush' }, { text: t('resources.sharedBy', { name: resource.sharedBy }) }]} />
         <Text variant="display" className="text-[22px] leading-[28px]">
           {resource.title}
         </Text>
@@ -82,7 +84,7 @@ export default function ResourceScreen() {
 
       {resource.url ? (
         <Button
-          title={resource.type === 'song' ? t('resources.detail.play') : t('resources.detail.openLink')}
+          title={t('resources.detail.openLink')}
           onPress={() => Linking.openURL(resource.url).catch(() => setError(t('resources.detail.linkFailed')))}
         />
       ) : null}
@@ -97,10 +99,6 @@ export default function ResourceScreen() {
         ) : (
           <Text className="text-[15px] leading-[24px]">{resource.body}</Text>
         )
-      ) : null}
-
-      {resource.type === 'song' && !resource.body ? (
-        <Button title={t('resources.detail.searchLyrics')} icon="search-outline" variant="secondary" onPress={() => Linking.openURL(lyricsSearchUrl(resource.title)).catch(() => setError(t('resources.detail.linkFailed')))} />
       ) : null}
 
       {resource.note ? (

@@ -10,6 +10,7 @@ export type ResourcesState = {
   error: string | null;
   refresh: () => Promise<void>;
   create: (input: NewResource) => Promise<Resource>;
+  update: (id: string, input: NewResource) => Promise<Resource>;
   remove: (id: string) => Promise<void>;
 };
 
@@ -47,6 +48,15 @@ export function useResources(type: ResourceType): ResourcesState {
     [load],
   );
 
+  const update = useCallback(
+    async (id: string, input: NewResource) => {
+      const updated = await resourcesService.update(id, input);
+      await load();
+      return updated;
+    },
+    [load],
+  );
+
   const remove = useCallback(
     async (id: string) => {
       await resourcesService.remove(id);
@@ -55,5 +65,5 @@ export function useResources(type: ResourceType): ResourcesState {
     [load],
   );
 
-  return { resources, loading, error, refresh: load, create, remove };
+  return { resources, loading, error, refresh: load, create, update, remove };
 }

@@ -18,6 +18,7 @@ function deps({ groupId = 'g1', adminGroupId = null, resource = dto() } = {}) {
     resources: {
       create: jest.fn(async (fields) => dto({ ...fields, id: 'new1' })),
       get: jest.fn(async () => resource),
+      update: jest.fn(async (id, patch) => dto({ ...patch, id })),
       remove: jest.fn(async () => undefined),
     },
   };
@@ -103,5 +104,30 @@ describe('deleteResource', () => {
   it('rejects non-members', async () => {
     const d = deps({ groupId: null });
     await expect(createResourceHandlers(d).deleteResource({ resourceId: 'res1' }, caller)).rejects.toThrow(MESSAGES.notMember);
+  });
+});
+
+describe('updateResource', () => {
+  const patch = { resourceId: 'res1', title: ' Amazing Grace ', reference: 'John Newton', url: '', body: ' Amazing grace ', note: '' };
+
+  it('lets the creator fix the fields', async () => {
+    const d = deps();
+    const result = await createResourceHandlers(d).updateResource(patch, caller);
+    expect(d.resources.update).toHaveBeenCalledWith('res1', { title: 'Amazing Grace', reference: 'John Newton', url: '', body: 'Amazing grace', note: '' });
+    expect(result.title).toBe('Amazing Grace');
+  });
+
+  it('lets an admin edit someone else’s song, but not another member', async () => {
+    const other = dto({ createdById: 'u9' });
+    await expect(createResourceHandlers(deps({ resource: other, adminGroupId: 'g1' })).updateResource(patch, caller)).resolves.toBeTruthy();
+    await expect(createResourceHandlers(deps({ resource: other })).updateResource(patch, caller)).rejects.toThrow(MESSAGES.notAllowedEdit);
+  });
+
+  it('validates like a new resource', async () => {
+    const h = createResourceHandlers(deps());
+    await expect(h.updateResource({ ...patch, title: ' ' }, caller)).rejects.toThrow(MESSAGES.titleRequired);
+    await expect(h.updateResource({ ...patch, body: '', url: '' }, caller)).rejects.toThrow(MESSAGES.nothingToShare);
+    await expect(h.updateResource({ ...patch, url: 'ftp://x' }, caller)).rejects.toThrow(MESSAGES.invalidUrl);
+    await expect(createResourceHandlers(deps({ resource: null })).updateResource(patch, caller)).rejects.toThrow(MESSAGES.notFound);
   });
 });

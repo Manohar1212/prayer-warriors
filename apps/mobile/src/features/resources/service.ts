@@ -65,6 +65,9 @@ export function createResourcesService({ fetchResources, cloud }: Deps): Resourc
     create: (input: NewResource) =>
       guarded(async () => fromDto((await cloud.run('createResource', { ...input })) as ResourceDto)),
 
+    update: (id, input: NewResource) =>
+      guarded(async () => fromDto((await cloud.run('updateResource', { resourceId: id, ...input })) as ResourceDto)),
+
     remove: (id) =>
       guarded(async () => {
         await cloud.run('deleteResource', { resourceId: id });

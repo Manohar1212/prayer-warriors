@@ -1,5 +1,5 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Linking, View } from 'react-native';
 
 import { RESOURCE_TYPES, lyricsSearchUrl, useResources, youtubeSearchUrl, type ResourceType } from '@/features/resources';
@@ -20,9 +20,11 @@ function isType(value: unknown): value is ResourceType {
 export default function NewResourceScreen() {
   const router = useRouter();
   const { t } = useLanguage();
-  const params = useLocalSearchParams<{ type?: string; title?: string; body?: string }>();
+  const params = useLocalSearchParams<{ type?: string; title?: string; body?: string; id?: string }>();
   const [type, setType] = useState<ResourceType>(isType(params.type) ? params.type : 'song');
-  const { create } = useResources(type);
+  const { resources, create, update } = useResources(type);
+  const editing = resources.find((r) => r.id === params.id) ?? null;
+  const isEdit = Boolean(params.id);
   const [title, setTitle] = useState(params.title ?? '');
   const [reference, setReference] = useState('');
   const [url, setUrl] = useState('');
@@ -30,6 +32,18 @@ export default function NewResourceScreen() {
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [filled, setFilled] = useState(false);
+
+  // Editing: fill the form once the song has loaded.
+  useEffect(() => {
+    if (!editing || filled) return;
+    setTitle(editing.title);
+    setReference(editing.reference);
+    setUrl(editing.url);
+    setBody(editing.body);
+    setNote(editing.note);
+    setFilled(true);
+  }, [editing, filled]);
 
   const [searchHint, setSearchHint] = useState<string | null>(null);
 
@@ -44,17 +58,19 @@ export default function NewResourceScreen() {
   }
 
   const copy = fieldCopy[type];
-  const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || url.trim().length > 0);
+  // Songs are sung from the book, so they need lyrics; other types may be a link alone.
+  const canSubmit = title.trim().length > 0 && (type === 'song' ? body.trim().length > 0 : body.trim().length > 0 || url.trim().length > 0);
 
   async function submit() {
     if (!canSubmit) return;
     setBusy(true);
     setError(null);
     try {
-      await create({ type, title, reference, url, body, note });
+      if (isEdit && editing) await update(editing.id, { type, title, reference, url, body, note });
+      else await create({ type, title, reference, url, body, note });
       goBackOr(router, '/(tabs)/resources');
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('resources.new.failed'));
+      setError(err instanceof Error ? err.message : t(isEdit ? 'resources.edit.failed' : 'resources.new.failed'));
     } finally {
       setBusy(false);
     }
@@ -62,11 +78,14 @@ export default function NewResourceScreen() {
 
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
-      <View className="flex-row flex-wrap gap-2">
-        {RESOURCE_TYPES.map((r) => (
-          <Chip key={r.id} label={t(`resources.type.${r.id}` as TranslationKey)} selected={type === r.id} onPress={() => setType(r.id)} />
-        ))}
-      </View>
+      {isEdit ? <Stack.Screen options={{ title: t('resources.edit.title') }} /> : null}
+      {isEdit ? null : (
+        <View className="flex-row flex-wrap gap-2">
+          {RESOURCE_TYPES.map((r) => (
+            <Chip key={r.id} label={t(`resources.type.${r.id}` as TranslationKey)} selected={type === r.id} onPress={() => setType(r.id)} />
+          ))}
+        </View>
+      )}
       <Text variant="muted" className="text-[15px] leading-[22px]">
         {t(copy.intro)}
       </Text>
@@ -89,7 +108,12 @@ export default function NewResourceScreen() {
         {copy.url ? (
           <Input label={t(copy.url)} value={url} onChangeText={setUrl} autoCapitalize="none" keyboardType="url" autoComplete="url" />
         ) : null}
-        <Input label={t(copy.body)} value={body} onChangeText={setBody} maxLength={4000} multiline style={{ minHeight: 110, textAlignVertical: 'top' }} />
+        <Input label={t(copy.body)} value={body} onChangeText={setBody} maxLength={4000} multiline style={{ minHeight: type === 'song' ? 220 : 110, textAlignVertical: 'top' }} />
+        {type === 'song' ? (
+          <Text variant="caption" color="muted" className="-mt-3">
+            {t('resources.new.lyricsHint')}
+          </Text>
+        ) : null}
         {type !== 'song' ? (
           <Input label={t('resources.new.note')} value={note} onChangeText={setNote} maxLength={500} multiline style={{ minHeight: 70, textAlignVertical: 'top' }} />
         ) : null}
@@ -98,7 +122,7 @@ export default function NewResourceScreen() {
             {error}
           </Text>
         ) : null}
-        <Button title={t('resources.new.submit')} onPress={submit} loading={busy} disabled={!canSubmit} className="mt-1" />
+        <Button title={t(isEdit ? 'resources.edit.submit' : 'resources.new.submit')} onPress={submit} loading={busy} disabled={!canSubmit} className="mt-1" />
       </View>
     </Screen>
   );

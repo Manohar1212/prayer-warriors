@@ -15,6 +15,7 @@ const MESSAGES = {
   nothingToShare: 'Add some text or a link.',
   notFound: "That resource isn't available.",
   notAllowed: 'Only the person who shared this, or an admin, can remove it.',
+  notAllowedEdit: 'Only the person who shared this, or an admin, can edit it.',
 };
 
 function fail(message) {
@@ -59,6 +60,29 @@ function createResourceHandlers({ memberships, resources }) {
         body: cleanBody,
         note: cleanNote,
       });
+    },
+
+    /** Fix a title or lyrics after sharing; the person who shared it or an admin. Type never changes. */
+    async updateResource({ resourceId, title, body, reference, url, note } = {}, { callerId } = {}) {
+      const groupId = await requireGroup(callerId);
+      const resource = resourceId ? await resources.get(resourceId) : null;
+      if (!resource || resource.groupId !== groupId) throw fail(MESSAGES.notFound);
+      const isCreator = resource.createdById === callerId;
+      const isAdmin = !isCreator && (await memberships.findAdminGroupId(callerId)) === groupId;
+      if (!isCreator && !isAdmin) throw fail(MESSAGES.notAllowedEdit);
+      const cleanTitle = text(title);
+      if (!cleanTitle) throw fail(MESSAGES.titleRequired);
+      if (cleanTitle.length > 120) throw fail(MESSAGES.titleTooLong);
+      const cleanBody = text(body);
+      if (cleanBody.length > 4000) throw fail(MESSAGES.bodyTooLong);
+      const cleanReference = text(reference);
+      if (cleanReference.length > 80) throw fail(MESSAGES.referenceTooLong);
+      const cleanNote = text(note);
+      if (cleanNote.length > 500) throw fail(MESSAGES.noteTooLong);
+      const cleanUrl = text(url);
+      if (cleanUrl && !HTTP_URL.test(cleanUrl)) throw fail(MESSAGES.invalidUrl);
+      if (!cleanBody && !cleanUrl) throw fail(MESSAGES.nothingToShare);
+      return resources.update(resource.id, { title: cleanTitle, reference: cleanReference, url: cleanUrl, body: cleanBody, note: cleanNote });
     },
 
     async deleteResource({ resourceId } = {}, { callerId } = {}) {
