@@ -65,6 +65,8 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="profile" options={{ ...modalOptions, title: t('profile.title') }} />
         <Stack.Screen name="promise" options={{ ...cardOptions, title: t('home.dailyPromise') }} />
+        <Stack.Screen name="quiz/index" options={{ ...cardOptions, title: t('quiz.title') }} />
+        <Stack.Screen name="quiz/leaderboard" options={{ ...cardOptions, title: t('quiz.leaderboard') }} />
         <Stack.Screen name="add-member" options={{ ...modalOptions, title: t('members.add.title') }} />
         <Stack.Screen name="prayer/new" options={{ ...modalOptions, title: t('prayer.new.title') }} />
         <Stack.Screen name="prayer/point" options={{ ...modalOptions, title: t('prayer.points.editTitle') }} />

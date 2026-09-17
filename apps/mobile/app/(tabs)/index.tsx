@@ -7,8 +7,10 @@ import { useAuth } from '@/features/auth';
 import { useBibleLanguage } from '@/features/bible';
 import { isJoinable, useCalls } from '@/features/calls';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
+import { useDailyQuiz } from '@/features/quiz';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { useLanguage, type TranslationKey } from '@/i18n';
+import { quizService } from '@/lib/parse';
 import { colors } from '@/theme/tokens';
 import { Card, Screen, Text } from '@/ui';
 import { PrayIcon } from '@/ui/PrayIcon';
@@ -31,7 +33,7 @@ const tiles: { label: TranslationKey; icon: IconName | 'pray'; bg: string; fg: s
   { label: 'home.action.songs', icon: 'musical-notes', bg: 'bg-lavender', fg: colors.violet, href: '/(tabs)/resources' },
 ];
 
-function ActionCard({ icon, bg, fg, title, body, onPress }: { icon: IconName | 'pray'; bg: string; fg: string; title: string; body: string; onPress: () => void }) {
+function ActionCard({ icon, bg, fg, title, body, badge, onPress }: { icon: IconName | 'pray'; bg: string; fg: string; title: string; body: string; badge?: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" onPress={onPress} className="active:opacity-80">
       <Card className="flex-row items-center gap-3.5 p-4">
@@ -44,7 +46,15 @@ function ActionCard({ icon, bg, fg, title, body, onPress }: { icon: IconName | '
           </Text>
           <Text variant="caption">{body}</Text>
         </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+        {badge ? (
+          <View className="rounded-full bg-primary px-3 py-1.5">
+            <Text variant="label" color="cream" className="text-[12px]">
+              {badge}
+            </Text>
+          </View>
+        ) : (
+          <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+        )}
       </Card>
     </Pressable>
   );
@@ -57,6 +67,7 @@ export default function HomeScreen() {
   const [lang] = useBibleLanguage();
   const verse = useVerseOfTheDay(lang);
   const { next: nextCall } = useCalls();
+  const { quiz, refresh: refreshQuiz } = useDailyQuiz(quizService);
   const name = user?.displayName ?? t('home.friend');
   const firstName = name.split(' ')[0];
   const now = new Date();
@@ -65,7 +76,8 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       setSky(randomSceneVariant());
-    }, []),
+      refreshQuiz();
+    }, [refreshQuiz]),
   );
 
   return (
@@ -100,6 +112,15 @@ export default function HomeScreen() {
       <View className="gap-3">
         <ActionCard icon="pray" bg="bg-sky" fg={colors.skyDeep} title={t('home.prayerRequest')} body={t('home.prayerRequestBody')} onPress={() => router.push('/prayer/new')} />
         <ActionCard icon="calendar" bg="bg-lavender" fg={colors.violet} title={t('home.monthlyPrayer')} body={t('home.monthlyPrayerBody')} onPress={() => router.push({ pathname: '/(tabs)/prayer', params: { tab: 'monthly' } })} />
+        <ActionCard
+          icon="help-circle"
+          bg="bg-honey"
+          fg={colors.gold}
+          title={t('home.quiz')}
+          body={quiz?.result ? t('home.quizDone', { score: quiz.result.score, total: quiz.questions.length }) : t('home.quizBody')}
+          badge={quiz?.result ? t('home.quizScore', { score: quiz.result.score, total: quiz.questions.length }) : t('home.quizPlay')}
+          onPress={() => router.push('/quiz')}
+        />
       </View>
 
       <View className="flex-row justify-between">

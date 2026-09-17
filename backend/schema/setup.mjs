@@ -323,6 +323,21 @@ const prayerPointClaimSchema = {
   },
 };
 
+const quizResultSchema = {
+  className: 'QuizResult',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    user: { type: 'Pointer', targetClass: '_User', required: true },
+    day: { type: 'String', required: true },
+    score: { type: 'Number', required: true },
+    answers: { type: 'Array' },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
 const notificationSchema = {
   className: 'Notification',
   fields: {
@@ -444,6 +459,7 @@ await upsertSchema(prayerResponseSchema);
 await upsertSchema(prayerCommentSchema);
 await upsertSchema(prayerPointSchema);
 await upsertSchema(prayerPointClaimSchema);
+await upsertSchema(quizResultSchema);
 await upsertSchema(journalSchema);
 await upsertSchema(resourceSchema);
 await upsertSchema(contributionSchema);

@@ -19,6 +19,7 @@ import { createResourcesService } from '../features/resources/service';
 import type { RawResource } from '../features/resources/types';
 import type { JournalInput, PrayerStatus, RawJournalEntry, RawPrayerComment, RawPrayerRequest } from '../features/prayer/types';
 import { createPrayerPointsService } from '../features/prayer/points';
+import { createQuizService } from '../features/quiz/service';
 
 const config = loadParseConfig();
 
@@ -55,6 +56,7 @@ function currentUserPointer() {
 }
 
 export const prayerPointsService = createPrayerPointsService({ cloud: Parse.Cloud, currentUserId: () => Parse.User.current()?.id ?? null });
+export const quizService = createQuizService({ cloud: Parse.Cloud });
 
 export const prayerService = createPrayerService({
   fetchRequests: async (status: PrayerStatus): Promise<RawPrayerRequest[]> => {

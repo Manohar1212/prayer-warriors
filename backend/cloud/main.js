@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const { createMemberHandlers } = require('./members');
 const { createPrayerHandlers } = require('./prayer');
 const { createPrayerPointHandlers } = require('./prayerPoints');
+const { createQuizHandlers } = require('./quiz');
+const { QUESTIONS } = require('./quizQuestions');
 const { createResourceHandlers } = require('./resources');
 const { createFinanceHandlers } = require('./finance');
 const { createCallHandlers } = require('./calls');
@@ -346,6 +348,50 @@ const prayerPointClaims = {
     row.set('doneAt', at);
     await row.save(null, { useMasterKey: true });
     return prayerPointClaimDto(row);
+  },
+};
+
+// ---------- daily quiz ----------
+
+function quizResultDto(obj) {
+  const user = obj.get('user');
+  return {
+    id: obj.id,
+    groupId: refId(obj.get('group')),
+    userId: refId(user),
+    userName: user && typeof user.get === 'function' ? user.get('displayName') || 'Member' : 'Member',
+    day: obj.get('day'),
+    score: obj.get('score') || 0,
+    answers: obj.get('answers') || [],
+  };
+}
+
+const quizResults = {
+  async find(userId, day) {
+    const row = await new Parse.Query('QuizResult')
+      .equalTo('user', pointer('_User', userId))
+      .equalTo('day', day)
+      .first({ useMasterKey: true });
+    return row ? quizResultDto(row) : null;
+  },
+  async listForGroup(groupId) {
+    const rows = await new Parse.Query('QuizResult')
+      .equalTo('group', pointer('Group', groupId))
+      .include('user')
+      .limit(5000)
+      .find({ useMasterKey: true });
+    return rows.map(quizResultDto);
+  },
+  async create({ groupId, userId, day, score, answers }) {
+    const row = new Parse.Object('QuizResult');
+    row.set('group', pointer('Group', groupId));
+    row.set('user', pointer('_User', userId));
+    row.set('day', day);
+    row.set('score', score);
+    row.set('answers', answers);
+    row.setACL(groupReadAcl(groupId));
+    await row.save(null, { useMasterKey: true });
+    return quizResultDto(row);
   },
 };
 
@@ -743,6 +789,7 @@ const memberHandlers = createMemberHandlers({ memberships, users, roles, generat
 const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, comments: prayerComments });
 const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims, requests });
 const resourceHandlers = createResourceHandlers({ memberships, resources });
+const quizHandlers = createQuizHandlers({ memberships, results: quizResults, bank: QUESTIONS });
 const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
 Parse.Cloud.define('addMember', (request) =>
@@ -833,6 +880,9 @@ Parse.Cloud.define('joinCall', async (request) => {
 );
 ['listPrayerPoints', 'listAnsweredPrayerPoints', 'addPrayerPoint', 'addRequestToMonthly', 'updatePrayerPoint', 'removePrayerPoint', 'claimPrayerPoint', 'releasePrayerPoint', 'markPrayerPointDone', 'markPrayerPointAnswered'].forEach((name) =>
   Parse.Cloud.define(name, (request) => prayerPointHandlers[name](request.params, { callerId: callerId(request) })),
+);
+['getDailyQuiz', 'submitQuiz', 'getQuizLeaderboard'].forEach((name) =>
+  Parse.Cloud.define(name, (request) => quizHandlers[name](request.params, { callerId: callerId(request) })),
 );
 Parse.Cloud.define('ping', () => 'pong');
 
