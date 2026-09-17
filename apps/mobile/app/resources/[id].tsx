@@ -5,7 +5,7 @@ import { Linking, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { useMembers } from '@/features/members';
-import { useResources, type Resource } from '@/features/resources';
+import { lyricsSearchUrl, useResources, type Resource } from '@/features/resources';
 import { goBackOr } from '@/lib/navigation';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
@@ -97,6 +97,10 @@ export default function ResourceScreen() {
         ) : (
           <Text className="text-[15px] leading-[24px]">{resource.body}</Text>
         )
+      ) : null}
+
+      {resource.type === 'song' && !resource.body ? (
+        <Button title={t('resources.detail.searchLyrics')} icon="search-outline" variant="secondary" onPress={() => Linking.openURL(lyricsSearchUrl(resource.title)).catch(() => setError(t('resources.detail.linkFailed')))} />
       ) : null}
 
       {resource.note ? (

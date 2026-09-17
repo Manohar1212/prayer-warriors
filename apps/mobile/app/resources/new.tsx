@@ -1,8 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Linking, View } from 'react-native';
 
-import { RESOURCE_TYPES, useResources, type ResourceType } from '@/features/resources';
+import { RESOURCE_TYPES, lyricsSearchUrl, useResources, youtubeSearchUrl, type ResourceType } from '@/features/resources';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { Button, Chip, Input, Screen, Text } from '@/ui';
@@ -30,6 +30,18 @@ export default function NewResourceScreen() {
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const [searchHint, setSearchHint] = useState<string | null>(null);
+
+  /** Opens a web search in the browser; the member copies what they find and pastes it here. */
+  function openSearch(url: string) {
+    if (!title.trim()) {
+      setSearchHint(t('resources.new.searchNeedsTitle'));
+      return;
+    }
+    setSearchHint(null);
+    Linking.openURL(url).catch(() => setError(t('resources.detail.linkFailed')));
+  }
 
   const copy = fieldCopy[type];
   const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || url.trim().length > 0);
@@ -60,6 +72,19 @@ export default function NewResourceScreen() {
       </Text>
       <View className="gap-5">
         <Input label={t(copy.title)} value={title} onChangeText={setTitle} maxLength={120} autoFocus />
+        {type === 'song' ? (
+          <View className="gap-2">
+            <View className="flex-row gap-2">
+              <Button title={t('resources.new.searchLyrics')} icon="search-outline" variant="secondary" size="compact" className="flex-1" onPress={() => openSearch(lyricsSearchUrl(title))} />
+              <Button title={t('resources.new.findVideo')} icon="logo-youtube" variant="secondary" size="compact" className="flex-1" onPress={() => openSearch(youtubeSearchUrl(title))} />
+            </View>
+            {searchHint ? (
+              <Text variant="caption" color="muted">
+                {searchHint}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
         {copy.reference ? <Input label={t(copy.reference)} value={reference} onChangeText={setReference} maxLength={80} /> : null}
         {copy.url ? (
           <Input label={t(copy.url)} value={url} onChangeText={setUrl} autoCapitalize="none" keyboardType="url" autoComplete="url" />
