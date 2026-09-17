@@ -40,7 +40,7 @@ type Props = {
 export function Scene({ variant = 'mountains', shape = 'wide', dim = false, style }: Props) {
   return (
     <View pointerEvents="none" style={[{ overflow: 'hidden', backgroundColor: '#1E2D42' }, style]}>
-      <Image source={photos[variant][shape]} resizeMode="cover" style={StyleSheet.absoluteFill} />
+      <Image source={photos[variant][shape]} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
       {dim ? (
         <LinearGradient colors={['rgba(11,21,38,0.05)', 'rgba(11,21,38,0.35)', 'rgba(11,21,38,0.8)']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
       ) : null}
