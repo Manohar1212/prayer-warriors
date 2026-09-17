@@ -4,14 +4,15 @@ import { Image, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-n
 /** Seven photographs (Pexels, free licence), each a different place and light. */
 export type SceneVariant = 'cross' | 'mountains' | 'night' | 'sea' | 'hills' | 'rays' | 'glass';
 
-const photos: Record<SceneVariant, number> = {
-  cross: require('../../assets/promise/cross.jpg'),
-  mountains: require('../../assets/promise/mountains.jpg'),
-  night: require('../../assets/promise/night.jpg'),
-  sea: require('../../assets/promise/sea.jpg'),
-  hills: require('../../assets/promise/hills.jpg'),
-  rays: require('../../assets/promise/rays.jpg'),
-  glass: require('../../assets/promise/glass.jpg'),
+/** Each photo is bundled twice, cropped around its subject: wide (2:1) for cards, tall (4:5) for full screens. */
+const photos: Record<SceneVariant, { wide: number; tall: number }> = {
+  cross: { wide: require('../../assets/promise/cross.jpg'), tall: require('../../assets/promise/cross-tall.jpg') },
+  mountains: { wide: require('../../assets/promise/mountains.jpg'), tall: require('../../assets/promise/mountains-tall.jpg') },
+  night: { wide: require('../../assets/promise/night.jpg'), tall: require('../../assets/promise/night-tall.jpg') },
+  sea: { wide: require('../../assets/promise/sea.jpg'), tall: require('../../assets/promise/sea-tall.jpg') },
+  hills: { wide: require('../../assets/promise/hills.jpg'), tall: require('../../assets/promise/hills-tall.jpg') },
+  rays: { wide: require('../../assets/promise/rays.jpg'), tall: require('../../assets/promise/rays-tall.jpg') },
+  glass: { wide: require('../../assets/promise/glass.jpg'), tall: require('../../assets/promise/glass-tall.jpg') },
 };
 
 const ALL = Object.keys(photos) as SceneVariant[];
@@ -28,18 +29,18 @@ export function randomSceneVariant(): SceneVariant {
 
 type Props = {
   variant?: SceneVariant;
+  /** 'wide' for the Home card, 'tall' for the promise screen, the share card and Welcome. */
+  shape?: 'wide' | 'tall';
   /** Darkens the lower part so white text stays readable on top of it. */
   dim?: boolean;
-  /** Kept for callers; photos are centred in any box. */
-  align?: 'center' | 'right';
   style?: StyleProp<ViewStyle>;
 };
 
 /** A photograph filling its box, with an optional dark fade for text laid over it. */
-export function Scene({ variant = 'mountains', dim = false, style }: Props) {
+export function Scene({ variant = 'mountains', shape = 'wide', dim = false, style }: Props) {
   return (
     <View pointerEvents="none" style={[{ overflow: 'hidden', backgroundColor: '#1E2D42' }, style]}>
-      <Image source={photos[variant]} resizeMode="cover" style={StyleSheet.absoluteFill} />
+      <Image source={photos[variant][shape]} resizeMode="cover" style={StyleSheet.absoluteFill} />
       {dim ? (
         <LinearGradient colors={['rgba(11,21,38,0.05)', 'rgba(11,21,38,0.35)', 'rgba(11,21,38,0.8)']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
       ) : null}

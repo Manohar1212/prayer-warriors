@@ -25,7 +25,7 @@ export default function PromiseScreen() {
   return (
     <Screen edges={['bottom']} scroll className="gap-6 pt-4">
       <View className="overflow-hidden rounded-[16px]" style={{ height: 380 }}>
-        <Scene variant={sky} dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+        <Scene variant={sky} shape="tall" dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
         <View className="flex-1 items-center justify-center gap-4 px-7">
           <Text variant="caption" color="cream" style={{ letterSpacing: 2.5 }}>
             {t('promise.today').toUpperCase()}

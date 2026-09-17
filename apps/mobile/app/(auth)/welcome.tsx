@@ -20,7 +20,7 @@ export default function WelcomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: '#1E2D42' }}>
       <StatusBar style="light" />
-      <Scene dim style={StyleSheet.absoluteFill} />
+      <Scene variant="cross" shape="tall" dim style={StyleSheet.absoluteFill} />
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <ScrollView
           horizontal
