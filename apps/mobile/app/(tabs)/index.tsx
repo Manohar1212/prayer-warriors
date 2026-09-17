@@ -23,11 +23,12 @@ function greetingKey(date: Date): TranslationKey {
   return 'home.evening';
 }
 
+/** Shortcuts to things that are not one tap away on the tab bar. */
 const tiles: { label: TranslationKey; icon: IconName | 'pray'; bg: string; fg: string; href: Href }[] = [
-  { label: 'tab.prayer', icon: 'pray', bg: 'bg-sage', fg: colors.leaf, href: '/(tabs)/prayer' },
-  { label: 'tab.community', icon: 'people', bg: 'bg-sky', fg: colors.skyDeep, href: '/(tabs)/community' },
-  { label: 'tab.resources', icon: 'layers', bg: 'bg-lavender', fg: colors.violet, href: '/(tabs)/resources' },
-  { label: 'tab.funds', icon: 'wallet', bg: 'bg-blush', fg: colors.roseDeep, href: '/(tabs)/funds' },
+  { label: 'home.action.word', icon: 'book', bg: 'bg-honey', fg: colors.gold, href: '/bible' },
+  { label: 'home.action.journal', icon: 'create', bg: 'bg-sky', fg: colors.skyDeep, href: '/journal' },
+  { label: 'home.action.call', icon: 'call', bg: 'bg-sage', fg: colors.leaf, href: '/(tabs)/community' },
+  { label: 'home.action.songs', icon: 'musical-notes', bg: 'bg-lavender', fg: colors.violet, href: '/(tabs)/resources' },
 ];
 
 function ActionCard({ icon, bg, fg, title, body, onPress }: { icon: IconName | 'pray'; bg: string; fg: string; title: string; body: string; onPress: () => void }) {
