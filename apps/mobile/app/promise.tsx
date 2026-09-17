@@ -50,7 +50,7 @@ export default function PromiseScreen() {
           <Text variant="caption">{t('home.readChapter')}</Text>
         </Pressable>
       </View>
-      <Button title={t('promise.viewAll')} onPress={() => router.push('/bible')} />
+      <Button title={t('promise.viewAll')} onPress={() => router.push({ pathname: '/bible', params: { from: 'home' } })} />
       {verse ? (
         <View pointerEvents="none" style={{ position: 'absolute', left: -1000, top: 0 }}>
           <VerseShareCard

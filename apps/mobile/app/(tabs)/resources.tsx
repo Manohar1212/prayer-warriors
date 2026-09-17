@@ -77,7 +77,7 @@ export default function ResourcesScreen() {
   const plural = t(pluralKey[type]);
 
   const onTab = (tab: Tab) => {
-    if (tab === 'bible') router.push('/bible');
+    if (tab === 'bible') router.push({ pathname: '/bible', params: { from: 'resources' } });
     else setType(tab);
   };
 

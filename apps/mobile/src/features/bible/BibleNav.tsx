@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, type Href } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { goBackOr } from '../../lib/navigation';
@@ -28,11 +28,17 @@ export function BibleNav({ crumbs }: { crumbs: Crumb[] }) {
 }
 
 /** Header-left control shown only when the stack has nothing to go back to (deep links). */
+/** The Bible opens from Home and from Resources; the arrow returns to whichever one opened it. */
 export function HeaderHome() {
   const router = useRouter();
-  // Always offer a way back: to the previous screen when there is one, else Home.
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const back = () => {
+    if (from === 'resources') router.navigate('/(tabs)/resources');
+    else if (from === 'home') router.navigate('/(tabs)');
+    else goBackOr(router, '/(tabs)');
+  };
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => goBackOr(router, '/(tabs)')} hitSlop={10} style={{ paddingHorizontal: 8 }}>
+    <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={10} style={{ paddingHorizontal: 8 }}>
       <Ionicons name="arrow-back" size={22} color={colors.ink} />
     </Pressable>
   );
