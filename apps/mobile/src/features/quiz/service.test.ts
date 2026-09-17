@@ -6,6 +6,7 @@ const quiz = {
   day: '2026-09-17',
   questions: [{ id: 'q1', en: { q: 'Who built the ark?', o: ['Moses', 'Noah', 'Abraham', 'David'] }, te: { q: 'ఓడను ఎవరు నిర్మించారు?', o: ['మోషే', 'నోవహు', 'అబ్రాహాము', 'దావీదు'] } }],
   result: null,
+  streak: 2,
 };
 
 describe('createQuizService', () => {
@@ -15,7 +16,8 @@ describe('createQuizService', () => {
     await service.today();
     await service.submit('2026-09-17', [1]);
     await service.leaderboard();
-    expect(cloud.run.mock.calls).toEqual([['getDailyQuiz'], ['submitQuiz', { day: '2026-09-17', answers: [1] }], ['getQuizLeaderboard']]);
+    await service.leaderboard('2026-08');
+    expect(cloud.run.mock.calls).toEqual([['getDailyQuiz'], ['submitQuiz', { day: '2026-09-17', answers: [1] }], ['getQuizLeaderboard', {}], ['getQuizLeaderboard', { month: '2026-08' }]]);
   });
 });
 
@@ -29,6 +31,7 @@ describe('useDailyQuiz', () => {
     expect(result.current.quiz?.result).toBeNull();
     await act(() => result.current.submit([1]));
     expect(result.current.quiz?.result).toEqual({ score: 1, answers: [1], correct: [1] });
+    expect(result.current.quiz?.streak).toBe(3);
   });
 
   it('surfaces a load failure', async () => {

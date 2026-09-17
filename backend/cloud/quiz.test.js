@@ -1,4 +1,4 @@
-const { createQuizHandlers, dayKeyFor, questionsForDay, MESSAGES } = require('./quiz');
+const { createQuizHandlers, dayKeyFor, questionsForDay, streaksFor, MESSAGES } = require('./quiz');
 const { QUESTIONS } = require('./quizQuestions');
 
 const NOW = new Date('2026-09-16T20:30:00.000Z'); // 02:00 on 17 Sept in India
@@ -13,7 +13,9 @@ function deps({ groupId = 'g1', mine = null, rows = [] } = {}) {
     results: {
       find: jest.fn(async () => mine),
       create: jest.fn(async (fields) => ({ id: 'r-new', ...fields })),
-      listForGroup: jest.fn(async () => rows),
+      listForMonth: jest.fn(async (_g, month) => rows.filter((r) => r.day.startsWith(month))),
+      listForUser: jest.fn(async (userId, month) => rows.filter((r) => r.userId === userId && r.day.startsWith(month))),
+      listDays: jest.fn(async () => [...new Set(rows.map((r) => r.day))]),
     },
     bank,
     now: () => NOW,
@@ -94,22 +96,57 @@ describe('submitQuiz', () => {
   });
 });
 
+describe('streaksFor', () => {
+  it('counts the run reaching today, or yesterday when today is unplayed', () => {
+    expect(streaksFor(['2026-09-15', '2026-09-16', '2026-09-17'], TODAY)).toEqual({ current: 3, best: 3 });
+    expect(streaksFor(['2026-09-15', '2026-09-16'], TODAY)).toEqual({ current: 2, best: 2 });
+    expect(streaksFor(['2026-09-10', '2026-09-11', '2026-09-12', '2026-09-15'], TODAY)).toEqual({ current: 0, best: 3 });
+    expect(streaksFor([], TODAY)).toEqual({ current: 0, best: 0 });
+  });
+
+  it('keeps the closing run of a finished month', () => {
+    expect(streaksFor(['2026-08-29', '2026-08-30', '2026-08-31'], TODAY)).toEqual({ current: 3, best: 3 });
+  });
+});
+
 describe('getQuizLeaderboard', () => {
-  it('totals per member, best first, and marks the caller', async () => {
-    const rows = [
-      { userId: 'u2', userName: 'Mary', day: '2026-09-15', score: 3 },
-      { userId: 'u2', userName: 'Mary', day: TODAY, score: 3 },
-      { userId: 'u1', userName: 'Shiny', day: '2026-09-15', score: 2 },
-      { userId: 'u1', userName: 'Shiny', day: '2026-09-16', score: 3 },
-      { userId: 'u1', userName: 'Shiny', day: TODAY, score: 1 },
-      { userId: 'u3', userName: 'Anna', day: TODAY, score: 3 },
-    ];
+  const rows = [
+    { userId: 'u2', userName: 'Mary', day: '2026-09-15', score: 3 },
+    { userId: 'u2', userName: 'Mary', day: TODAY, score: 3 },
+    { userId: 'u1', userName: 'Shiny', day: '2026-09-15', score: 2 },
+    { userId: 'u1', userName: 'Shiny', day: '2026-09-16', score: 3 },
+    { userId: 'u1', userName: 'Shiny', day: TODAY, score: 1 },
+    { userId: 'u3', userName: 'Anna', day: TODAY, score: 3 },
+    { userId: 'u3', userName: 'Anna', day: '2026-08-30', score: 3 },
+    { userId: 'u3', userName: 'Anna', day: '2026-08-31', score: 2 },
+  ];
+
+  it('ranks this month by streak and lists the months with history', async () => {
     const board = await createQuizHandlers(deps({ rows })).getQuizLeaderboard({}, caller);
-    expect(board.map((e) => [e.rank, e.userName, e.total, e.days, e.today, e.perfect])).toEqual([
-      [1, 'Mary', 6, 2, 3, 2],
-      [2, 'Shiny', 6, 3, 1, 1],
-      [3, 'Anna', 3, 1, 3, 1],
+    expect(board.month).toBe('2026-09');
+    expect(board.current).toBe(true);
+    expect(board.resetsOn).toBe('2026-10-01');
+    expect(board.daysInMonth).toBe(30);
+    expect(board.months).toEqual(['2026-09', '2026-08']);
+    expect(board.entries.map((e) => [e.rank, e.userName, e.streak, e.best, e.points, e.days, e.today])).toEqual([
+      [1, 'Shiny', 3, 3, 6, 3, 1],
+      [2, 'Mary', 1, 1, 6, 2, 3],
+      [3, 'Anna', 1, 1, 3, 1, 3],
     ]);
-    expect(board.find((e) => e.userName === 'Shiny').me).toBe(true);
+    expect(board.entries[0].me).toBe(true);
+  });
+
+  it('shows a past month as history and ignores a future month', async () => {
+    const h = createQuizHandlers(deps({ rows }));
+    const past = await h.getQuizLeaderboard({ month: '2026-08' }, caller);
+    expect(past.current).toBe(false);
+    expect(past.entries.map((e) => [e.userName, e.streak, e.points])).toEqual([['Anna', 2, 5]]);
+    const future = await h.getQuizLeaderboard({ month: '2027-01' }, caller);
+    expect(future.month).toBe('2026-09');
+  });
+
+  it('reports the streak with the daily quiz', async () => {
+    const result = await createQuizHandlers(deps({ rows })).getDailyQuiz({}, caller);
+    expect(result.streak).toBe(3);
   });
 });

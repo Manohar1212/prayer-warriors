@@ -106,6 +106,12 @@ export default function QuizScreen() {
           <Text variant="body" color="creamSoft" className="text-center">
             {t(scoreKey(score))}
           </Text>
+          <View className="mt-3 flex-row items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1.5">
+            <Ionicons name="flame" size={15} color={colors.gold} />
+            <Text variant="label" color="cream" className="text-[13px]">
+              {quiz.streak > 1 ? t('quiz.streakLine', { n: quiz.streak }) : quiz.streak === 1 ? t('quiz.streakStart') : t('quiz.streakLineOne')}
+            </Text>
+          </View>
         </Card>
         {quiz.questions.map((q, i) => (
           <Card key={q.id} className="gap-3">

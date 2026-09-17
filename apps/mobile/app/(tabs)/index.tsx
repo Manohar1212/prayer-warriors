@@ -117,7 +117,7 @@ export default function HomeScreen() {
           bg="bg-honey"
           fg={colors.gold}
           title={t('home.quiz')}
-          body={quiz?.result ? t('home.quizDone', { score: quiz.result.score, total: quiz.questions.length }) : t('home.quizBody')}
+          body={quiz?.result ? `${t('home.quizDone', { score: quiz.result.score, total: quiz.questions.length })}${quiz.streak > 1 ? ` · ${t('home.quizStreak', { n: quiz.streak })}` : ''}` : t('home.quizBody')}
           badge={quiz?.result ? t('home.quizScore', { score: quiz.result.score, total: quiz.questions.length }) : t('home.quizPlay')}
           onPress={() => router.push('/quiz')}
         />

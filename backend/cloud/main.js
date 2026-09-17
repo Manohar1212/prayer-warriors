@@ -374,13 +374,29 @@ const quizResults = {
       .first({ useMasterKey: true });
     return row ? quizResultDto(row) : null;
   },
-  async listForGroup(groupId) {
+  async listForMonth(groupId, month) {
     const rows = await new Parse.Query('QuizResult')
       .equalTo('group', pointer('Group', groupId))
+      .startsWith('day', `${month}-`)
       .include('user')
-      .limit(5000)
+      .limit(2000)
       .find({ useMasterKey: true });
     return rows.map(quizResultDto);
+  },
+  async listForUser(userId, month) {
+    const rows = await new Parse.Query('QuizResult')
+      .equalTo('user', pointer('_User', userId))
+      .startsWith('day', `${month}-`)
+      .limit(100)
+      .find({ useMasterKey: true });
+    return rows.map(quizResultDto);
+  },
+  /** Every day anyone in the group has played; the leaderboard derives its month list from it. */
+  async listDays(groupId) {
+    const days = await new Parse.Query('QuizResult')
+      .equalTo('group', pointer('Group', groupId))
+      .distinct('day', { useMasterKey: true });
+    return days.filter((d) => typeof d === 'string');
   },
   async create({ groupId, userId, day, score, answers }) {
     const row = new Parse.Object('QuizResult');

@@ -11,17 +11,31 @@ export type QuizQuestion = {
 
 export type QuizResult = { score: number; answers: number[]; correct: number[] };
 
-export type DailyQuiz = { day: string; questions: QuizQuestion[]; result: QuizResult | null };
+export type DailyQuiz = { day: string; questions: QuizQuestion[]; result: QuizResult | null; streak: number };
 
 export type LeaderboardEntry = {
   rank: number;
   userId: string;
   userName: string;
-  total: number;
+  /** Consecutive days played this month, still alive (reaches today or yesterday). */
+  streak: number;
+  /** Longest run in the month. */
+  best: number;
+  points: number;
   days: number;
-  perfect: number;
   today: number | null;
   me: boolean;
+};
+
+/** One month's board; the board starts again on the 1st and earlier months remain as history. */
+export type Leaderboard = {
+  month: string;
+  /** Every month with results, newest first; always includes the current one. */
+  months: string[];
+  current: boolean;
+  resetsOn: string;
+  daysInMonth: number;
+  entries: LeaderboardEntry[];
 };
 
 type Deps = { cloud: { run(name: string, params?: Record<string, unknown>): Promise<unknown> } };
@@ -38,7 +52,7 @@ export function createQuizService({ cloud }: Deps) {
   return {
     today: () => guarded(() => cloud.run('getDailyQuiz')) as Promise<DailyQuiz>,
     submit: (day: string, answers: number[]) => guarded(() => cloud.run('submitQuiz', { day, answers })) as Promise<{ day: string; score: number; correct: number[] }>,
-    leaderboard: () => guarded(() => cloud.run('getQuizLeaderboard')) as Promise<LeaderboardEntry[]>,
+    leaderboard: (month?: string) => guarded(() => cloud.run('getQuizLeaderboard', month ? { month } : {})) as Promise<Leaderboard>,
   };
 }
 
@@ -77,7 +91,7 @@ export function useDailyQuiz(service: QuizService): DailyQuizState {
     async (answers: number[]) => {
       if (!quiz) return;
       const result = await service.submit(quiz.day, answers);
-      setQuiz({ ...quiz, result: { score: result.score, answers, correct: result.correct } });
+      setQuiz({ ...quiz, result: { score: result.score, answers, correct: result.correct }, streak: quiz.streak + 1 });
     },
     [quiz, service],
   );
@@ -86,21 +100,26 @@ export function useDailyQuiz(service: QuizService): DailyQuizState {
 }
 
 export function useLeaderboard(service: QuizService) {
-  const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null);
+  const [month, setMonth] = useState<string | undefined>(undefined);
+  const [board, setBoard] = useState<Leaderboard | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
-      setEntries(await service.leaderboard());
+      setBoard(await service.leaderboard(month));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load the leaderboard.');
+    } finally {
+      setLoading(false);
     }
-  }, [service]);
+  }, [service, month]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  return { entries, error, refresh: load };
+  return { board, loading, error, refresh: load, setMonth };
 }
