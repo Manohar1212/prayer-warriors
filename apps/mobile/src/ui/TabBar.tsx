@@ -1,4 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
+
+import { PrayIcon } from './PrayIcon';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -6,7 +8,7 @@ import { colors } from '../theme/tokens';
 import { Text } from './Text';
 
 type IconName = keyof typeof Ionicons.glyphMap;
-export type TabIcon = { icon: IconName; active: IconName };
+export type TabIcon = { icon: IconName; active: IconName } | { pray: true };
 
 type TabRoute = { key: string; name: string };
 /** The slice of React Navigation's tab-bar props this bar reads; kept local so the navigator's own types stay out of the UI kit. */
@@ -34,7 +36,7 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
         const focused = state.routes[state.index]?.key === route.key;
         const options = descriptors[route.key]?.options;
         const label = typeof options?.title === 'string' ? options.title : route.name;
-        const icon = icons[route.name] ?? { icon: 'ellipse-outline', active: 'ellipse' };
+        const icon: TabIcon = icons[route.name] ?? { icon: 'ellipse-outline', active: 'ellipse' };
         const onPress = () => {
           const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
           if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
@@ -48,7 +50,7 @@ export function TabBar({ state, descriptors, navigation, icons }: TabBarProps) {
             onPress={onPress}
             className="flex-1 items-center gap-1 px-0.5 pb-1 pt-2.5"
           >
-            <Ionicons name={focused ? icon.active : icon.icon} size={23} color={focused ? colors.primary : colors.muted} />
+            {'pray' in icon ? <PrayIcon size={23} color={focused ? colors.primary : colors.muted} /> : <Ionicons name={focused ? icon.active : icon.icon} size={23} color={focused ? colors.primary : colors.muted} />}
             <Text variant="label" color={focused ? 'primary' : 'muted'} style={{ fontSize: 10, lineHeight: 13 }} numberOfLines={1}>
               {label}
             </Text>

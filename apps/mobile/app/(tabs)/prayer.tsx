@@ -13,6 +13,7 @@ import { useT, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Badge, Button, Card, Chip, EmptyState, Screen, Segments, TabHeader, Text } from '@/ui';
+import { PrayIcon } from '@/ui/PrayIcon';
 
 type Tab = 'active' | 'monthly' | 'answered';
 
@@ -24,7 +25,7 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
       <Pressable accessibilityRole="button" accessibilityLabel={`Open ${request.title}`} onPress={onOpen} className="gap-3">
         <View className="flex-row items-center gap-3">
           <View className="h-11 w-11 items-center justify-center rounded-full bg-honey">
-            <Ionicons name="hand-left" size={20} color={colors.gold} />
+            <PrayIcon size={22} color={colors.gold} />
           </View>
           <View className="flex-1 gap-0.5">
             <Text variant="label" className="text-[15px]" numberOfLines={2}>
@@ -81,7 +82,7 @@ function PointRow({ point, canEdit, onClaim, onRelease, onDone, onEdit, onAnswer
     <Card className="gap-3">
       <View className="flex-row items-center gap-3">
         <View className={`h-11 w-11 items-center justify-center rounded-full ${done ? 'bg-sage' : point.mine ? 'bg-sky' : 'bg-honey'}`}>
-          <Ionicons name={done ? 'checkmark' : 'hand-left'} size={20} color={done ? colors.leaf : point.mine ? colors.skyDeep : colors.gold} />
+          {done ? <Ionicons name="checkmark" size={20} color={colors.leaf} /> : <PrayIcon size={22} color={point.mine ? colors.skyDeep : colors.gold} />}
         </View>
         <View className="flex-1 gap-0.5">
           <Text variant="label" className="text-[15px]">

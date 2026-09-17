@@ -11,6 +11,7 @@ import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Card, Screen, Text } from '@/ui';
+import { PrayIcon } from '@/ui/PrayIcon';
 import { Scene, randomSceneVariant } from '@/ui/Scene';
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -22,19 +23,19 @@ function greetingKey(date: Date): TranslationKey {
   return 'home.evening';
 }
 
-const tiles: { label: TranslationKey; icon: IconName; bg: string; fg: string; href: Href }[] = [
-  { label: 'tab.prayer', icon: 'hand-left', bg: 'bg-sage', fg: colors.leaf, href: '/(tabs)/prayer' },
+const tiles: { label: TranslationKey; icon: IconName | 'pray'; bg: string; fg: string; href: Href }[] = [
+  { label: 'tab.prayer', icon: 'pray', bg: 'bg-sage', fg: colors.leaf, href: '/(tabs)/prayer' },
   { label: 'tab.community', icon: 'people', bg: 'bg-sky', fg: colors.skyDeep, href: '/(tabs)/community' },
   { label: 'tab.resources', icon: 'layers', bg: 'bg-lavender', fg: colors.violet, href: '/(tabs)/resources' },
-  { label: 'tab.funds', icon: 'heart', bg: 'bg-blush', fg: colors.roseDeep, href: '/(tabs)/funds' },
+  { label: 'tab.funds', icon: 'wallet', bg: 'bg-blush', fg: colors.roseDeep, href: '/(tabs)/funds' },
 ];
 
-function ActionCard({ icon, bg, fg, title, body, onPress }: { icon: IconName; bg: string; fg: string; title: string; body: string; onPress: () => void }) {
+function ActionCard({ icon, bg, fg, title, body, onPress }: { icon: IconName | 'pray'; bg: string; fg: string; title: string; body: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" onPress={onPress} className="active:opacity-80">
       <Card className="flex-row items-center gap-3.5 p-4">
         <View className={`h-12 w-12 items-center justify-center rounded-full ${bg}`}>
-          <Ionicons name={icon} size={22} color={fg} />
+          {icon === 'pray' ? <PrayIcon size={24} color={fg} /> : <Ionicons name={icon} size={22} color={fg} />}
         </View>
         <View className="flex-1 gap-0.5">
           <Text variant="label" className="text-[15px]">
@@ -91,7 +92,7 @@ export default function HomeScreen() {
       </Pressable>
 
       <View className="gap-3">
-        <ActionCard icon="hand-left" bg="bg-sky" fg={colors.skyDeep} title={t('home.prayerRequest')} body={t('home.prayerRequestBody')} onPress={() => router.push('/prayer/new')} />
+        <ActionCard icon="pray" bg="bg-sky" fg={colors.skyDeep} title={t('home.prayerRequest')} body={t('home.prayerRequestBody')} onPress={() => router.push('/prayer/new')} />
         <ActionCard icon="calendar" bg="bg-lavender" fg={colors.violet} title={t('home.monthlyPrayer')} body={t('home.monthlyPrayerBody')} onPress={() => router.push({ pathname: '/(tabs)/prayer', params: { tab: 'monthly' } })} />
       </View>
 
@@ -99,7 +100,7 @@ export default function HomeScreen() {
         {tiles.map((tile) => (
           <Pressable key={tile.label} accessibilityRole="button" onPress={() => router.push(tile.href)} className="items-center gap-2 active:opacity-80">
             <View className={`h-[68px] w-[68px] items-center justify-center rounded-[16px] ${tile.bg}`}>
-              <Ionicons name={tile.icon} size={26} color={tile.fg} />
+              {tile.icon === 'pray' ? <PrayIcon size={28} color={tile.fg} /> : <Ionicons name={tile.icon} size={26} color={tile.fg} />}
             </View>
             <Text variant="caption" color="ink">
               {t(tile.label)}
