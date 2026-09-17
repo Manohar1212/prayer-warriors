@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, type Href } from 'expo-router';
-import { useState } from 'react';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
@@ -12,7 +12,7 @@ import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Card, Screen, Text } from '@/ui';
 import { PrayIcon } from '@/ui/PrayIcon';
-import { Scene, randomSceneVariant } from '@/ui/Scene';
+import { LiveScene, randomSceneVariant, type SceneVariant } from '@/ui/Scene';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -60,8 +60,13 @@ export default function HomeScreen() {
   const name = user?.displayName ?? t('home.friend');
   const firstName = name.split(' ')[0];
   const now = new Date();
-  // A different sky each time Home opens.
-  const [sky] = useState(randomSceneVariant);
+  // A different sky each time Home comes into view; it keeps drifting while you look at it.
+  const [sky, setSky] = useState<SceneVariant>(randomSceneVariant);
+  useFocusEffect(
+    useCallback(() => {
+      setSky(randomSceneVariant());
+    }, []),
+  );
 
   return (
     <Screen edges={['top']} scroll className="gap-4 px-5 pt-3">
@@ -79,7 +84,7 @@ export default function HomeScreen() {
 
       {/* Today's promise on the sunrise. */}
       <Pressable accessibilityRole="button" accessibilityLabel={t('home.dailyPromise')} onPress={() => router.push('/promise')} className="overflow-hidden rounded-[16px] active:opacity-90" style={{ height: 176 }}>
-        <Scene variant={sky} dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+        <LiveScene key={sky} start={sky} dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
         <View className="flex-1 justify-end gap-1 p-5">
           <Text variant="label" color="cream" className={lang === 'te' ? 'text-[17px] leading-[27px]' : 'text-[18px] leading-[26px]'} numberOfLines={3}>
             {verse ? verse.text : '…'}

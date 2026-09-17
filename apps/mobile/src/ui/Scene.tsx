@@ -1,4 +1,5 @@
-import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Rect, RadialGradient, Stop } from 'react-native-svg';
 
 export type SceneVariant = 'dawn' | 'golden' | 'rose' | 'dusk' | 'night';
@@ -79,6 +80,50 @@ export function Scene({ variant = 'dawn', dim = false, align = 'center', style }
         <Rect x="286" y="164" width="32" height="6" rx="1.5" fill="#101A2A" />
         {dim ? <Rect x="0" y="0" width="390" height="260" fill={`url(#${id}-dim)`} /> : null}
       </Svg>
+    </View>
+  );
+}
+
+/** The skies in the order they cycle, so no two consecutive ones look alike. */
+const CYCLE: SceneVariant[] = ['dawn', 'golden', 'dusk', 'rose', 'night'];
+
+/**
+ * A scene that slowly cross-fades to the next sky every `every` milliseconds while mounted.
+ * Two scenes are stacked; the top one fades in over the bottom one, then they swap roles.
+ */
+export function LiveScene({ start, every = 12000, dim = false, style }: { start: SceneVariant; every?: number; dim?: boolean; style?: StyleProp<ViewStyle> }) {
+  const [base, setBase] = useState<SceneVariant>(start);
+  const [next, setNext] = useState<SceneVariant | null>(null);
+  const fade = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setInterval(() => {
+      if (cancelled) return;
+      const upcoming = CYCLE[(CYCLE.indexOf(base) + 1) % CYCLE.length];
+      setNext(upcoming);
+      fade.setValue(0);
+      Animated.timing(fade, { toValue: 1, duration: 1800, easing: Easing.inOut(Easing.quad), useNativeDriver: Platform.OS !== 'web' }).start(({ finished }) => {
+        if (!finished || cancelled) return;
+        setBase(upcoming);
+        setNext(null);
+        fade.setValue(0);
+      });
+    }, every);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [base, every, fade]);
+
+  return (
+    <View pointerEvents="none" style={style}>
+      <Scene variant={base} dim={dim} style={StyleSheet.absoluteFill} />
+      {next ? (
+        <Animated.View style={[StyleSheet.absoluteFill, { opacity: fade }]}>
+          <Scene variant={next} dim={dim} style={StyleSheet.absoluteFill} />
+        </Animated.View>
+      ) : null}
     </View>
   );
 }
