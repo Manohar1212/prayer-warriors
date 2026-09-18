@@ -365,6 +365,7 @@ function prayerNightDto(obj) {
     note: obj.get('note') || '',
     cancelledAt: cancelledAt ? cancelledAt.toISOString() : null,
     lastReminderDay: obj.get('lastReminderDay') || '',
+    callId: refId(obj.get('call')),
   };
 }
 
@@ -397,20 +398,27 @@ const prayerNights = {
       .find({ useMasterKey: true });
     return rows.map(prayerNightDto);
   },
-  async create({ groupId, month, scheduledAt, note, createdById }) {
+  async create({ groupId, month, scheduledAt, note, createdById, callId }) {
     const obj = new Parse.Object('PrayerNight');
     obj.set('group', pointer('Group', groupId));
     obj.set('month', month);
     obj.set('scheduledAt', scheduledAt);
     obj.set('note', note);
     obj.set('createdBy', pointer('_User', createdById));
+    if (callId) obj.set('call', pointer('Call', callId));
     obj.setACL(groupReadAcl(groupId));
     await obj.save(null, { useMasterKey: true });
     return prayerNightDto(obj);
   },
   async update(id, patch) {
     const obj = await new Parse.Query('PrayerNight').get(id, { useMasterKey: true });
-    Object.entries(patch).forEach(([key, value]) => (value === null ? obj.unset(key) : obj.set(key, value)));
+    Object.entries(patch).forEach(([key, value]) => {
+      if (key === 'callId') {
+        if (value) obj.set('call', pointer('Call', value));
+        else obj.unset('call');
+      } else if (value === null) obj.unset(key);
+      else obj.set(key, value);
+    });
     await obj.save(null, { useMasterKey: true });
     return prayerNightDto(obj);
   },
@@ -877,7 +885,7 @@ const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, 
 const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims, requests });
 const resourceHandlers = createResourceHandlers({ memberships, resources });
 const quizHandlers = createQuizHandlers({ memberships, results: quizResults, bank: QUESTIONS });
-const prayerNightHandlers = createPrayerNightHandlers({ memberships, nights: prayerNights, notify: (event) => notifier.notify(event) });
+const prayerNightHandlers = createPrayerNightHandlers({ memberships, nights: prayerNights, calls: callsRepo, notify: (event) => notifier.notify(event) });
 const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
 Parse.Cloud.define('addMember', (request) =>

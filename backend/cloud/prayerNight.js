@@ -10,6 +10,7 @@ const { monthKeyFor } = require('./prayerPoints');
 const DAY_MS = 24 * 60 * 60 * 1000;
 const REMINDER_DAYS = 7;
 const NOTICE_DAYS = 14;
+const CALL_TITLE = 'All-night prayer';
 
 const MESSAGES = {
   notMember: "You're not a member of this group yet.",
@@ -46,13 +47,32 @@ function view(night, now) {
     month: night.month,
     scheduledAt: scheduledAt.toISOString(),
     note: night.note || '',
+    /** The group call scheduled for the same time, so members can join from the prayer card. */
+    callId: night.callId || null,
     daysUntil: days,
     /** True while the daily reminders are running (the last week, including the day itself). */
     reminding: days >= 0 && days <= REMINDER_DAYS,
   };
 }
 
-function createPrayerNightHandlers({ memberships, nights, notify = async () => undefined, now = () => new Date() }) {
+function createPrayerNightHandlers({ memberships, nights, calls = null, notify = async () => undefined, now = () => new Date() }) {
+  /** Keeps one group call on the calendar at the night's time: moved with it, cancelled with it. */
+  async function syncCall(night, { groupId, scheduledAt, createdById, cancel = false }) {
+    if (!calls) return night.callId || null;
+    const existing = night.callId ? await calls.get(night.callId) : null;
+    const open = existing && existing.status === 'scheduled';
+    if (cancel) {
+      if (open) await calls.update(existing.id, { status: 'cancelled' });
+      return night.callId || null;
+    }
+    if (open) {
+      await calls.update(existing.id, { scheduledAt, title: CALL_TITLE });
+      return existing.id;
+    }
+    const created = await calls.create({ groupId, title: CALL_TITLE, scheduledAt, status: 'scheduled', createdById });
+    return created.id;
+  }
+
   async function requireGroup(callerId) {
     const groupId = callerId ? await memberships.findGroupId(callerId) : null;
     if (!groupId) throw fail(MESSAGES.notMember);
@@ -100,9 +120,10 @@ function createPrayerNightHandlers({ memberships, nights, notify = async () => u
       if (cleanNote.length > 300) throw fail(MESSAGES.noteTooLong);
       const month = monthKeyFor(at);
       const existing = await nights.findByMonth(groupId, month);
+      const callId = await syncCall(existing || {}, { groupId, scheduledAt: at, createdById: callerId });
       const saved = existing
-        ? await nights.update(existing.id, { scheduledAt: at, note: cleanNote, cancelledAt: null, lastReminderDay: '' })
-        : await nights.create({ groupId, month, scheduledAt: at, note: cleanNote, createdById: callerId });
+        ? await nights.update(existing.id, { scheduledAt: at, note: cleanNote, cancelledAt: null, lastReminderDay: '', callId })
+        : await nights.create({ groupId, month, scheduledAt: at, note: cleanNote, createdById: callerId, callId });
       const days = daysUntil(at, now());
       await notify({ type: existing ? 'prayerNightMoved' : 'prayerNight', groupId, actorId: callerId, nightId: saved.id, scheduledAt: at.toISOString(), daysUntil: days, note: cleanNote });
       return { ...view(saved, now()), shortNotice: days < NOTICE_DAYS };
@@ -113,6 +134,7 @@ function createPrayerNightHandlers({ memberships, nights, notify = async () => u
       const groupId = await requireAdmin(callerId);
       const night = nightId ? await nights.get(nightId) : null;
       if (!night || night.groupId !== groupId || night.cancelledAt) throw fail(MESSAGES.notFound);
+      await syncCall(night, { groupId, cancel: true });
       await nights.update(night.id, { cancelledAt: now() });
       await notify({ type: 'prayerNightCancelled', groupId, actorId: callerId, nightId: night.id, scheduledAt: new Date(night.scheduledAt).toISOString() });
       return { cancelled: true };

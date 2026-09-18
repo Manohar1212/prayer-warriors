@@ -333,6 +333,7 @@ const prayerNightSchema = {
     createdBy: { type: 'Pointer', targetClass: '_User' },
     cancelledAt: { type: 'Date' },
     lastReminderDay: { type: 'String' },
+    call: { type: 'Pointer', targetClass: 'Call' },
   },
   classLevelPermissions: {
     find: authenticated, get: authenticated, count: authenticated,

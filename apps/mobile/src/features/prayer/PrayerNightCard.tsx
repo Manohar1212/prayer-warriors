@@ -9,6 +9,13 @@ import type { PrayerNight } from './night';
 
 type Props = { night: PrayerNight | null; isAdmin: boolean; compact?: boolean };
 
+const JOIN_WINDOW_MS = 15 * 60 * 1000;
+
+/** True from 15 minutes before the start, like any group call. */
+export function nightCallOpen(night: PrayerNight, now: Date): boolean {
+  return Boolean(night.callId) && now.getTime() >= new Date(night.scheduledAt).getTime() - JOIN_WINDOW_MS;
+}
+
 export function nightWhen(night: PrayerNight, locale: string): string {
   return new Date(night.scheduledAt).toLocaleString(locale, { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
 }
@@ -69,11 +76,21 @@ export function PrayerNightCard({ night, isAdmin, compact = false }: Props) {
           <Text variant="caption" color="creamSoft">
             {night.reminding ? t('prayer.night.reminding') : t('prayer.night.pickHint')}
           </Text>
-          {isAdmin ? (
-            <View className="flex-row">
-              <Button title={t('prayer.night.change')} variant="inverse" size="compact" icon="calendar-outline" onPress={open} />
-            </View>
-          ) : null}
+          {!night.callId ? null : nightCallOpen(night, new Date()) ? (
+            <Text variant="caption" color="creamSoft">
+              {t('prayer.night.callOpen')}
+            </Text>
+          ) : (
+            <Text variant="caption" color="creamSoft">
+              {t('prayer.night.callScheduled')}
+            </Text>
+          )}
+          <View className="flex-row flex-wrap gap-2">
+            {night.callId && nightCallOpen(night, new Date()) ? (
+              <Button title={t('calls.join')} variant="inverse" size="compact" icon="call" onPress={() => router.push({ pathname: '/calls/[id]', params: { id: night.callId as string } })} />
+            ) : null}
+            {isAdmin ? <Button title={t('prayer.night.change')} variant="inverse" size="compact" icon="calendar-outline" onPress={open} /> : null}
+          </View>
         </View>
       ) : null}
     </Card>

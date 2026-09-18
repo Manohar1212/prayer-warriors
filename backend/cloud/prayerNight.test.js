@@ -8,9 +8,14 @@ function night(overrides = {}) {
   return { id: 'n1', groupId: 'g1', month: '2026-10', scheduledAt: '2026-10-03T16:30:00.000Z', note: 'Bring your Bible', cancelledAt: null, lastReminderDay: '', ...overrides };
 }
 
-function deps({ upcoming = null, byMonth = null, rows = [] } = {}) {
+function deps({ upcoming = null, byMonth = null, rows = [], call = null } = {}) {
   const store = new Map();
   const d = {
+    calls: {
+      get: jest.fn(async () => call),
+      create: jest.fn(async (fields) => ({ id: 'call-new', ...fields })),
+      update: jest.fn(async (id, patch) => ({ id, ...patch })),
+    },
     memberships: { findGroupId: jest.fn(async () => 'g1'), findAdminGroupId: jest.fn(async (id) => (id === 'admin' ? 'g1' : null)) },
     nights: {
       findUpcoming: jest.fn(async () => upcoming),
@@ -38,18 +43,21 @@ describe('schedulePrayerNight', () => {
   it('creates the month\'s night, announces it, and flags short notice', async () => {
     const d = deps();
     const result = await createPrayerNightHandlers(d).schedulePrayerNight({ scheduledAt: '2026-10-03T16:30:00.000Z', note: ' Bring your Bible ' }, admin);
-    expect(d.nights.create).toHaveBeenCalledWith({ groupId: 'g1', month: '2026-10', scheduledAt: new Date('2026-10-03T16:30:00.000Z'), note: 'Bring your Bible', createdById: 'admin' });
-    expect(result).toMatchObject({ month: '2026-10', daysUntil: 15, reminding: false, shortNotice: false, note: 'Bring your Bible' });
+    expect(d.calls.create).toHaveBeenCalledWith({ groupId: 'g1', title: 'All-night prayer', scheduledAt: new Date('2026-10-03T16:30:00.000Z'), status: 'scheduled', createdById: 'admin' });
+    expect(d.nights.create).toHaveBeenCalledWith({ groupId: 'g1', month: '2026-10', scheduledAt: new Date('2026-10-03T16:30:00.000Z'), note: 'Bring your Bible', createdById: 'admin', callId: 'call-new' });
+    expect(result).toMatchObject({ month: '2026-10', daysUntil: 15, reminding: false, shortNotice: false, note: 'Bring your Bible', callId: 'call-new' });
     expect(d.notify).toHaveBeenCalledWith(expect.objectContaining({ type: 'prayerNight', groupId: 'g1', actorId: 'admin', daysUntil: 15 }));
     const soon = await createPrayerNightHandlers(deps()).schedulePrayerNight({ scheduledAt: '2026-09-26T16:30:00.000Z' }, admin);
     expect(soon.shortNotice).toBe(true);
   });
 
   it('moves an existing night for that month instead of adding another', async () => {
-    const d = deps({ byMonth: night({ lastReminderDay: '2026-09-17' }) });
+    const d = deps({ byMonth: night({ lastReminderDay: '2026-09-17', callId: 'c1' }), call: { id: 'c1', status: 'scheduled' } });
     const result = await createPrayerNightHandlers(d).schedulePrayerNight({ scheduledAt: '2026-10-10T16:30:00.000Z' }, admin);
     expect(d.nights.create).not.toHaveBeenCalled();
-    expect(d.nights.update).toHaveBeenCalledWith('n1', { scheduledAt: new Date('2026-10-10T16:30:00.000Z'), note: '', cancelledAt: null, lastReminderDay: '' });
+    expect(d.calls.create).not.toHaveBeenCalled();
+    expect(d.calls.update).toHaveBeenCalledWith('c1', { scheduledAt: new Date('2026-10-10T16:30:00.000Z'), title: 'All-night prayer' });
+    expect(d.nights.update).toHaveBeenCalledWith('n1', { scheduledAt: new Date('2026-10-10T16:30:00.000Z'), note: '', cancelledAt: null, lastReminderDay: '', callId: 'c1' });
     expect(result.scheduledAt).toBe('2026-10-10T16:30:00.000Z');
     expect(d.notify).toHaveBeenCalledWith(expect.objectContaining({ type: 'prayerNightMoved' }));
   });
@@ -97,8 +105,9 @@ describe('getPrayerNight and reminders', () => {
 
 describe('cancelPrayerNight', () => {
   it('cancels and tells the group', async () => {
-    const d = deps({ upcoming: night() });
+    const d = deps({ upcoming: night({ callId: 'c1' }), call: { id: 'c1', status: 'scheduled' } });
     await createPrayerNightHandlers(d).cancelPrayerNight({ nightId: 'n1' }, admin);
+    expect(d.calls.update).toHaveBeenCalledWith('c1', { status: 'cancelled' });
     expect(d.nights.update).toHaveBeenCalledWith('n1', { cancelledAt: NOW });
     expect(d.notify).toHaveBeenCalledWith(expect.objectContaining({ type: 'prayerNightCancelled' }));
     await expect(createPrayerNightHandlers(deps({ upcoming: night() })).cancelPrayerNight({ nightId: 'zzz' }, admin)).rejects.toThrow(MESSAGES.notFound);

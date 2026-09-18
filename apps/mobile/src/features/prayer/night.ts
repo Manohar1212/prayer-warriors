@@ -9,6 +9,8 @@ export type PrayerNight = {
   month: string;
   scheduledAt: string;
   note: string;
+  /** The group call scheduled for the same time; null when calls are not set up. */
+  callId: string | null;
   /** Whole days until the night, by Indian calendar day; 0 means tonight. */
   daysUntil: number;
   /** True in the last week, when everyone is reminded daily. */
