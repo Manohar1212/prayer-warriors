@@ -53,9 +53,11 @@ export function PrayerNightCard({ night, isAdmin, compact = false }: Props) {
           <Ionicons name="moon" size={20} color={colors.gold} />
         </View>
         <View className="flex-1 gap-0.5">
-          <Text variant="caption" color="creamSoft" className="uppercase tracking-[1px]">
-            {t('prayer.night.title')}
-          </Text>
+          {compact ? (
+            <Text variant="caption" color="creamSoft">
+              {t('prayer.night.title')}
+            </Text>
+          ) : null}
           <Text variant="label" color="cream" className="text-[16px]">
             {nightWhen(night, locale)}
           </Text>
@@ -66,25 +68,13 @@ export function PrayerNightCard({ night, isAdmin, compact = false }: Props) {
           </Text>
         </View>
       </View>
-      {!compact ? (
+      {!compact && (night.note || isAdmin || (night.callId && nightCallOpen(night, new Date()))) ? (
         <View className="gap-2">
           {night.note ? (
             <Text variant="body" color="creamSoft">
               {night.note}
             </Text>
           ) : null}
-          <Text variant="caption" color="creamSoft">
-            {night.reminding ? t('prayer.night.reminding') : t('prayer.night.pickHint')}
-          </Text>
-          {!night.callId ? null : nightCallOpen(night, new Date()) ? (
-            <Text variant="caption" color="creamSoft">
-              {t('prayer.night.callOpen')}
-            </Text>
-          ) : (
-            <Text variant="caption" color="creamSoft">
-              {t('prayer.night.callScheduled')}
-            </Text>
-          )}
           <View className="flex-row flex-wrap gap-2">
             {night.callId && nightCallOpen(night, new Date()) ? (
               <Button title={t('calls.join')} variant="inverse" size="compact" icon="call" onPress={() => router.push({ pathname: '/calls/[id]', params: { id: night.callId as string } })} />

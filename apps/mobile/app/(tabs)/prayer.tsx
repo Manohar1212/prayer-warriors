@@ -157,9 +157,9 @@ function MonthlyPoints() {
   return (
     <View className="gap-3">
       <PrayerNightCard night={night} isAdmin={isAdmin} />
-      <View className="flex-row items-start justify-between gap-3">
-        <Text variant="muted" className="flex-1 text-[13px] leading-[19px]">
-          {t('prayer.points.intro', { month: monthName })}
+      <View className="flex-row items-center justify-between gap-3 pt-1">
+        <Text variant="title" className="text-[17px]">
+          {t('prayer.points.heading', { month: monthName })}
         </Text>
         {isAdmin ? <Button title={t('prayer.points.add')} size="compact" variant="secondary" icon="add" onPress={() => router.push('/prayer/point')} /> : null}
       </View>
@@ -175,7 +175,7 @@ function MonthlyPoints() {
           <PointRow key={p.id} point={p} canEdit={isAdmin} onClaim={() => claim(p.id)} onRelease={() => release(p.id)} onDone={() => markDone(p.id)} onEdit={() => router.push({ pathname: '/prayer/point', params: { id: p.id, title: p.title } })} onAnswered={() => router.push({ pathname: '/prayer/answered', params: { id: p.id, title: p.title } })} />
         ))
       ) : (
-        <EmptyState icon="calendar-outline" tone="honey" title={t('prayer.points.empty')} body={isAdmin ? t('prayer.points.emptyAdmin') : ''} />
+        <EmptyState icon="calendar-outline" tone="honey" title={t('prayer.points.empty')} body={isAdmin ? t('prayer.points.emptyAdmin') : t('prayer.points.emptyMember')} />
       )}
     </View>
   );
