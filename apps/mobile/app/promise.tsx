@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 
 import { useBibleLanguage } from '@/features/bible';
 import { shareVerse } from '@/features/home/shareVerse';
@@ -11,6 +11,8 @@ import { useLanguage } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Button, Screen, Text } from '@/ui';
 import { Scene, randomSceneVariant } from '@/ui/Scene';
+
+const emblem = require('../assets/logo-emblem.png');
 
 /** Today's promise on the sunrise, with share and read actions. */
 export default function PromiseScreen() {
@@ -28,7 +30,7 @@ export default function PromiseScreen() {
     <Screen edges={['bottom']} scroll className="gap-6 pt-4">
       <View className="overflow-hidden rounded-[16px]" style={{ height: 440 }}>
         <Scene variant={sky} shape="tall" dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-        <View className="flex-1 items-center justify-center gap-4 px-7">
+        <View className="flex-1 items-center justify-center gap-4 px-7 pb-8">
           <Text variant="caption" color="cream" style={{ letterSpacing: 2.5 }}>
             {t('promise.today').toUpperCase()}
           </Text>
@@ -51,6 +53,13 @@ export default function PromiseScreen() {
               </Text>
             </>
           ) : null}
+        </View>
+        {/* The same brand line as the shared image, so the card reads as ours on screen too. */}
+        <View className="absolute bottom-3.5 left-0 right-0 flex-row items-center justify-center gap-1.5">
+          <Image source={emblem} style={{ width: 18, height: 18 }} resizeMode="contain" />
+          <Text variant="label" color="cream" className="text-[12px]">
+            Prayer Warriors
+          </Text>
         </View>
       </View>
       <View className="flex-row items-center justify-center gap-14">
