@@ -5,6 +5,7 @@ import { colors } from '../../theme/tokens';
 import { CrossMark } from '../../ui/CrossMark';
 import { Scene, type SceneVariant } from '../../ui/Scene';
 import { Text } from '../../ui/Text';
+import { headingSpacing, quoted } from './quote';
 
 const emblem = require('../../../assets/logo-emblem.png');
 
@@ -26,11 +27,12 @@ export type VerseShareCardProps = {
 };
 
 const W = 360;
-const H = 500;
+const MIN_H = 500;
 
 /**
  * The card that goes out on WhatsApp: the verse set on the sky over the mountains, with the
- * title and day above and the Lord's Prayer line and emblem below. 360×450pt, captured at 3×.
+ * title and day above and the Lord's Prayer line and emblem below. 360pt wide and at least
+ * 500pt tall; it grows with long verses so nothing is ever cut off. Captured at 3×.
  */
 export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function VerseShareCard({ text, reference, title, date, prayer, prayerReference, sky, second = null, telugu = false }, ref) {
   const both = Boolean(second);
@@ -38,14 +40,14 @@ export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function Ver
   const verseSize = both ? (telugu ? 16 : 18) : telugu ? (long ? 18 : 21) : long ? 20 : 24;
   const verseLine = both ? (telugu ? 26 : 26) : telugu ? (long ? 30 : 34) : long ? 30 : 35;
   return (
-    <View ref={ref} collapsable={false} style={{ width: W, height: H, backgroundColor: '#1E2D42', overflow: 'hidden' }}>
+    <View ref={ref} collapsable={false} style={{ width: W, minHeight: MIN_H, backgroundColor: '#1E2D42', overflow: 'hidden' }}>
       <Scene variant={sky} shape="tall" dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       {/* A darker veil in the middle so the verse reads on the bright skies too. */}
       <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(11,21,38,0.28)' }} />
-      <View style={{ flex: 1, paddingHorizontal: 30, paddingTop: 30, paddingBottom: 24, alignItems: 'center', justifyContent: 'space-between' }}>
+      <View style={{ flexGrow: 1, paddingHorizontal: 30, paddingTop: 30, paddingBottom: 24, alignItems: 'center', justifyContent: 'space-between', gap: 22 }}>
         <View style={{ alignItems: 'center', gap: 6 }}>
           <CrossMark size={36} color={colors.surface} />
-          <Text variant="caption" color="cream" style={{ letterSpacing: 2.5 }}>
+          <Text variant="caption" color="cream" style={{ letterSpacing: headingSpacing(title) }}>
             {title.toUpperCase()}
           </Text>
           <Text variant="caption" color="creamSoft" style={{ fontSize: 12 }}>
@@ -55,7 +57,7 @@ export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function Ver
 
         <View style={{ alignItems: 'center', gap: 12 }}>
           <Text variant="scripture" color="cream" style={{ textAlign: 'center', fontSize: verseSize, lineHeight: verseLine }}>
-            {`“${text}”`}
+            {quoted(text)}
           </Text>
           <Text variant="label" color="cream" style={{ fontSize: 14, textAlign: 'center' }}>
             {reference}
@@ -64,7 +66,7 @@ export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function Ver
             <>
               <View style={{ width: 28, height: 1, backgroundColor: 'rgba(255,255,255,0.5)', marginVertical: 2 }} />
               <Text variant="scripture" color="cream" style={{ textAlign: 'center', fontSize: telugu ? 18 : 16, lineHeight: telugu ? 26 : 27 }}>
-                {`“${second.text}”`}
+                {quoted(second.text)}
               </Text>
               <Text variant="label" color="cream" style={{ fontSize: 14, textAlign: 'center' }}>
                 {second.reference}

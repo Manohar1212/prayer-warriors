@@ -10,6 +10,7 @@ import { VerseShareCard } from '@/features/home/VerseShareCard';
 import { useLanguage } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Button, Screen, Text } from '@/ui';
+import { headingSpacing, quoted } from '@/features/home/quote';
 import { Scene, randomSceneVariant } from '@/ui/Scene';
 
 const emblem = require('../assets/logo-emblem.png');
@@ -31,11 +32,11 @@ export default function PromiseScreen() {
       <View className="overflow-hidden rounded-[16px]" style={{ height: 440 }}>
         <Scene variant={sky} shape="tall" dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
         <View className="flex-1 items-center justify-center gap-4 px-7 pb-8">
-          <Text variant="caption" color="cream" style={{ letterSpacing: 2.5 }}>
+          <Text variant="caption" color="cream" style={{ letterSpacing: headingSpacing(t('promise.today')) }}>
             {t('promise.today').toUpperCase()}
           </Text>
           <Text variant="scripture" color="cream" className={`text-center ${lang === 'te' ? 'text-[17px] leading-[28px]' : 'text-[18px] leading-[27px]'}`}>
-            {verse ? `“${verse.text}”` : '…'}
+            {verse ? quoted(verse.text) : '…'}
           </Text>
           {verse ? (
             <Text variant="label" color="creamSoft" className="text-[13px]">
@@ -46,7 +47,7 @@ export default function PromiseScreen() {
             <>
               <View className="h-px w-8 bg-surface/50" />
               <Text variant="scripture" color="cream" className={`text-center ${lang === 'te' ? 'text-[17px] leading-[26px]' : 'text-[17px] leading-[28px]'}`}>
-                {`“${other.text}”`}
+                {quoted(other.text)}
               </Text>
               <Text variant="label" color="creamSoft" className="text-[13px]">
                 {other.reference}
