@@ -39,7 +39,7 @@ export function HeaderHome() {
   };
   return (
     <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={10} style={{ paddingHorizontal: 8 }}>
-      <Ionicons name="arrow-back" size={22} color={colors.ink} />
+      <Ionicons name="chevron-back" size={26} color={colors.ink} />
     </Pressable>
   );
 }

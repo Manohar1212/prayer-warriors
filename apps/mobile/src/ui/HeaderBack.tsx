@@ -26,7 +26,7 @@ export function HeaderBack({ modal = false, fallback = '/(tabs)', onDark = false
       className={`h-9 w-9 items-center justify-center rounded-full ${onDark ? 'bg-surface/15' : ''}`}
       style={{ marginLeft: onDark ? 0 : 4 }}
     >
-      <Ionicons name={modal ? 'close' : 'arrow-back'} size={22} color={onDark ? colors.surface : colors.ink} />
+      <Ionicons name={modal ? 'close' : 'chevron-back'} size={modal ? 22 : 26} color={onDark ? colors.surface : colors.ink} />
     </Pressable>
   );
 }
