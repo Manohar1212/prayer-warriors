@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
 
-import { CATEGORIES, usePrayerPoints, usePrayerRequests, type AnsweredPrayerPoint, type PrayerCategory, type PrayerPoint, type PrayerRequest, type PrayerStatus } from '@/features/prayer';
+import { CATEGORIES, PrayerNightCard, usePrayerNight, usePrayerPoints, usePrayerRequests, type AnsweredPrayerPoint, type PrayerCategory, type PrayerNight, type PrayerPoint, type PrayerRequest, type PrayerStatus } from '@/features/prayer';
+import { syncPrayerNightReminders } from '@/features/notifications';
 import { useMembers } from '@/features/members';
 import { useLanguage } from '@/i18n';
-import { prayerPointsService } from '@/lib/parse';
+import { prayerNightService, prayerPointsService } from '@/lib/parse';
 import { timeAgoShort } from '@/lib/time';
 import { useT, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
@@ -142,8 +143,20 @@ function MonthlyPoints() {
   const { isAdmin } = useMembers();
   const { points, loading, error, claim, release, markDone } = usePrayerPoints(prayerPointsService);
   const monthName = new Date().toLocaleDateString(locale, { month: 'long' });
+  const onNight = useCallback(
+    (night: PrayerNight | null) =>
+      syncPrayerNightReminders(night, {
+        daysAway: (n) => t('prayer.night.reminder.days', { n }),
+        tonight: t('prayer.night.reminder.tonight'),
+        soon: t('prayer.night.reminder.soon'),
+        body: t('prayer.night.reminder.body'),
+      }),
+    [t],
+  );
+  const { night } = usePrayerNight(prayerNightService, onNight);
   return (
     <View className="gap-3">
+      <PrayerNightCard night={night} isAdmin={isAdmin} />
       <View className="flex-row items-start justify-between gap-3">
         <Text variant="muted" className="flex-1 text-[13px] leading-[19px]">
           {t('prayer.points.intro', { month: monthName })}

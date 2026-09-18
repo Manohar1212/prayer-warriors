@@ -323,6 +323,23 @@ const prayerPointClaimSchema = {
   },
 };
 
+const prayerNightSchema = {
+  className: 'PrayerNight',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    month: { type: 'String', required: true },
+    scheduledAt: { type: 'Date', required: true },
+    note: { type: 'String' },
+    createdBy: { type: 'Pointer', targetClass: '_User' },
+    cancelledAt: { type: 'Date' },
+    lastReminderDay: { type: 'String' },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
 const quizResultSchema = {
   className: 'QuizResult',
   fields: {
@@ -460,6 +477,7 @@ await upsertSchema(prayerCommentSchema);
 await upsertSchema(prayerPointSchema);
 await upsertSchema(prayerPointClaimSchema);
 await upsertSchema(quizResultSchema);
+await upsertSchema(prayerNightSchema);
 await upsertSchema(journalSchema);
 await upsertSchema(resourceSchema);
 await upsertSchema(contributionSchema);

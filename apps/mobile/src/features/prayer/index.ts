@@ -12,3 +12,6 @@ export type { PrayerComment,
   PrayerStatus,
   PrayerUrgency,
 } from './types';
+export { createPrayerNightService, usePrayerNight } from './night';
+export type { PrayerNight, PrayerNightService, ScheduledPrayerNight } from './night';
+export { PrayerNightCard, nightWhen } from './PrayerNightCard';

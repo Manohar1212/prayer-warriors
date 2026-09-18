@@ -88,6 +88,16 @@ function buildMessage(event, actorName) {
       return { title: `${actor} started the call`, body: `${title} — join now`, route: `/calls/${event.callId}`, pref: 'calls' };
     case 'callCancelled':
       return { title: 'Call cancelled', body: title, route: '/(tabs)/community', pref: 'calls' };
+    case 'prayerNight':
+      return { title: 'All-night prayer announced', body: `${dayTime(event.scheduledAt)}${event.note ? ` · ${clip(event.note, 80)}` : ''}`, route: '/(tabs)/prayer?tab=monthly', pref: 'prayer' };
+    case 'prayerNightMoved':
+      return { title: 'All-night prayer rescheduled', body: `Now ${dayTime(event.scheduledAt)}`, route: '/(tabs)/prayer?tab=monthly', pref: 'prayer' };
+    case 'prayerNightCancelled':
+      return { title: 'All-night prayer cancelled', body: dayTime(event.scheduledAt), route: '/(tabs)/prayer?tab=monthly', pref: 'prayer' };
+    case 'prayerNightReminder': {
+      const when = event.daysUntil === 0 ? 'All-night prayer is tonight' : event.daysUntil === 1 ? 'All-night prayer is tomorrow' : `All-night prayer in ${event.daysUntil} days`;
+      return { title: when, body: `${dayTime(event.scheduledAt)} · Pick your prayer point and come ready`, route: '/(tabs)/prayer?tab=monthly', pref: 'prayer' };
+    }
     case 'resource':
       return { title: `New ${event.resourceType} shared`, body: title, route: `/resources/${event.resourceId}`, pref: 'resources' };
     case 'contribution':
@@ -142,6 +152,8 @@ function createNotifier({ members, users, inbox, tokens, push, log = (m) => cons
       })),
     );
 
+    // Daily reminders also ring locally on each phone, so they go to the inbox only.
+    if (event.inboxOnly) return;
     const deviceTokens = await tokens.forUsers(recipientIds);
     if (!deviceTokens.length) return;
     const payloads = deviceTokens.map(({ token }) => ({

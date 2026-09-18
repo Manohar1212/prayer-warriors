@@ -7,10 +7,12 @@ import { useAuth } from '@/features/auth';
 import { useBibleLanguage } from '@/features/bible';
 import { isJoinable, useCalls } from '@/features/calls';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
+import { nightWhen, usePrayerNight, type PrayerNight } from '@/features/prayer';
+import { syncPrayerNightReminders } from '@/features/notifications';
 import { useDailyQuiz } from '@/features/quiz';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { useLanguage, type TranslationKey } from '@/i18n';
-import { quizService } from '@/lib/parse';
+import { prayerNightService, quizService } from '@/lib/parse';
 import { colors } from '@/theme/tokens';
 import { Card, Screen, Text } from '@/ui';
 import { PrayIcon } from '@/ui/PrayIcon';
@@ -68,6 +70,18 @@ export default function HomeScreen() {
   const verse = useVerseOfTheDay(lang);
   const { next: nextCall } = useCalls();
   const { quiz, refresh: refreshQuiz } = useDailyQuiz(quizService);
+  const onNight = useCallback(
+    (n: PrayerNight | null) =>
+      syncPrayerNightReminders(n, {
+        daysAway: (d) => t('prayer.night.reminder.days', { n: d }),
+        tonight: t('prayer.night.reminder.tonight'),
+        soon: t('prayer.night.reminder.soon'),
+        body: t('prayer.night.reminder.body'),
+      }),
+    [t],
+  );
+  const { night } = usePrayerNight(prayerNightService, onNight);
+  const nightCountdown = night ? (night.daysUntil === 0 ? t('prayer.night.tonight') : night.daysUntil === 1 ? t('prayer.night.tomorrow') : t('prayer.night.inDays', { n: night.daysUntil })) : null;
   const name = user?.displayName ?? t('home.friend');
   const firstName = name.split(' ')[0];
   const now = new Date();
@@ -111,7 +125,15 @@ export default function HomeScreen() {
 
       <View className="gap-3">
         <ActionCard icon="pray" bg="bg-sky" fg={colors.skyDeep} title={t('home.prayerRequest')} body={t('home.prayerRequestBody')} onPress={() => router.push('/prayer/new')} />
-        <ActionCard icon="calendar" bg="bg-lavender" fg={colors.violet} title={t('home.monthlyPrayer')} body={t('home.monthlyPrayerBody')} onPress={() => router.push({ pathname: '/(tabs)/prayer', params: { tab: 'monthly' } })} />
+        <ActionCard
+          icon={night ? 'moon' : 'calendar'}
+          bg="bg-lavender"
+          fg={colors.violet}
+          title={night ? t('prayer.night.title') : t('home.monthlyPrayer')}
+          body={night ? nightWhen(night, locale) : t('home.monthlyPrayerBody')}
+          badge={nightCountdown ?? undefined}
+          onPress={() => router.push({ pathname: '/(tabs)/prayer', params: { tab: 'monthly' } })}
+        />
         <ActionCard
           icon="help-circle"
           bg="bg-honey"

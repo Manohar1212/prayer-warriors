@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { createMemberHandlers } = require('./members');
 const { createPrayerHandlers } = require('./prayer');
 const { createPrayerPointHandlers } = require('./prayerPoints');
+const { createPrayerNightHandlers } = require('./prayerNight');
 const { createQuizHandlers } = require('./quiz');
 const { QUESTIONS } = require('./quizQuestions');
 const { createResourceHandlers } = require('./resources');
@@ -348,6 +349,70 @@ const prayerPointClaims = {
     row.set('doneAt', at);
     await row.save(null, { useMasterKey: true });
     return prayerPointClaimDto(row);
+  },
+};
+
+// ---------- all-night prayer ----------
+
+function prayerNightDto(obj) {
+  const at = obj.get('scheduledAt');
+  const cancelledAt = obj.get('cancelledAt');
+  return {
+    id: obj.id,
+    groupId: refId(obj.get('group')),
+    month: obj.get('month'),
+    scheduledAt: at ? at.toISOString() : null,
+    note: obj.get('note') || '',
+    cancelledAt: cancelledAt ? cancelledAt.toISOString() : null,
+    lastReminderDay: obj.get('lastReminderDay') || '',
+  };
+}
+
+const prayerNights = {
+  async findUpcoming(groupId, since) {
+    const obj = await new Parse.Query('PrayerNight')
+      .equalTo('group', pointer('Group', groupId))
+      .doesNotExist('cancelledAt')
+      .greaterThanOrEqualTo('scheduledAt', since)
+      .ascending('scheduledAt')
+      .first({ useMasterKey: true });
+    return obj ? prayerNightDto(obj) : null;
+  },
+  async findByMonth(groupId, month) {
+    const obj = await new Parse.Query('PrayerNight')
+      .equalTo('group', pointer('Group', groupId))
+      .equalTo('month', month)
+      .first({ useMasterKey: true });
+    return obj ? prayerNightDto(obj) : null;
+  },
+  async get(id) {
+    const obj = await new Parse.Query('PrayerNight').get(id, { useMasterKey: true }).catch(() => null);
+    return obj ? prayerNightDto(obj) : null;
+  },
+  async listUpcoming(since) {
+    const rows = await new Parse.Query('PrayerNight')
+      .doesNotExist('cancelledAt')
+      .greaterThanOrEqualTo('scheduledAt', since)
+      .limit(500)
+      .find({ useMasterKey: true });
+    return rows.map(prayerNightDto);
+  },
+  async create({ groupId, month, scheduledAt, note, createdById }) {
+    const obj = new Parse.Object('PrayerNight');
+    obj.set('group', pointer('Group', groupId));
+    obj.set('month', month);
+    obj.set('scheduledAt', scheduledAt);
+    obj.set('note', note);
+    obj.set('createdBy', pointer('_User', createdById));
+    obj.setACL(groupReadAcl(groupId));
+    await obj.save(null, { useMasterKey: true });
+    return prayerNightDto(obj);
+  },
+  async update(id, patch) {
+    const obj = await new Parse.Query('PrayerNight').get(id, { useMasterKey: true });
+    Object.entries(patch).forEach(([key, value]) => (value === null ? obj.unset(key) : obj.set(key, value)));
+    await obj.save(null, { useMasterKey: true });
+    return prayerNightDto(obj);
   },
 };
 
@@ -812,6 +877,7 @@ const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, 
 const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims, requests });
 const resourceHandlers = createResourceHandlers({ memberships, resources });
 const quizHandlers = createQuizHandlers({ memberships, results: quizResults, bank: QUESTIONS });
+const prayerNightHandlers = createPrayerNightHandlers({ memberships, nights: prayerNights, notify: (event) => notifier.notify(event) });
 const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
 Parse.Cloud.define('addMember', (request) =>
@@ -906,6 +972,11 @@ Parse.Cloud.define('joinCall', async (request) => {
 ['listPrayerPoints', 'listAnsweredPrayerPoints', 'addPrayerPoint', 'addRequestToMonthly', 'updatePrayerPoint', 'removePrayerPoint', 'claimPrayerPoint', 'releasePrayerPoint', 'markPrayerPointDone', 'markPrayerPointAnswered'].forEach((name) =>
   Parse.Cloud.define(name, (request) => prayerPointHandlers[name](request.params, { callerId: callerId(request) })),
 );
+['getPrayerNight', 'schedulePrayerNight', 'cancelPrayerNight'].forEach((name) =>
+  Parse.Cloud.define(name, (request) => prayerNightHandlers[name](request.params, { callerId: callerId(request) })),
+);
+// Schedule daily (e.g. 08:00 IST) in the Back4App dashboard; members opening the app also trigger the day's reminder.
+Parse.Cloud.job('prayerNightReminders', () => prayerNightHandlers.sendDueReminders());
 ['getDailyQuiz', 'submitQuiz', 'getQuizLeaderboard'].forEach((name) =>
   Parse.Cloud.define(name, (request) => quizHandlers[name](request.params, { callerId: callerId(request) })),
 );
