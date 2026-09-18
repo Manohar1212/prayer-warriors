@@ -32,7 +32,7 @@ const tiles: { label: TranslationKey; icon: IconName | 'pray'; bg: string; fg: s
   { label: 'home.action.word', icon: 'book', bg: 'bg-honey', fg: colors.gold, href: { pathname: '/bible', params: { from: 'home' } } },
   { label: 'home.action.journal', icon: 'create', bg: 'bg-sky', fg: colors.skyDeep, href: '/journal' },
   { label: 'home.action.call', icon: 'call', bg: 'bg-sage', fg: colors.leaf, href: '/(tabs)/community' },
-  { label: 'home.action.songs', icon: 'musical-notes', bg: 'bg-lavender', fg: colors.violet, href: '/(tabs)/resources' },
+  { label: 'home.action.leaderboard', icon: 'trophy', bg: 'bg-lavender', fg: colors.violet, href: '/quiz/leaderboard' },
 ];
 
 function ActionCard({ icon, bg, fg, title, body, badge, onPress }: { icon: IconName | 'pray'; bg: string; fg: string; title: string; body: string; badge?: string; onPress: () => void }) {

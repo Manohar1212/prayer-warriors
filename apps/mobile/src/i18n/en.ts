@@ -35,8 +35,8 @@ export const en = {
   // ---- tabs
   'tab.home': 'Home',
   'tab.prayer': 'Prayer',
-  'tab.community': 'Community',
-  'tab.resources': 'Resources',
+  'tab.community': 'Group',
+  'tab.resources': 'Songs',
   'tab.funds': 'Funds',
 
   // ---- welcome / auth
@@ -81,7 +81,7 @@ export const en = {
   'home.verseOfTheDay': 'Daily Bread',
   'home.readChapter': 'Read chapter',
   'home.shareVerse': 'Share',
-  'home.dailyBread': 'Daily Bread',
+  'home.dailyBread': 'Daily Promise',
   'home.quiz': 'Daily Bible Quiz',
   'home.quizBody': '3 questions today, in English and Telugu',
   'home.quizDone': 'You scored {score} of {total} today',
@@ -138,7 +138,8 @@ export const en = {
   'home.action.call': 'Call',
   'home.action.songs': 'Songs',
   'home.action.word': 'Bible',
-  'home.action.journal': 'Journal',
+  'home.action.journal': 'Diary',
+  'home.action.leaderboard': 'Leaders',
   'home.requests': 'Prayer requests',
   'home.noRequests': 'No open requests right now.',
   'home.shareRequest': 'Share one',
@@ -159,7 +160,7 @@ export const en = {
   'prayer.openRequest': '1 open request',
   'prayer.answeredCount': '{count} answered',
   'prayer.requestsTab': 'Requests',
-  'prayer.monthly': 'Monthly',
+  'prayer.monthly': 'All-night',
   'prayer.active': 'Active',
   'prayer.answered': 'Answered',
   'prayer.journal': 'Journal',
@@ -257,7 +258,7 @@ export const en = {
   'prayer.new.failed': 'Could not post the request.',
 
   // ---- journal
-  'journal.title': 'My journal',
+  'journal.title': 'My diary',
   'journal.intro': 'Only you can see your journal.',
   'journal.newEntry': 'New entry',
   'journal.emptyTitle': 'Nothing here yet',
@@ -276,7 +277,7 @@ export const en = {
   'journal.entry.deleteFailed': 'Could not delete the entry.',
 
   // ---- community
-  'community.title': 'Community',
+  'community.title': 'Group',
   'community.members': '{count} members',
   'community.member': '1 member',
   'community.calls': 'Group calls',
@@ -323,14 +324,14 @@ export const en = {
   'calls.schedule.failed': 'Could not schedule the call.',
 
   // ---- resources
-  'resources.title': 'Resources',
-  'resources.subtitle': 'Songs, scripture and prayers',
+  'resources.title': 'Songs',
+  'resources.subtitle': 'Songbook, shared verses and prayers',
   'resources.songs': 'Songbook',
-  'resources.scripture': 'Scripture',
+  'resources.scripture': 'Verses',
   'resources.prayers': 'Prayers',
   'resources.bible': 'Bible',
   'resources.type.song': 'Song',
-  'resources.type.scripture': 'Scripture',
+  'resources.type.scripture': 'Verse',
   'resources.type.prayer': 'Prayer',
   'resources.searchIn': 'Search {plural}',
   'resources.sharedBy': 'Shared by {name}',
@@ -338,7 +339,7 @@ export const en = {
   'resources.noMatch': 'Nothing matches "{query}".',
   'resources.emptySongTitle': 'No songs yet',
   'resources.emptySongBody': 'Share a song that lifts the group up. A link to YouTube or Spotify is enough.',
-  'resources.emptyScriptureTitle': 'No scripture yet',
+  'resources.emptyScriptureTitle': 'No verses shared yet',
   'resources.emptyScriptureBody': 'Share a verse that spoke to you this week.',
   'resources.emptyPrayerTitle': 'No prayers yet',
   'resources.emptyPrayerBody': 'Share a written prayer the group can pray together.',
@@ -364,7 +365,7 @@ export const en = {
   'resources.detail.searchLyrics': 'Search lyrics on the web',
   'resources.song.title': 'Song',
   'resources.book.group': 'Our songs',
-  'resources.book.akk': 'AKK Hymnal',
+  'resources.book.akk': 'Keerthanalu',
   'resources.book.telugu': 'Telugu Songs',
   'resources.book.akkFull': 'Andhra Kraisthava Keerthanalu',
   'resources.book.count': '{n} songs',

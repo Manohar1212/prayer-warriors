@@ -2,16 +2,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
 
-import { firstLine, HYMN_BOOKS, loadHymnBook, matchesQuery, numberSongs, RESOURCE_TYPES, searchHymns, searchSongs, useResources, useSongBook, type Hymn, type Resource, type ResourceType, type Song } from '@/features/resources';
+import { firstLine, HYMN_BOOKS, loadHymnBook, matchesQuery, numberSongs, searchHymns, searchSongs, useResources, useSongBook, type Hymn, type Resource, type ResourceType, type Song, type SongBook } from '@/features/resources';
 import { shortDate } from '@/lib/time';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors, gradients } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
-import { Card, Chip, EmptyState, Fab, Screen, Segments, TabHeader, Text } from '@/ui';
+import { Card, Chip, EmptyState, Fab, Screen, TabHeader, Text } from '@/ui';
 
-type Tab = ResourceType | 'bible';
+/** One row of choices: the three song books, shared verses and prayers, and the Bible. */
+type Tab = SongBook | 'scripture' | 'prayer' | 'bible';
 
 const emptyCopy: Record<ResourceType, { title: TranslationKey; body: TranslationKey }> = {
   song: { title: 'resources.emptySongTitle', body: 'resources.emptySongBody' },
@@ -107,13 +108,24 @@ export default function ResourcesScreen() {
     if (book === 'group') return searchSongs(numberSongs(resources), query);
     return searchHymns(book, query);
   }, [resources, query, type, book]);
-  const bookOptions = [{ value: 'group' as const, label: t('resources.book.group') }, ...HYMN_BOOKS.map((b) => ({ value: b.id, label: t(b.label) }))];
   const songLike = type === 'song';
   const plural = t(pluralKey[type]);
+  const selected: Tab = songLike ? book : type;
+  const chips: { value: Tab; label: string }[] = [
+    { value: 'group', label: t('resources.book.group') },
+    ...HYMN_BOOKS.map((b) => ({ value: b.id as Tab, label: t(b.label) })),
+    { value: 'scripture', label: t('resources.scripture') },
+    { value: 'prayer', label: t('resources.prayers') },
+    { value: 'bible', label: t('resources.bible') },
+  ];
 
   const onTab = (tab: Tab) => {
     if (tab === 'bible') router.push({ pathname: '/bible', params: { from: 'resources' } });
-    else setType(tab);
+    else if (tab === 'scripture' || tab === 'prayer') setType(tab);
+    else {
+      setType('song');
+      setBook(tab);
+    }
   };
 
   return (
@@ -129,19 +141,16 @@ export default function ResourcesScreen() {
         ListHeaderComponent={
           <View className="gap-3 pb-1">
             <TabHeader title={t('resources.title')} subtitle={t('resources.subtitle')} right={<HeaderActions />} />
-            <View className="flex-row gap-2">
-              {[...RESOURCE_TYPES.map((r) => ({ value: r.id as Tab, label: t(pluralKey[r.id]) })), { value: 'bible' as Tab, label: t('resources.bible') }].map((o) => (
-                <Chip key={o.value} label={o.label} selected={type === o.value} onPress={() => onTab(o.value)} />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2 pr-4" className="-mr-4">
+              {chips.map((o) => (
+                <Chip key={o.value} label={o.label} selected={selected === o.value} onPress={() => onTab(o.value)} />
               ))}
-            </View>
+            </ScrollView>
             {songLike ? (
-              <View className="gap-1.5">
-                <Segments options={bookOptions} value={book} onChange={setBook} />
-                <Text variant="caption" color="muted" className="px-1">
-                  {book === 'akk' ? `${t('resources.book.akkFull')} · ` : ''}
-                  {t('resources.book.count', { n: book === 'group' ? numberSongs(resources).length : loadHymnBook(book).length })}
-                </Text>
-              </View>
+              <Text variant="caption" color="muted" className="px-1">
+                {book === 'akk' ? `${t('resources.book.akkFull')} · ` : ''}
+                {t('resources.book.count', { n: book === 'group' ? numberSongs(resources).length : loadHymnBook(book).length })}
+              </Text>
             ) : null}
             <View className="flex-row items-center gap-2 rounded-[12px] border border-border bg-surface px-3.5">
               <Ionicons name="search-outline" size={16} color={colors.muted} />
