@@ -1,7 +1,7 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
 import { journalService } from '../../lib/parse';
+import { useCachedQuery } from '../../lib/useCachedQuery';
 import type { JournalEntry, JournalInput } from './types';
 
 export type JournalState = {
@@ -15,48 +15,24 @@ export type JournalState = {
 };
 
 export function useJournal(): JournalState {
-  const [active, setActive] = useState<JournalEntry[]>([]);
-  const [answered, setAnswered] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      setError(null);
-      const result = await journalService.list();
-      setActive(result.active);
-      setAnswered(result.answered);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load your journal.');
-    }
-  }, []);
-
-  useEffect(() => {
-    load().finally(() => setLoading(false));
-  }, [load]);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load]),
-  );
+  const { data, loading, error, refresh } = useCachedQuery('journal', () => journalService.list(), { fallback: 'Could not load your journal.' });
 
   const save = useCallback(
     async (input: JournalInput) => {
       const saved = await journalService.save(input);
-      await load();
+      await refresh();
       return saved;
     },
-    [load],
+    [refresh],
   );
 
   const remove = useCallback(
     async (id: string) => {
       await journalService.remove(id);
-      await load();
+      await refresh();
     },
-    [load],
+    [refresh],
   );
 
-  return { active, answered, loading, error, refresh: load, save, remove };
+  return { active: data?.active ?? [], answered: data?.answered ?? [], loading, error, refresh, save, remove };
 }

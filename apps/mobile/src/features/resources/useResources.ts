@@ -1,7 +1,7 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
 import { resourcesService } from '../../lib/parse';
+import { useCachedQuery } from '../../lib/useCachedQuery';
 import type { NewResource, Resource, ResourceType } from './types';
 
 export type ResourcesState = {
@@ -15,55 +15,33 @@ export type ResourcesState = {
 };
 
 export function useResources(type: ResourceType): ResourcesState {
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      setError(null);
-      setResources(await resourcesService.list(type));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load resources.');
-    }
-  }, [type]);
-
-  useEffect(() => {
-    setLoading(true);
-    load().finally(() => setLoading(false));
-  }, [load]);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load]),
-  );
+  const { data, loading, error, refresh } = useCachedQuery(`resources:${type}`, () => resourcesService.list(type), { fallback: 'Could not load resources.' });
 
   const create = useCallback(
     async (input: NewResource) => {
       const created = await resourcesService.create(input);
-      await load();
+      await refresh();
       return created;
     },
-    [load],
+    [refresh],
   );
 
   const update = useCallback(
     async (id: string, input: NewResource) => {
       const updated = await resourcesService.update(id, input);
-      await load();
+      await refresh();
       return updated;
     },
-    [load],
+    [refresh],
   );
 
   const remove = useCallback(
     async (id: string) => {
       await resourcesService.remove(id);
-      await load();
+      await refresh();
     },
-    [load],
+    [refresh],
   );
 
-  return { resources, loading, error, refresh: load, create, update, remove };
+  return { resources: data ?? [], loading, error, refresh, create, update, remove };
 }

@@ -10,6 +10,7 @@ import {
 
 import type { AuthStatus } from './gate';
 import type { AuthService, AuthUser, ProfilePatch } from './types';
+import { clearQueryCache } from '../../lib/useCachedQuery';
 
 export type AuthContextValue = {
   status: AuthStatus;
@@ -54,6 +55,7 @@ export function AuthProvider({ service, children }: PropsWithChildren<{ service:
 
   const signOut = useCallback(async () => {
     await service.signOut();
+    clearQueryCache();
     setUser(null);
     setStatus('signedOut');
   }, [service]);

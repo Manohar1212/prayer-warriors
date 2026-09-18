@@ -1,7 +1,7 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
 import { notificationsService } from '../../lib/parse';
+import { useCachedQuery } from '../../lib/useCachedQuery';
 import type { AppNotification } from './types';
 
 export type NotificationsState = {
@@ -14,54 +14,28 @@ export type NotificationsState = {
 };
 
 export function useNotifications(): NotificationsState {
-  const [items, setItems] = useState<AppNotification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, loading, error, refresh, setData } = useCachedQuery<AppNotification[]>('notifications', () => notificationsService.list(), { fallback: 'Could not load notifications.' });
 
-  const load = useCallback(async () => {
-    try {
-      setError(null);
-      setItems(await notificationsService.list());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load notifications.');
-    }
-  }, []);
-
-  useEffect(() => {
-    load().finally(() => setLoading(false));
-  }, [load]);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load]),
+  const markRead = useCallback(
+    async (id: string) => {
+      const when = new Date().toISOString();
+      setData((current) => (current ?? []).map((n) => (n.id === id && !n.readAt ? { ...n, readAt: when } : n)));
+      await notificationsService.markRead([id]).catch(() => undefined);
+    },
+    [setData],
   );
-
-  const markRead = useCallback(async (id: string) => {
-    const when = new Date().toISOString();
-    setItems((current) => current.map((n) => (n.id === id && !n.readAt ? { ...n, readAt: when } : n)));
-    await notificationsService.markRead([id]).catch(() => undefined);
-  }, []);
 
   const markAllRead = useCallback(async () => {
     const when = new Date().toISOString();
-    setItems((current) => current.map((n) => (n.readAt ? n : { ...n, readAt: when })));
+    setData((current) => (current ?? []).map((n) => (n.readAt ? n : { ...n, readAt: when })));
     await notificationsService.markAllRead().catch(() => undefined);
-  }, []);
+  }, [setData]);
 
-  return { items, loading, error, refresh: load, markRead, markAllRead };
+  return { items: data ?? [], loading, error, refresh, markRead, markAllRead };
 }
 
 /** Unread badge count; refreshes whenever the host screen gains focus. */
 export function useUnreadCount(): number {
-  const [count, setCount] = useState(0);
-  const load = useCallback(() => {
-    notificationsService
-      .unreadCount()
-      .then(setCount)
-      .catch(() => undefined);
-  }, []);
-  useEffect(load, [load]);
-  useFocusEffect(load);
-  return count;
+  const { data } = useCachedQuery<number>('notifications:unread', () => notificationsService.unreadCount());
+  return data ?? 0;
 }

@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
+import { useCachedQuery } from '../../lib/useCachedQuery';
 import { mapParseError } from '../auth/errors';
 
 /** One question in both languages; the right answer is only known to the server until you play. */
@@ -68,58 +69,22 @@ export type DailyQuizState = {
 };
 
 export function useDailyQuiz(service: QuizService): DailyQuizState {
-  const [quiz, setQuiz] = useState<DailyQuiz | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      setQuiz(await service.today());
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load the quiz.');
-    } finally {
-      setLoading(false);
-    }
-  }, [service]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const { data: quiz, loading, error, refresh, setData } = useCachedQuery<DailyQuiz>('quiz:today', () => service.today(), { fallback: 'Could not load the quiz.' });
 
   const submit = useCallback(
     async (answers: number[]) => {
       if (!quiz) return;
       const result = await service.submit(quiz.day, answers);
-      setQuiz({ ...quiz, result: { score: result.score, answers, correct: result.correct }, streak: quiz.streak + 1 });
+      setData((current) => (current ? { ...current, result: { score: result.score, answers, correct: result.correct }, streak: current.streak + 1 } : current));
     },
-    [quiz, service],
+    [quiz, service, setData],
   );
 
-  return { quiz, loading, error, refresh: load, submit };
+  return { quiz, loading, error, refresh, submit };
 }
 
 export function useLeaderboard(service: QuizService) {
   const [month, setMonth] = useState<string | undefined>(undefined);
-  const [board, setBoard] = useState<Leaderboard | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      setBoard(await service.leaderboard(month));
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load the leaderboard.');
-    } finally {
-      setLoading(false);
-    }
-  }, [service, month]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  return { board, loading, error, refresh: load, setMonth };
+  const { data: board, loading, error, refresh } = useCachedQuery<Leaderboard>(`quiz:board:${month ?? 'current'}`, () => service.leaderboard(month), { fallback: 'Could not load the leaderboard.' });
+  return { board, loading, error, refresh, setMonth };
 }

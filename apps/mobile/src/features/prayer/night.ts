@@ -1,6 +1,4 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-
+import { useCachedQuery } from '../../lib/useCachedQuery';
 import { mapParseError } from '../auth/errors';
 
 /** The month's all-night prayer as the server describes it. */
@@ -41,32 +39,10 @@ export type PrayerNightService = ReturnType<typeof createPrayerNightService>;
 
 /** Loads the upcoming all-night prayer and keeps it fresh whenever the screen is focused. */
 export function usePrayerNight(service: PrayerNightService, onLoaded?: (night: PrayerNight | null) => void) {
-  const [night, setNight] = useState<PrayerNight | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      const next = await service.get();
-      setNight(next);
-      setError(null);
-      onLoaded?.(next);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load the prayer night.');
-    } finally {
-      setLoading(false);
-    }
-  }, [service, onLoaded]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load]),
-  );
-
-  return { night, loading, error, refresh: load };
+  // The night is wrapped so "no night scheduled" is a cached answer too, not a missing one.
+  const { data, loading, error, refresh } = useCachedQuery<{ night: PrayerNight | null }>('prayer:night', async () => ({ night: await service.get() }), {
+    fallback: 'Could not load the prayer night.',
+    onLoaded: (result) => onLoaded?.(result.night),
+  });
+  return { night: data?.night ?? null, loading, error, refresh };
 }

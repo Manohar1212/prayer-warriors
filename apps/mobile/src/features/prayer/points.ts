@@ -1,6 +1,6 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
+import { useCachedQuery } from '../../lib/useCachedQuery';
 import { mapParseError } from '../auth/errors';
 
 /** One of the regular things the group prays for every month, with this month's claim if any. */
@@ -71,33 +71,10 @@ export type PrayerPointsState = {
 };
 
 export function usePrayerPoints(service: PrayerPointsService): PrayerPointsState {
-  const [month, setMonth] = useState('');
-  const [points, setPoints] = useState<PrayerPoint[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, loading, error, refresh } = useCachedQuery('prayer:points', () => service.list(), { fallback: 'Could not load prayer points.' });
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      setError(null);
-      const result = await service.list();
-      setMonth(result.month);
-      setPoints(result.points);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load prayer points.');
-    }
-  }, [service]);
-
-  useEffect(() => {
-    setLoading(true);
-    load().finally(() => setLoading(false));
-  }, [load]);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load]),
-  );
-
+  // Run the change, reload, and only then surface a refusal so it is not wiped by the reload.
   const act = useCallback(
     async (work: () => Promise<unknown>) => {
       let message: string | null = null;
@@ -106,19 +83,18 @@ export function usePrayerPoints(service: PrayerPointsService): PrayerPointsState
       } catch (err) {
         message = err instanceof Error ? err.message : 'Could not update.';
       }
-      // Refresh first (it clears the error), then surface the refusal so it stays visible.
-      await load();
-      if (message) setError(message);
+      await refresh();
+      setActionError(message);
     },
-    [load],
+    [refresh],
   );
 
   return {
-    month,
-    points,
+    month: data?.month ?? '',
+    points: data?.points ?? [],
     loading,
-    error,
-    refresh: load,
+    error: actionError ?? error,
+    refresh,
     claim: (id) => act(() => service.claim(id)),
     release: (id) => act(() => service.release(id)),
     markDone: (id) => act(() => service.markDone(id)),

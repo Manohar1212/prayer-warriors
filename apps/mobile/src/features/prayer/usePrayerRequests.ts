@@ -1,7 +1,7 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
 import { prayerService } from '../../lib/parse';
+import { useCachedQuery } from '../../lib/useCachedQuery';
 import type { NewPrayerRequest, PrayerRequest, PrayerStatus } from './types';
 
 export type PrayerRequestsState = {
@@ -14,76 +14,44 @@ export type PrayerRequestsState = {
   markAnswered: (id: string, testimony: string) => Promise<PrayerRequest>;
 };
 
-function messageOf(err: unknown, fallback: string): string {
-  return err instanceof Error ? err.message : fallback;
+function flip(r: PrayerRequest): PrayerRequest {
+  return { ...r, praying: !r.praying, prayingCount: r.prayingCount + (r.praying ? -1 : 1) };
 }
 
 export function usePrayerRequests(status: PrayerStatus): PrayerRequestsState {
-  const [requests, setRequests] = useState<PrayerRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      setError(null);
-      setRequests(await prayerService.list(status));
-    } catch (err) {
-      setError(messageOf(err, 'Could not load prayer requests.'));
-    }
-  }, [status]);
-
-  useEffect(() => {
-    setLoading(true);
-    load().finally(() => setLoading(false));
-  }, [load]);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load]),
-  );
+  const { data, loading, error, refresh, setData } = useCachedQuery(`prayer:${status}`, () => prayerService.list(status), { fallback: 'Could not load prayer requests.' });
 
   const create = useCallback(
     async (input: NewPrayerRequest) => {
       const created = await prayerService.create(input);
-      await load();
+      await refresh();
       return created;
     },
-    [load],
+    [refresh],
   );
 
-  const togglePraying = useCallback(async (id: string) => {
-    // Optimistic flip; the server's answer wins.
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, praying: !r.praying, prayingCount: r.prayingCount + (r.praying ? -1 : 1) }
-          : r,
-      ),
-    );
-    try {
-      const result = await prayerService.togglePraying(id);
-      setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, ...result } : r)));
-    } catch (err) {
-      setRequests((prev) =>
-        prev.map((r) =>
-          r.id === id
-            ? { ...r, praying: !r.praying, prayingCount: r.prayingCount + (r.praying ? -1 : 1) }
-            : r,
-        ),
-      );
-      setError(messageOf(err, 'Could not update.'));
-    }
-  }, []);
+  const togglePraying = useCallback(
+    async (id: string) => {
+      // Optimistic flip; the server's answer wins.
+      setData((prev) => (prev ?? []).map((r) => (r.id === id ? flip(r) : r)));
+      try {
+        const result = await prayerService.togglePraying(id);
+        setData((prev) => (prev ?? []).map((r) => (r.id === id ? { ...r, ...result } : r)));
+      } catch {
+        setData((prev) => (prev ?? []).map((r) => (r.id === id ? flip(r) : r)));
+      }
+    },
+    [setData],
+  );
 
   const markAnswered = useCallback(
     async (id: string, testimony: string) => {
       const updated = await prayerService.markAnswered(id, testimony);
-      await load();
+      await refresh();
       return updated;
     },
-    [load],
+    [refresh],
   );
 
-  return { requests, loading, error, refresh: load, create, togglePraying, markAnswered };
+  return { requests: data ?? [], loading, error, refresh, create, togglePraying, markAnswered };
 }

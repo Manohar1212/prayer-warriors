@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useAuth } from '../auth';
 import { membersService } from '../../lib/parse';
+import { useCachedQuery } from '../../lib/useCachedQuery';
 import type { AddedMember, Member, NewMember } from './types';
 
 export type MembersState = {
@@ -15,33 +16,19 @@ export type MembersState = {
 
 export function useMembers(): MembersState {
   const { user } = useAuth();
-  const [members, setMembers] = useState<Member[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      setError(null);
-      setMembers(await membersService.list());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load members.');
-    }
-  }, []);
-
-  useEffect(() => {
-    load().finally(() => setLoading(false));
-  }, [load]);
+  const { data, loading, error, refresh } = useCachedQuery('members', () => membersService.list(), { fallback: 'Could not load members.' });
+  const members: Member[] = data ?? [];
 
   const add = useCallback(
     async (input: NewMember) => {
       const added = await membersService.add(input);
-      await load();
+      await refresh();
       return added;
     },
-    [load],
+    [refresh],
   );
 
   const isAdmin = members.some((m) => m.userId === user?.id && m.role === 'admin');
 
-  return { members, loading, error, isAdmin, refresh: load, add };
+  return { members, loading, error, isAdmin, refresh, add };
 }

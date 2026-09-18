@@ -1,5 +1,13 @@
+jest.mock('expo-router', () => ({
+  useFocusEffect: (effect: () => void) => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require('react').useEffect(effect, [effect]);
+  },
+}));
+
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
+import { clearQueryCache } from '../../lib/useCachedQuery';
 import { createQuizService, useDailyQuiz } from './service';
 
 const quiz = {
@@ -22,6 +30,7 @@ describe('createQuizService', () => {
 });
 
 describe('useDailyQuiz', () => {
+  beforeEach(() => clearQueryCache());
   it('loads today, then keeps the score and correct answers after submitting', async () => {
     const cloud = { run: jest.fn(async (name: string) => (name === 'getDailyQuiz' ? quiz : { day: '2026-09-17', score: 1, correct: [1] })) };
     const service = createQuizService({ cloud });

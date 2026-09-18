@@ -1,7 +1,7 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { fundsService } from '../../lib/parse';
+import { useCachedQuery } from '../../lib/useCachedQuery';
 import { monthRange, summarise, toTransactions, type Summary } from './summary';
 import type { Contribution, Expense, Ledger, Transaction } from './types';
 
@@ -17,28 +17,8 @@ export type FundsState = {
 };
 
 export function useFunds(): FundsState {
-  const [ledger, setLedger] = useState<Ledger>({ contributions: [], expenses: [] });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      setError(null);
-      setLedger(await fundsService.list());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load the ledger.');
-    }
-  }, []);
-
-  useEffect(() => {
-    load().finally(() => setLoading(false));
-  }, [load]);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load]),
-  );
+  const { data, loading, error, refresh } = useCachedQuery<Ledger>('funds', () => fundsService.list(), { fallback: 'Could not load the ledger.' });
+  const ledger = useMemo<Ledger>(() => data ?? { contributions: [], expenses: [] }, [data]);
 
   const derived = useMemo(() => {
     const now = new Date();
@@ -49,5 +29,5 @@ export function useFunds(): FundsState {
     };
   }, [ledger]);
 
-  return { ...ledger, ...derived, loading, error, refresh: load };
+  return { ...ledger, ...derived, loading, error, refresh };
 }
