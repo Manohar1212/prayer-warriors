@@ -14,4 +14,4 @@ export type { PrayerComment,
 } from './types';
 export { createPrayerNightService, usePrayerNight } from './night';
 export type { PrayerNight, PrayerNightService, ScheduledPrayerNight } from './night';
-export { PrayerNightCard, nightWhen } from './PrayerNightCard';
+export { PrayerNightCard, nightCallOpen, nightWhen } from './PrayerNightCard';

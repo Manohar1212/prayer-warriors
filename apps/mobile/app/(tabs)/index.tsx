@@ -7,7 +7,7 @@ import { useAuth } from '@/features/auth';
 import { useBibleLanguage } from '@/features/bible';
 import { isJoinable, useCalls } from '@/features/calls';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
-import { nightWhen, usePrayerNight, type PrayerNight } from '@/features/prayer';
+import { nightCallOpen, nightWhen, usePrayerNight, type PrayerNight } from '@/features/prayer';
 import { syncPrayerNightReminders } from '@/features/notifications';
 import { useDailyQuiz } from '@/features/quiz';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
@@ -82,6 +82,9 @@ export default function HomeScreen() {
   );
   const { night } = usePrayerNight(prayerNightService, onNight);
   const nightCountdown = night ? (night.daysUntil === 0 ? t('prayer.night.tonight') : night.daysUntil === 1 ? t('prayer.night.tomorrow') : t('prayer.night.inDays', { n: night.daysUntil })) : null;
+  // The all-night prayer's own call is part of its card, so it is not repeated as the next call below.
+  const nightCallOpenNow = Boolean(night && nightCallOpen(night, new Date()));
+  const nextCallIsNight = Boolean(nextCall && night && nextCall.id === night.callId);
   const name = user?.displayName ?? t('home.friend');
   const firstName = name.split(' ')[0];
   const now = new Date();
@@ -131,8 +134,8 @@ export default function HomeScreen() {
           fg={colors.violet}
           title={night ? t('prayer.night.title') : t('home.monthlyPrayer')}
           body={night ? nightWhen(night, locale) : t('home.monthlyPrayerBody')}
-          badge={nightCountdown ?? undefined}
-          onPress={() => router.push({ pathname: '/(tabs)/prayer', params: { tab: 'monthly' } })}
+          badge={nightCallOpenNow ? t('home.join') : (nightCountdown ?? undefined)}
+          onPress={() => (nightCallOpenNow && night?.callId ? router.push({ pathname: '/calls/[id]', params: { id: night.callId } }) : router.push({ pathname: '/(tabs)/prayer', params: { tab: 'monthly' } }))}
         />
         <ActionCard
           icon="help-circle"
@@ -158,7 +161,7 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      {nextCall ? (
+      {nextCall && !nextCallIsNight ? (
         <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/calls/[id]', params: { id: nextCall.id } })} className="active:opacity-80">
           <Card className="flex-row items-center gap-3.5 p-4">
             <View className="h-12 w-12 items-center justify-center rounded-full bg-sage">
