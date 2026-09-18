@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 
 import { goBackOr } from '../../lib/navigation';
 import { colors } from '../../theme/tokens';
+import { Chevron } from '../../ui/Chevron';
 import { Text } from '../../ui/Text';
 
 type Crumb = { label: string; href: Href };
@@ -39,7 +40,7 @@ export function HeaderHome() {
   };
   return (
     <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={10} style={{ paddingHorizontal: 8 }}>
-      <Ionicons name="chevron-back" size={26} color={colors.ink} />
+      <Chevron size={24} color={colors.ink} />
     </Pressable>
   );
 }
