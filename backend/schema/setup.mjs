@@ -349,6 +349,21 @@ const quizResultSchema = {
     day: { type: 'String', required: true },
     score: { type: 'Number', required: true },
     answers: { type: 'Array' },
+    durationMs: { type: 'Number' }, // first open → submit, on the server clock; absent for older results
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
+const quizStartSchema = {
+  className: 'QuizStart',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    user: { type: 'Pointer', targetClass: '_User', required: true },
+    day: { type: 'String', required: true },
+    startedAt: { type: 'Date', required: true },
   },
   classLevelPermissions: {
     find: authenticated, get: authenticated, count: authenticated,
@@ -478,6 +493,7 @@ await upsertSchema(prayerCommentSchema);
 await upsertSchema(prayerPointSchema);
 await upsertSchema(prayerPointClaimSchema);
 await upsertSchema(quizResultSchema);
+await upsertSchema(quizStartSchema);
 await upsertSchema(prayerNightSchema);
 await upsertSchema(journalSchema);
 await upsertSchema(resourceSchema);

@@ -74,7 +74,12 @@ function streaksFor(days, today) {
   return { current: alive ? run : 0, best };
 }
 
-function createQuizHandlers({ memberships, results, bank, now = () => new Date() }) {
+/** Sort key for time: faster first; a result with no recorded time sorts after every timed one. */
+function timeRank(ms) {
+  return typeof ms === 'number' ? ms : Number.POSITIVE_INFINITY;
+}
+
+function createQuizHandlers({ memberships, results, starts, bank, now = () => new Date() }) {
   async function requireGroup(callerId) {
     const groupId = callerId ? await memberships.findGroupId(callerId) : null;
     if (!groupId) throw fail(MESSAGES.notMember);
@@ -94,28 +99,44 @@ function createQuizHandlers({ memberships, results, bank, now = () => new Date()
       return {
         day,
         questions: questions.map(publicQuestion),
-        result: mine ? { score: mine.score, answers: mine.answers, correct: questions.map((q) => q.answer) } : null,
+        result: mine ? { score: mine.score, answers: mine.answers, correct: questions.map((q) => q.answer), durationMs: typeof mine.durationMs === 'number' ? mine.durationMs : null } : null,
         streak: streaksFor(played.map((r) => r.day), day).current,
         groupId,
       };
     },
 
+    /**
+     * The quiz screen opened: remember the first open of the day so the time to answer is
+     * measured on the server clock. Opening again returns the same moment.
+     */
+    async startQuiz(_params, { callerId } = {}) {
+      const groupId = await requireGroup(callerId);
+      const day = dayKeyFor(now());
+      const existing = await starts.find(callerId, day);
+      const startedAt = existing ? existing.startedAt : (await starts.create({ groupId, userId: callerId, day, startedAt: now() })).startedAt;
+      return { day, startedAt: new Date(startedAt).toISOString() };
+    },
+
     async submitQuiz({ day, answers } = {}, { callerId } = {}) {
       const groupId = await requireGroup(callerId);
-      const today = dayKeyFor(now());
+      const at = now();
+      const today = dayKeyFor(at);
       if (day !== today) throw fail(MESSAGES.wrongDay);
       if (!Array.isArray(answers) || answers.length !== PER_DAY || answers.some((a) => !Number.isInteger(a) || a < 0 || a > 3)) throw fail(MESSAGES.badAnswers);
       if (await results.find(callerId, today)) throw fail(MESSAGES.alreadyPlayed);
       const questions = questionsForDay(bank, today);
       const correct = questions.map((q) => q.answer);
       const score = answers.reduce((sum, a, i) => sum + (a === correct[i] ? 1 : 0), 0);
-      const saved = await results.create({ groupId, userId: callerId, day: today, score, answers });
-      return { day: today, score, correct, id: saved.id };
+      const start = await starts.find(callerId, today);
+      const durationMs = start ? Math.max(0, at.getTime() - new Date(start.startedAt).getTime()) : null;
+      const saved = await results.create({ groupId, userId: callerId, day: today, score, answers, durationMs });
+      return { day: today, score, correct, durationMs, id: saved.id };
     },
 
     /**
-     * One month's board, ranked by streak. The board starts fresh each month (India time);
-     * earlier months stay readable as history. Ties: longer best streak, then points, then name.
+     * One month's board: most right answers first, then the faster total time (fastest finger),
+     * untimed results last among equals, then name. The board starts fresh each month (India
+     * time); earlier months stay readable as history. Streaks are reported but do not rank.
      */
     async getQuizLeaderboard({ month } = {}, { callerId } = {}) {
       const groupId = await requireGroup(callerId);
@@ -127,18 +148,19 @@ function createQuizHandlers({ memberships, results, bank, now = () => new Date()
       const rows = await results.listForMonth(groupId, wanted);
       const byUser = new Map();
       for (const r of rows) {
-        const entry = byUser.get(r.userId) || { userId: r.userId, userName: r.userName, days: [], points: 0, today: null };
+        const entry = byUser.get(r.userId) || { userId: r.userId, userName: r.userName, days: [], points: 0, timeMs: null, today: null };
         entry.days.push(r.day);
         entry.points += r.score;
+        if (typeof r.durationMs === 'number') entry.timeMs = (entry.timeMs ?? 0) + r.durationMs;
         if (r.day === today) entry.today = r.score;
         byUser.set(r.userId, entry);
       }
       const entries = [...byUser.values()]
         .map((e) => {
           const { current, best } = streaksFor(e.days, today);
-          return { userId: e.userId, userName: e.userName, streak: current, best, points: e.points, days: e.days.length, today: e.today, me: e.userId === callerId };
+          return { userId: e.userId, userName: e.userName, points: e.points, timeMs: e.timeMs, streak: current, best, days: e.days.length, today: e.today, me: e.userId === callerId };
         })
-        .sort((a, b) => b.streak - a.streak || b.best - a.best || b.points - a.points || String(a.userName).localeCompare(String(b.userName)))
+        .sort((a, b) => b.points - a.points || timeRank(a.timeMs) - timeRank(b.timeMs) || String(a.userName).localeCompare(String(b.userName)))
         .map((e, i) => ({ ...e, rank: i + 1 }));
       return { month: wanted, months, current: wanted === thisMonth, resetsOn: `${shiftMonth(thisMonth, 1)}-01`, daysInMonth: daysIn(wanted), entries };
     },

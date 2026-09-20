@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useCachedQuery } from '../../lib/useCachedQuery';
 import { mapParseError } from '../auth/errors';
@@ -10,7 +10,8 @@ export type QuizQuestion = {
   te: { q: string; o: string[] };
 };
 
-export type QuizResult = { score: number; answers: number[]; correct: number[] };
+/** `durationMs` is first open → submit on the server clock; null for results played before timing existed. */
+export type QuizResult = { score: number; answers: number[]; correct: number[]; durationMs: number | null };
 
 export type DailyQuiz = { day: string; questions: QuizQuestion[]; result: QuizResult | null; streak: number };
 
@@ -18,11 +19,14 @@ export type LeaderboardEntry = {
   rank: number;
   userId: string;
   userName: string;
+  /** Right answers this month: the first ranking key. */
+  points: number;
+  /** Total time over the month's quizzes, the tie-break (fastest finger); null when never timed. */
+  timeMs: number | null;
   /** Consecutive days played this month, still alive (reaches today or yesterday). */
   streak: number;
   /** Longest run in the month. */
   best: number;
-  points: number;
   days: number;
   today: number | null;
   me: boolean;
@@ -52,7 +56,9 @@ async function guarded<T>(work: () => Promise<T>): Promise<T> {
 export function createQuizService({ cloud }: Deps) {
   return {
     today: () => guarded(() => cloud.run('getDailyQuiz')) as Promise<DailyQuiz>,
-    submit: (day: string, answers: number[]) => guarded(() => cloud.run('submitQuiz', { day, answers })) as Promise<{ day: string; score: number; correct: number[] }>,
+    /** Marks the first open of today's quiz; the server keeps the earliest one. */
+    start: () => guarded(() => cloud.run('startQuiz')) as Promise<{ day: string; startedAt: string }>,
+    submit: (day: string, answers: number[]) => guarded(() => cloud.run('submitQuiz', { day, answers })) as Promise<{ day: string; score: number; correct: number[]; durationMs: number | null }>,
     leaderboard: (month?: string) => guarded(() => cloud.run('getQuizLeaderboard', month ? { month } : {})) as Promise<Leaderboard>,
   };
 }
@@ -68,14 +74,26 @@ export type DailyQuizState = {
   submit: (answers: number[]) => Promise<void>;
 };
 
-export function useDailyQuiz(service: QuizService): DailyQuizState {
+/**
+ * `startClock` is for the quiz screen only: it tells the server the member is looking at
+ * today's questions, which starts the fastest-finger clock. Home shows the same data without it.
+ */
+export function useDailyQuiz(service: QuizService, { startClock = false }: { startClock?: boolean } = {}): DailyQuizState {
   const { data: quiz, loading, error, refresh, setData } = useCachedQuery<DailyQuiz>('quiz:today', () => service.today(), { fallback: 'Could not load the quiz.' });
+  const startedFor = useRef<string | null>(null);
+  const unplayedDay = quiz && !quiz.result ? quiz.day : null;
+
+  useEffect(() => {
+    if (!startClock || !unplayedDay || startedFor.current === unplayedDay) return;
+    startedFor.current = unplayedDay;
+    service.start().catch(() => undefined);
+  }, [startClock, unplayedDay, service]);
 
   const submit = useCallback(
     async (answers: number[]) => {
       if (!quiz) return;
       const result = await service.submit(quiz.day, answers);
-      setData((current) => (current ? { ...current, result: { score: result.score, answers, correct: result.correct }, streak: current.streak + 1 } : current));
+      setData((current) => (current ? { ...current, result: { score: result.score, answers, correct: result.correct, durationMs: result.durationMs ?? null }, streak: current.streak + 1 } : current));
     },
     [quiz, service, setData],
   );

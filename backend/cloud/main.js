@@ -436,8 +436,30 @@ function quizResultDto(obj) {
     day: obj.get('day'),
     score: obj.get('score') || 0,
     answers: obj.get('answers') || [],
+    durationMs: typeof obj.get('durationMs') === 'number' ? obj.get('durationMs') : null,
   };
 }
+
+/** First open of the day's quiz per member: the server-side start of the clock. */
+const quizStarts = {
+  async find(userId, day) {
+    const row = await new Parse.Query('QuizStart')
+      .equalTo('user', pointer('_User', userId))
+      .equalTo('day', day)
+      .first({ useMasterKey: true });
+    return row ? { id: row.id, userId, day, startedAt: row.get('startedAt') } : null;
+  },
+  async create({ groupId, userId, day, startedAt }) {
+    const row = new Parse.Object('QuizStart');
+    row.set('group', pointer('Group', groupId));
+    row.set('user', pointer('_User', userId));
+    row.set('day', day);
+    row.set('startedAt', startedAt);
+    row.setACL(groupReadAcl(groupId, userId));
+    await row.save(null, { useMasterKey: true });
+    return { id: row.id, userId, day, startedAt };
+  },
+};
 
 const quizResults = {
   async find(userId, day) {
@@ -471,13 +493,14 @@ const quizResults = {
       .distinct('day', { useMasterKey: true });
     return days.filter((d) => typeof d === 'string');
   },
-  async create({ groupId, userId, day, score, answers }) {
+  async create({ groupId, userId, day, score, answers, durationMs = null }) {
     const row = new Parse.Object('QuizResult');
     row.set('group', pointer('Group', groupId));
     row.set('user', pointer('_User', userId));
     row.set('day', day);
     row.set('score', score);
     row.set('answers', answers);
+    if (typeof durationMs === 'number') row.set('durationMs', durationMs);
     row.setACL(groupReadAcl(groupId));
     await row.save(null, { useMasterKey: true });
     return quizResultDto(row);
@@ -884,7 +907,7 @@ const memberHandlers = createMemberHandlers({ memberships, users, roles, generat
 const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, comments: prayerComments });
 const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims, requests });
 const resourceHandlers = createResourceHandlers({ memberships, resources });
-const quizHandlers = createQuizHandlers({ memberships, results: quizResults, bank: QUESTIONS });
+const quizHandlers = createQuizHandlers({ memberships, results: quizResults, starts: quizStarts, bank: QUESTIONS });
 const prayerNightHandlers = createPrayerNightHandlers({ memberships, nights: prayerNights, calls: callsRepo, notify: (event) => notifier.notify(event) });
 const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
@@ -985,7 +1008,7 @@ Parse.Cloud.define('joinCall', async (request) => {
 );
 // Schedule daily (e.g. 08:00 IST) in the Back4App dashboard; members opening the app also trigger the day's reminder.
 Parse.Cloud.job('prayerNightReminders', () => prayerNightHandlers.sendDueReminders());
-['getDailyQuiz', 'submitQuiz', 'getQuizLeaderboard'].forEach((name) =>
+['getDailyQuiz', 'startQuiz', 'submitQuiz', 'getQuizLeaderboard'].forEach((name) =>
   Parse.Cloud.define(name, (request) => quizHandlers[name](request.params, { callerId: callerId(request) })),
 );
 Parse.Cloud.define('ping', () => 'pong');

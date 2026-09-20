@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
-import { useDailyQuiz, type QuizQuestion } from '@/features/quiz';
+import { formatDuration, useDailyQuiz, type QuizQuestion } from '@/features/quiz';
 import { useLanguage } from '@/i18n';
 import { quizService } from '@/lib/parse';
 import { colors } from '@/theme/tokens';
@@ -64,7 +64,7 @@ export default function QuizScreen() {
   const router = useRouter();
   const { t, language, locale } = useLanguage();
   const lang: Lang = language === 'te' ? 'te' : 'en';
-  const { quiz, loading, error, refresh, submit } = useDailyQuiz(quizService);
+  const { quiz, loading, error, refresh, submit } = useDailyQuiz(quizService, { startClock: true });
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<(number | null)[]>([null, null, null]);
   const [busy, setBusy] = useState(false);
@@ -93,7 +93,7 @@ export default function QuizScreen() {
 
   // Already played: show the score and every question with the right answer marked.
   if (quiz.result) {
-    const { score, answers, correct } = quiz.result;
+    const { score, answers, correct, durationMs } = quiz.result;
     return (
       <Screen edges={['bottom']} scroll className="gap-4 pt-4">
         <Card tone="forest" className="items-center gap-1 py-6">
@@ -106,6 +106,11 @@ export default function QuizScreen() {
           <Text variant="body" color="creamSoft" className="text-center">
             {t(scoreKey(score))}
           </Text>
+          {typeof durationMs === 'number' ? (
+            <Text variant="caption" color="creamSoft">
+              {t('quiz.yourTime', { time: formatDuration(durationMs) })}
+            </Text>
+          ) : null}
           <View className="mt-3 flex-row items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1.5">
             <Ionicons name="flame" size={15} color={colors.gold} />
             <Text variant="label" color="cream" className="text-[13px]">

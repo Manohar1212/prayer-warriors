@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
-import { useLeaderboard, type LeaderboardEntry } from '@/features/quiz';
+import { formatDuration, useLeaderboard, type LeaderboardEntry } from '@/features/quiz';
 import { useLanguage } from '@/i18n';
 import { quizService } from '@/lib/parse';
 import { colors, gradients } from '@/theme/tokens';
@@ -21,7 +21,7 @@ function dayLabel(day: string, locale: string) {
 }
 
 /** One of the three places on the podium; first place stands taller in the middle. */
-function Podium({ entry, place, streakText }: { entry: LeaderboardEntry | undefined; place: 1 | 2 | 3; streakText: (n: number) => string }) {
+function Podium({ entry, place }: { entry: LeaderboardEntry | undefined; place: 1 | 2 | 3 }) {
   const height = place === 1 ? 92 : place === 2 ? 68 : 52;
   const size = place === 1 ? 64 : 52;
   return (
@@ -36,9 +36,9 @@ function Podium({ entry, place, streakText }: { entry: LeaderboardEntry | undefi
               {entry.userName.split(' ')[0]}
             </Text>
             <View className="flex-row items-center gap-1">
-              <Ionicons name="flame" size={13} color={colors.gold} />
+              <Ionicons name="checkmark-circle" size={13} color={colors.gold} />
               <Text variant="caption" color="creamSoft">
-                {streakText(entry.streak)}
+                {entry.points} · {formatDuration(entry.timeMs)}
               </Text>
             </View>
           </View>
@@ -81,7 +81,7 @@ function Row({ entry, daysInMonth, streakText, t }: { entry: LeaderboardEntry; d
           {entry.me ? ` · ${t('common.you')}` : ''}
         </Text>
         <Text variant="caption">
-          {t('quiz.pts', { n: entry.points })} · {t('quiz.daysOf', { n: entry.days, total: daysInMonth })}
+          {t('quiz.pts', { n: entry.points })} · {formatDuration(entry.timeMs)} · {t('quiz.daysOf', { n: entry.days, total: daysInMonth })}
           {entry.today === null ? '' : ` · ${t('quiz.todayScore', { n: entry.today })}`}
         </Text>
       </View>
@@ -145,14 +145,14 @@ export default function LeaderboardScreen() {
       </View>
 
       {board.entries.length === 0 ? (
-        <EmptyState icon="flame-outline" tone="honey" title={board.current ? t('quiz.emptyTitle') : t('quiz.emptyPastTitle')} body={board.current ? t('quiz.emptyBody') : t('quiz.emptyPastBody')} />
+        <EmptyState icon="trophy-outline" tone="honey" title={board.current ? t('quiz.emptyTitle') : t('quiz.emptyPastTitle')} body={board.current ? t('quiz.emptyBody') : t('quiz.emptyPastBody')} />
       ) : (
         <>
           <LinearGradient colors={[...gradients.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 16, paddingHorizontal: 12, paddingTop: 20, overflow: 'hidden', opacity: loading ? 0.6 : 1 }}>
             <View className="flex-row items-end gap-2">
-              <Podium entry={second} place={2} streakText={streakText} />
-              <Podium entry={first} place={1} streakText={streakText} />
-              <Podium entry={third} place={3} streakText={streakText} />
+              <Podium entry={second} place={2} />
+              <Podium entry={first} place={1} />
+              <Podium entry={third} place={3} />
             </View>
           </LinearGradient>
 
@@ -162,9 +162,9 @@ export default function LeaderboardScreen() {
             </Text>
             {me ? (
               <View className="flex-row">
+                <Stat icon="checkmark-circle-outline" label={t('quiz.points')} value={String(me.points)} />
+                <Stat icon="timer-outline" label={t('quiz.time')} value={formatDuration(me.timeMs)} />
                 <Stat icon="flame" label={t('quiz.streak')} value={String(me.streak)} />
-                <Stat icon="trending-up" label={t('quiz.best')} value={String(me.best)} />
-                <Stat icon="star" label={t('quiz.points')} value={String(me.points)} />
                 <Stat icon="ribbon" label={t('quiz.rank')} value={`#${me.rank}`} />
               </View>
             ) : (
@@ -177,6 +177,9 @@ export default function LeaderboardScreen() {
           <View className="gap-2">
             <Text variant="label" color="muted" className="px-1 text-[12px] uppercase tracking-[1px]">
               {t('quiz.everyone')}
+            </Text>
+            <Text variant="caption" color="muted" className="px-1">
+              {t('quiz.rankRule')}
             </Text>
             <Card className="overflow-hidden" style={{ padding: 0 }}>
               {board.entries.map((entry, i) => (

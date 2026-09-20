@@ -7,7 +7,7 @@ const caller = { callerId: 'u1' };
 
 const bank = Array.from({ length: 7 }, (_, i) => ({ id: `q${i}`, answer: i % 4, en: { q: `Q${i}`, o: ['a', 'b', 'c', 'd'] }, te: { q: `ప${i}`, o: ['అ', 'ఆ', 'ఇ', 'ఈ'] } }));
 
-function deps({ groupId = 'g1', mine = null, rows = [] } = {}) {
+function deps({ groupId = 'g1', mine = null, rows = [], started = null } = {}) {
   return {
     memberships: { findGroupId: jest.fn(async () => groupId) },
     results: {
@@ -16,6 +16,10 @@ function deps({ groupId = 'g1', mine = null, rows = [] } = {}) {
       listForMonth: jest.fn(async (_g, month) => rows.filter((r) => r.day.startsWith(month))),
       listForUser: jest.fn(async (userId, month) => rows.filter((r) => r.userId === userId && r.day.startsWith(month))),
       listDays: jest.fn(async () => [...new Set(rows.map((r) => r.day))]),
+    },
+    starts: {
+      find: jest.fn(async () => started),
+      create: jest.fn(async (fields) => ({ id: 's-new', ...fields })),
     },
     bank,
     now: () => NOW,
@@ -64,10 +68,11 @@ describe('getDailyQuiz', () => {
   });
 
   it('includes the correct answers once the caller has played', async () => {
-    const d = deps({ mine: { score: 2, answers: [0, 1, 2], day: TODAY } });
+    const d = deps({ mine: { score: 2, answers: [0, 1, 2], day: TODAY, durationMs: 42_000 } });
     const result = await createQuizHandlers(d).getDailyQuiz({}, caller);
     expect(result.result.score).toBe(2);
     expect(result.result.correct).toHaveLength(3);
+    expect(result.result.durationMs).toBe(42_000);
   });
 
   it('refuses non-members', async () => {
@@ -83,7 +88,15 @@ describe('submitQuiz', () => {
     const result = await createQuizHandlers(d).submitQuiz({ day: TODAY, answers }, caller);
     expect(result.score).toBe(2);
     expect(result.correct).toEqual(qs.map((q) => q.answer));
-    expect(d.results.create).toHaveBeenCalledWith({ groupId: 'g1', userId: 'u1', day: TODAY, score: 2, answers });
+    expect(d.results.create).toHaveBeenCalledWith({ groupId: 'g1', userId: 'u1', day: TODAY, score: 2, answers, durationMs: null });
+  });
+
+  it('measures the time from the first open on the server clock', async () => {
+    const started = { userId: 'u1', day: TODAY, startedAt: new Date(NOW.getTime() - 42_000) };
+    const d = deps({ started });
+    const result = await createQuizHandlers(d).submitQuiz({ day: TODAY, answers: [0, 0, 0] }, caller);
+    expect(result.durationMs).toBe(42_000);
+    expect(d.results.create).toHaveBeenCalledWith(expect.objectContaining({ durationMs: 42_000 }));
   });
 
   it('refuses another day, a second attempt, or incomplete answers', async () => {
@@ -93,6 +106,27 @@ describe('submitQuiz', () => {
     await expect(h.submitQuiz({ day: TODAY, answers: [0, 4, 0] }, caller)).rejects.toThrow(MESSAGES.badAnswers);
     const played = createQuizHandlers(deps({ mine: { score: 1 } }));
     await expect(played.submitQuiz({ day: TODAY, answers: [0, 0, 0] }, caller)).rejects.toThrow(MESSAGES.alreadyPlayed);
+  });
+});
+
+describe('startQuiz', () => {
+  it('records the first open of today and returns it', async () => {
+    const d = deps();
+    const result = await createQuizHandlers(d).startQuiz({}, caller);
+    expect(result).toEqual({ day: TODAY, startedAt: NOW.toISOString() });
+    expect(d.starts.create).toHaveBeenCalledWith({ groupId: 'g1', userId: 'u1', day: TODAY, startedAt: NOW });
+  });
+
+  it('keeps the first open when the quiz is opened again', async () => {
+    const earlier = new Date(NOW.getTime() - 90_000);
+    const d = deps({ started: { userId: 'u1', day: TODAY, startedAt: earlier } });
+    const result = await createQuizHandlers(d).startQuiz({}, caller);
+    expect(result.startedAt).toBe(earlier.toISOString());
+    expect(d.starts.create).not.toHaveBeenCalled();
+  });
+
+  it('refuses non-members', async () => {
+    await expect(createQuizHandlers(deps({ groupId: null })).startQuiz({}, caller)).rejects.toThrow(MESSAGES.notMember);
   });
 });
 
@@ -111,36 +145,50 @@ describe('streaksFor', () => {
 
 describe('getQuizLeaderboard', () => {
   const rows = [
-    { userId: 'u2', userName: 'Mary', day: '2026-09-15', score: 3 },
-    { userId: 'u2', userName: 'Mary', day: TODAY, score: 3 },
-    { userId: 'u1', userName: 'Shiny', day: '2026-09-15', score: 2 },
-    { userId: 'u1', userName: 'Shiny', day: '2026-09-16', score: 3 },
-    { userId: 'u1', userName: 'Shiny', day: TODAY, score: 1 },
-    { userId: 'u3', userName: 'Anna', day: TODAY, score: 3 },
-    { userId: 'u3', userName: 'Anna', day: '2026-08-30', score: 3 },
-    { userId: 'u3', userName: 'Anna', day: '2026-08-31', score: 2 },
+    { userId: 'u2', userName: 'Mary', day: '2026-09-15', score: 3, durationMs: 60_000 },
+    { userId: 'u2', userName: 'Mary', day: TODAY, score: 3, durationMs: 50_000 },
+    { userId: 'u1', userName: 'Shiny', day: '2026-09-15', score: 2, durationMs: 40_000 },
+    { userId: 'u1', userName: 'Shiny', day: '2026-09-16', score: 3, durationMs: 30_000 },
+    { userId: 'u1', userName: 'Shiny', day: TODAY, score: 1, durationMs: 20_000 },
+    { userId: 'u3', userName: 'Anna', day: TODAY, score: 3, durationMs: 10_000 },
+    { userId: 'u3', userName: 'Anna', day: '2026-08-30', score: 3, durationMs: null },
+    { userId: 'u3', userName: 'Anna', day: '2026-08-31', score: 2, durationMs: 15_000 },
   ];
 
-  it('ranks this month by streak and lists the months with history', async () => {
+  it('ranks this month by right answers, then the faster total time, and lists the months with history', async () => {
     const board = await createQuizHandlers(deps({ rows })).getQuizLeaderboard({}, caller);
     expect(board.month).toBe('2026-09');
     expect(board.current).toBe(true);
     expect(board.resetsOn).toBe('2026-10-01');
     expect(board.daysInMonth).toBe(30);
     expect(board.months).toEqual(['2026-09', '2026-08']);
-    expect(board.entries.map((e) => [e.rank, e.userName, e.streak, e.best, e.points, e.days, e.today])).toEqual([
-      [1, 'Shiny', 3, 3, 6, 3, 1],
-      [2, 'Mary', 1, 1, 6, 2, 3],
-      [3, 'Anna', 1, 1, 3, 1, 3],
+    expect(board.entries.map((e) => [e.rank, e.userName, e.points, e.timeMs, e.streak, e.best, e.days, e.today])).toEqual([
+      [1, 'Shiny', 6, 90_000, 3, 3, 3, 1],
+      [2, 'Mary', 6, 110_000, 1, 1, 2, 3],
+      [3, 'Anna', 3, 10_000, 1, 1, 1, 3],
     ]);
     expect(board.entries[0].me).toBe(true);
+  });
+
+  it('places untimed results after timed ones on equal points, then by name', async () => {
+    const tie = [
+      { userId: 'u1', userName: 'Shiny', day: TODAY, score: 3, durationMs: null },
+      { userId: 'u2', userName: 'Mary', day: TODAY, score: 3, durationMs: 80_000 },
+      { userId: 'u3', userName: 'Anna', day: TODAY, score: 3, durationMs: null },
+    ];
+    const board = await createQuizHandlers(deps({ rows: tie })).getQuizLeaderboard({}, caller);
+    expect(board.entries.map((e) => [e.userName, e.timeMs])).toEqual([
+      ['Mary', 80_000],
+      ['Anna', null],
+      ['Shiny', null],
+    ]);
   });
 
   it('shows a past month as history and ignores a future month', async () => {
     const h = createQuizHandlers(deps({ rows }));
     const past = await h.getQuizLeaderboard({ month: '2026-08' }, caller);
     expect(past.current).toBe(false);
-    expect(past.entries.map((e) => [e.userName, e.streak, e.points])).toEqual([['Anna', 2, 5]]);
+    expect(past.entries.map((e) => [e.userName, e.streak, e.points, e.timeMs])).toEqual([['Anna', 2, 5, 15_000]]);
     const future = await h.getQuizLeaderboard({ month: '2027-01' }, caller);
     expect(future.month).toBe('2026-09');
   });
