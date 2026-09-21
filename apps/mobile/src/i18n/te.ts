@@ -332,7 +332,7 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'calls.schedule.failed': 'కాల్ షెడ్యూల్ కాలేదు.',
 
   'resources.title': 'పాటలు',
-  'resources.subtitle': 'పాటల పుస్తకం, పంచుకున్న వచనాలు, ప్రార్థనలు',
+  'resources.subtitle': 'కీర్తనలు, మనం పాడే పాటలు',
   'resources.songs': 'పాటల పుస్తకం',
   'resources.scripture': 'వచనాలు',
   'resources.prayers': 'ప్రార్థనలు',
@@ -372,7 +372,7 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'resources.detail.searchLyrics': 'వెబ్‌లో సాహిత్యం వెతకండి',
   'resources.song.title': 'పాట',
   'resources.book.group': 'మా పాటలు',
-  'resources.book.akk': 'కీర్తనలు',
+  'resources.book.akk': 'ఆంధ్ర క్రైస్తవ కీర్తనలు',
   'resources.book.telugu': 'తెలుగు',
   'resources.book.akkFull': 'ఆంధ్ర క్రైస్తవ కీర్తనలు',
   'resources.book.count': '{n} పాటలు',

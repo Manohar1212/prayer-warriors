@@ -5,7 +5,7 @@ import { Linking, View } from 'react-native';
 import { RESOURCE_TYPES, lyricsSearchUrl, useResources, youtubeSearchUrl, type ResourceType } from '@/features/resources';
 import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
-import { Button, Chip, Input, Screen, Text } from '@/ui';
+import { Button, Input, Screen, Text } from '@/ui';
 
 const fieldCopy: Record<ResourceType, { title: TranslationKey; reference?: TranslationKey; body: TranslationKey; url?: TranslationKey; intro: TranslationKey }> = {
   song: { intro: 'resources.new.songIntro', title: 'resources.new.songTitle', reference: 'resources.new.artist', url: 'resources.new.link', body: 'resources.new.lyrics' },
@@ -21,7 +21,8 @@ export default function NewResourceScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const params = useLocalSearchParams<{ type?: string; title?: string; body?: string; id?: string }>();
-  const [type, setType] = useState<ResourceType>(isType(params.type) ? params.type : 'song');
+  // New shares are songs; an older verse or prayer can still be edited as what it is.
+  const [type] = useState<ResourceType>(isType(params.type) ? params.type : 'song');
   const { resources, create, update } = useResources(type);
   const editing = resources.find((r) => r.id === params.id) ?? null;
   const isEdit = Boolean(params.id);
@@ -79,13 +80,6 @@ export default function NewResourceScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       {isEdit ? <Stack.Screen options={{ title: t('resources.edit.title') }} /> : null}
-      {isEdit ? null : (
-        <View className="flex-row flex-wrap gap-2">
-          {RESOURCE_TYPES.map((r) => (
-            <Chip key={r.id} label={t(`resources.type.${r.id}` as TranslationKey)} selected={type === r.id} onPress={() => setType(r.id)} />
-          ))}
-        </View>
-      )}
       <Text variant="muted" className="text-[15px] leading-[22px]">
         {t(copy.intro)}
       </Text>

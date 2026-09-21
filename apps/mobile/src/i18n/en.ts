@@ -338,7 +338,7 @@ export const en = {
 
   // ---- resources
   'resources.title': 'Songs',
-  'resources.subtitle': 'Songbook, shared verses and prayers',
+  'resources.subtitle': 'Hymns and the songs we sing',
   'resources.songs': 'Songbook',
   'resources.scripture': 'Verses',
   'resources.prayers': 'Prayers',
@@ -378,7 +378,7 @@ export const en = {
   'resources.detail.searchLyrics': 'Search lyrics on the web',
   'resources.song.title': 'Song',
   'resources.book.group': 'Our songs',
-  'resources.book.akk': 'Keerthanalu',
+  'resources.book.akk': 'Andhra Kraisthava Keerthanalu',
   'resources.book.telugu': 'Telugu',
   'resources.book.akkFull': 'Andhra Kraisthava Keerthanalu',
   'resources.book.count': '{n} songs',
