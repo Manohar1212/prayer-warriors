@@ -6,6 +6,8 @@ export type Member = {
   displayName: string;
   role: MemberRole;
   status: 'active' | 'inactive';
+  /** E.164, from memberPhones; null when they have not added one. */
+  phone: string | null;
 };
 
 export type NewMember = { displayName: string; email: string; phone?: string };

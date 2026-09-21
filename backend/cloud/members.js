@@ -13,6 +13,7 @@ const MESSAGES = {
   notAMember: 'That person is not a member of this group.',
   notYourself: 'You cannot remove yourself from the group.',
   lastAdmin: 'The group needs at least one admin.',
+  membersOnly: "You're not a member of this group yet.",
 };
 
 function fail(message) {
@@ -21,6 +22,18 @@ function fail(message) {
 
 function createMemberHandlers({ memberships, users, roles, sessions, pushTokens, prayerPoints, generatePassword, now = () => new Date() }) {
   return {
+    /**
+     * The mobile numbers of the caller's own group, for the call and WhatsApp buttons. Phone
+     * stays a protected field on _User, so this is the only way a member sees another's number.
+     */
+    async memberPhones(_params = {}, { callerId } = {}) {
+      const groupId = callerId ? await memberships.findGroupId(callerId) : null;
+      if (!groupId) throw fail(MESSAGES.membersOnly);
+      const ids = await memberships.listActiveUserIds(groupId);
+      const people = await users.findPhones(ids);
+      return { phones: people.filter((p) => p.phone && E164.test(p.phone)).map((p) => ({ userId: p.id, phone: p.phone })) };
+    },
+
     async addMember({ displayName, email, phone } = {}, { callerId } = {}) {
       if (!callerId) throw fail(MESSAGES.adminOnly);
       const groupId = await memberships.findAdminGroupId(callerId);

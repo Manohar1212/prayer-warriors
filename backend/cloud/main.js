@@ -132,6 +132,11 @@ const users = {
     const rows = await new Parse.Query(Parse.User).containedIn('objectId', ids).limit(1000).find({ useMasterKey: true });
     return rows.map((u) => ({ id: u.id, displayName: u.get('displayName') || null, notificationPrefs: u.get('notificationPrefs') || null }));
   },
+  async findPhones(ids) {
+    if (!ids.length) return [];
+    const rows = await new Parse.Query(Parse.User).containedIn('objectId', ids).select('phone').limit(1000).find({ useMasterKey: true });
+    return rows.map((u) => ({ id: u.id, phone: u.get('phone') || null }));
+  },
   async getPrefs(userId) {
     const user = await new Parse.Query(Parse.User).get(userId, { useMasterKey: true }).catch(() => null);
     return user ? user.get('notificationPrefs') || null : null;
@@ -1026,6 +1031,9 @@ Parse.Cloud.define('addMember', (request) =>
 );
 Parse.Cloud.define('removeMember', (request) =>
   memberHandlers.removeMember(request.params, { callerId: callerId(request) }),
+);
+Parse.Cloud.define('memberPhones', (request) =>
+  memberHandlers.memberPhones(request.params, { callerId: callerId(request) }),
 );
 Parse.Cloud.define(
   'createPrayerRequest',

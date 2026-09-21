@@ -1,8 +1,10 @@
 const { createMemberHandlers, MESSAGES } = require('./members');
 
-function deps({ adminGroupId = 'g1', existing = null, target = { id: 'gm2', groupId: 'g1', userId: 'u2', role: 'member', status: 'active' }, adminCount = 2 } = {}) {
+function deps({ adminGroupId = 'g1', memberGroupId = 'g1', existing = null, target = { id: 'gm2', groupId: 'g1', userId: 'u2', role: 'member', status: 'active' }, adminCount = 2 } = {}) {
   return {
     memberships: {
+      findGroupId: jest.fn(async () => memberGroupId),
+      listActiveUserIds: jest.fn(async () => ['u1', 'u2', 'u3']),
       findAdminGroupId: jest.fn(async () => adminGroupId),
       create: jest.fn(async () => ({ id: 'gm1' })),
       findActive: jest.fn(async () => target),
@@ -12,6 +14,7 @@ function deps({ adminGroupId = 'g1', existing = null, target = { id: 'gm2', grou
     users: {
       findByEmail: jest.fn(async () => existing),
       create: jest.fn(async () => ({ id: 'u2' })),
+      findPhones: jest.fn(async () => [{ id: 'u1', phone: '+919100641194' }, { id: 'u2', phone: null }, { id: 'u3', phone: '12345' }]),
     },
     roles: { addUser: jest.fn(async () => undefined), removeUser: jest.fn(async () => undefined) },
     sessions: { revokeAll: jest.fn(async () => undefined) },
@@ -24,6 +27,20 @@ function deps({ adminGroupId = 'g1', existing = null, target = { id: 'gm2', grou
 
 const caller = { callerId: 'admin1' };
 const input = { displayName: '  Mary ', email: 'Mary@Example.com', phone: '+919876543210' };
+
+describe('memberPhones', () => {
+  it("gives a member their own group's valid numbers only", async () => {
+    const d = deps({ adminGroupId: null });
+    await expect(createMemberHandlers(d).memberPhones({}, { callerId: 'u2' })).resolves.toEqual({ phones: [{ userId: 'u1', phone: '+919100641194' }] });
+    expect(d.memberships.listActiveUserIds).toHaveBeenCalledWith('g1');
+  });
+  it('refuses anyone outside a group', async () => {
+    const d = deps({ memberGroupId: null });
+    await expect(createMemberHandlers(d).memberPhones({}, { callerId: 'x' })).rejects.toThrow(MESSAGES.membersOnly);
+    await expect(createMemberHandlers(d).memberPhones({}, {})).rejects.toThrow(MESSAGES.membersOnly);
+    expect(d.users.findPhones).not.toHaveBeenCalled();
+  });
+});
 
 describe('addMember', () => {
   it('creates the user, role, and membership, marks the password as temporary, and returns it once', async () => {

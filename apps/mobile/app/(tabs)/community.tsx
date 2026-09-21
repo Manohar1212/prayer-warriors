@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { isJoinable, useCalls } from '@/features/calls';
@@ -13,6 +13,30 @@ import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Avatar, AvatarStack, Button, Card, Screen, Segments, TabHeader, Text } from '@/ui';
 
 type Tab = 'calls' | 'members';
+
+// WhatsApp's green, deepened a little so the logo reads on its pale disc.
+const WHATSAPP_GREEN = '#1DA851';
+const WHATSAPP_TINT = '#E4F6EA';
+
+/**
+ * A round button beside a member: two soft discs of the same weight, blue for a call and
+ * pale green with WhatsApp's own logo.
+ */
+function ContactButton({ kind, label, url }: { kind: 'call' | 'whatsapp'; label: string; url: string }) {
+  const call = kind === 'call';
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={() => Linking.openURL(url).catch(() => undefined)}
+      hitSlop={4}
+      className={`h-10 w-10 items-center justify-center rounded-full active:opacity-70 ${call ? 'bg-sky' : ''}`}
+      style={call ? undefined : { backgroundColor: WHATSAPP_TINT }}
+    >
+      <Ionicons name={call ? 'call' : 'logo-whatsapp'} size={call ? 17 : 19} color={call ? colors.primary : WHATSAPP_GREEN} />
+    </Pressable>
+  );
+}
 
 function MemberRow({ member, isYou, last, canRemove, onRemove }: { member: Member; isYou: boolean; last: boolean; canRemove: boolean; onRemove: (userId: string) => Promise<void> }) {
   const { t } = useLanguage();
@@ -49,6 +73,12 @@ function MemberRow({ member, isYou, last, canRemove, onRemove }: { member: Membe
             </Text>
           ) : null}
         </View>
+        {member.phone && !isYou ? (
+          <View className="flex-row gap-2.5">
+            <ContactButton kind="call" label={t('members.call', { name: member.displayName })} url={`tel:${member.phone}`} />
+            <ContactButton kind="whatsapp" label={t('members.whatsapp', { name: member.displayName })} url={`https://wa.me/${member.phone.replace(/\D/g, '')}`} />
+          </View>
+        ) : null}
         {canRemove && !confirming ? (
           <Pressable accessibilityRole="button" accessibilityLabel={t('members.remove.action', { name: member.displayName })} onPress={() => setConfirming(true)} hitSlop={8} className="h-9 w-9 items-center justify-center rounded-full active:opacity-60">
             <Ionicons name="person-remove-outline" size={18} color={colors.muted} />

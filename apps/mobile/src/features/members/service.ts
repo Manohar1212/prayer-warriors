@@ -15,7 +15,14 @@ function toMember(row: RawMembership): Member | null {
     displayName: name || 'Member',
     role: row.role === 'admin' ? 'admin' : 'member',
     status: row.status === 'inactive' ? 'inactive' : 'active',
+    phone: null,
   };
+}
+
+function toPhones(result: unknown): { userId: string; phone: string }[] {
+  const phones = (result as { phones?: unknown } | null)?.phones;
+  if (!Array.isArray(phones)) return [];
+  return phones.filter((p): p is { userId: string; phone: string } => typeof p?.userId === 'string' && typeof p?.phone === 'string');
 }
 
 function byRoleThenName(a: Member, b: Member): number {
@@ -35,10 +42,13 @@ export function createMembersService({ fetchMemberships, cloud }: Deps): Members
   return {
     list: () =>
       guarded(async () => {
-        const rows = await fetchMemberships();
+        // Numbers are a protected field, so they come from memberPhones; the list still shows without them.
+        const [rows, phones] = await Promise.all([fetchMemberships(), Promise.resolve().then(() => cloud.run('memberPhones')).catch(() => null)]);
+        const phoneOf = new Map(toPhones(phones).map((p) => [p.userId, p.phone]));
         return rows
           .map(toMember)
           .filter((m): m is Member => m !== null && m.status === 'active')
+          .map((m) => ({ ...m, phone: phoneOf.get(m.userId) ?? null }))
           .sort(byRoleThenName);
       }),
 
