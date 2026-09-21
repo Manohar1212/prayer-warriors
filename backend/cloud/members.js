@@ -5,17 +5,21 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const MESSAGES = {
   adminOnly: 'Only admins can add members.',
+  adminOnlyRemove: 'Only admins can remove members.',
   nameRequired: "Enter the member's name.",
   invalidEmail: 'Enter a valid email address.',
   invalidPhone: "That doesn't look like a valid mobile number.",
   duplicate: 'A member with that email already exists.',
+  notAMember: 'That person is not a member of this group.',
+  notYourself: 'You cannot remove yourself from the group.',
+  lastAdmin: 'The group needs at least one admin.',
 };
 
 function fail(message) {
   return new Error(message);
 }
 
-function createMemberHandlers({ memberships, users, roles, generatePassword }) {
+function createMemberHandlers({ memberships, users, roles, sessions, pushTokens, prayerPoints, generatePassword, now = () => new Date() }) {
   return {
     async addMember({ displayName, email, phone } = {}, { callerId } = {}) {
       if (!callerId) throw fail(MESSAGES.adminOnly);
@@ -48,6 +52,34 @@ function createMemberHandlers({ memberships, users, roles, generatePassword }) {
         phone: mobile,
         startingPassword: password,
       };
+    },
+
+    /**
+     * Takes a member out of the group: the membership goes inactive, both group roles lose
+     * them (so nothing in the group is readable any more), their sessions and push tokens go,
+     * and any monthly prayer point they were carrying is freed for someone else. What they
+     * wrote - requests, comments, contributions, quiz results - stays as it is, with their name.
+     */
+    async removeMember({ userId } = {}, { callerId } = {}) {
+      if (!callerId) throw fail(MESSAGES.adminOnlyRemove);
+      const groupId = await memberships.findAdminGroupId(callerId);
+      if (!groupId) throw fail(MESSAGES.adminOnlyRemove);
+
+      const id = typeof userId === 'string' ? userId.trim() : '';
+      if (!id) throw fail(MESSAGES.notAMember);
+      if (id === callerId) throw fail(MESSAGES.notYourself);
+
+      const membership = await memberships.findActive(id);
+      if (!membership || membership.groupId !== groupId) throw fail(MESSAGES.notAMember);
+      if (membership.role === 'admin' && (await memberships.countActiveAdmins(groupId)) <= 1) throw fail(MESSAGES.lastAdmin);
+
+      await memberships.deactivate({ id: membership.id, removedBy: callerId, removedAt: now() });
+      await roles.removeUser(groupId, 'member', id);
+      await roles.removeUser(groupId, 'admin', id);
+      await prayerPoints.releaseClaims({ groupId, userId: id });
+      await sessions.revokeAll(id);
+      await pushTokens.removeAllForUser(id);
+      return { userId: id };
     },
   };
 }

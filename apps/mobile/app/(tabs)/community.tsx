@@ -14,23 +14,61 @@ import { Avatar, AvatarStack, Button, Card, Screen, Segments, TabHeader, Text } 
 
 type Tab = 'calls' | 'members';
 
-function MemberRow({ member, isYou, last }: { member: Member; isYou: boolean; last: boolean }) {
+function MemberRow({ member, isYou, last, canRemove, onRemove }: { member: Member; isYou: boolean; last: boolean; canRemove: boolean; onRemove: (userId: string) => Promise<void> }) {
   const { t } = useLanguage();
   const admin = member.role === 'admin';
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Two taps rather than a system alert: a two-button Alert does nothing on the web build.
+  async function confirm() {
+    setBusy(true);
+    setError(null);
+    try {
+      await onRemove(member.userId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('members.remove.failed'));
+      setBusy(false);
+      setConfirming(false);
+    }
+  }
+
   return (
-    <View className={`flex-row items-center gap-3 py-3 ${last ? '' : 'border-b border-border'}`}>
-      <Avatar name={member.displayName} size={40} />
-      <View className="flex-1 gap-0.5">
-        <Text variant="label" className="text-[15px]">
-          {member.displayName}
-          {isYou ? ` (${t('common.you')})` : ''}
-        </Text>
-        {admin ? (
-          <Text variant="caption" color="primary">
-            {t('common.admin')}
+    <View className={`gap-2 py-3 ${last ? '' : 'border-b border-border'}`}>
+      <View className="flex-row items-center gap-3">
+        <Avatar name={member.displayName} size={40} />
+        <View className="flex-1 gap-0.5">
+          <Text variant="label" className="text-[15px]">
+            {member.displayName}
+            {isYou ? ` (${t('common.you')})` : ''}
           </Text>
+          {admin ? (
+            <Text variant="caption" color="primary">
+              {t('common.admin')}
+            </Text>
+          ) : null}
+        </View>
+        {canRemove && !confirming ? (
+          <Pressable accessibilityRole="button" accessibilityLabel={t('members.remove.action', { name: member.displayName })} onPress={() => setConfirming(true)} hitSlop={8} className="h-9 w-9 items-center justify-center rounded-full active:opacity-60">
+            <Ionicons name="person-remove-outline" size={18} color={colors.muted} />
+          </Pressable>
         ) : null}
       </View>
+      {confirming ? (
+        <View className="gap-2 rounded-[12px] bg-panel p-3">
+          <Text variant="caption">{t('members.remove.confirm', { name: member.displayName })}</Text>
+          <View className="flex-row gap-2">
+            <Button title={t('common.cancel')} size="compact" variant="secondary" className="flex-1" disabled={busy} onPress={() => setConfirming(false)} />
+            <Button title={t('members.remove.yes')} size="compact" variant="danger" className="flex-1" loading={busy} disabled={busy} onPress={confirm} />
+          </View>
+        </View>
+      ) : null}
+      {error ? (
+        <Text variant="caption" color="roseDeep">
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -44,7 +82,7 @@ export default function CommunityScreen() {
   const router = useRouter();
   const { t, locale } = useLanguage();
   const { user } = useAuth();
-  const { members, loading, error, isAdmin, refresh } = useMembers();
+  const { members, loading, error, isAdmin, refresh, remove } = useMembers();
   const { next, past } = useCalls();
   const [tab, setTab] = useState<Tab>('calls');
   const [onCall, setOnCall] = useState<string[]>([]);
@@ -165,7 +203,7 @@ export default function CommunityScreen() {
             ) : (
               <Card className="py-1">
                 {members.map((m, i) => (
-                  <MemberRow key={m.id} member={m} isYou={m.userId === user?.id} last={i === members.length - 1} />
+                  <MemberRow key={m.id} member={m} isYou={m.userId === user?.id} last={i === members.length - 1} canRemove={isAdmin && m.userId !== user?.id} onRemove={remove} />
                 ))}
               </Card>
             )}

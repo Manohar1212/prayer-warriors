@@ -72,6 +72,28 @@ const memberships = {
       .find({ useMasterKey: true });
     return rows.map((row) => refId(row.get('user'))).filter(Boolean);
   },
+  /** The caller's own active membership row, whatever their role. */
+  async findActive(userId) {
+    const row = await new Parse.Query('GroupMember')
+      .equalTo('user', pointer('_User', userId))
+      .equalTo('status', 'active')
+      .first({ useMasterKey: true });
+    return row ? { id: row.id, groupId: refId(row.get('group')), userId, role: row.get('role'), status: row.get('status') } : null;
+  },
+  async countActiveAdmins(groupId) {
+    return new Parse.Query('GroupMember')
+      .equalTo('group', pointer('Group', groupId))
+      .equalTo('role', 'admin')
+      .equalTo('status', 'active')
+      .count({ useMasterKey: true });
+  },
+  async deactivate({ id, removedBy, removedAt }) {
+    const row = await new Parse.Query('GroupMember').get(id, { useMasterKey: true });
+    row.set('status', 'inactive');
+    row.set('removedBy', pointer('_User', removedBy));
+    row.set('removedAt', removedAt);
+    await row.save(null, { useMasterKey: true });
+  },
   async create({ groupId, userId, role }) {
     const row = new Parse.Object('GroupMember');
     row.set('group', pointer('Group', groupId));
@@ -130,6 +152,25 @@ const roles = {
     if (!role) throw new Error(`Role group:${groupId}:${roleName} is missing.`);
     role.getUsers().add(Parse.User.createWithoutData(userId));
     await role.save(null, { useMasterKey: true });
+  },
+  async removeUser(groupId, roleName, userId) {
+    const role = await new Parse.Query(Parse.Role)
+      .equalTo('name', `group:${groupId}:${roleName}`)
+      .first({ useMasterKey: true });
+    if (!role) return;
+    role.getUsers().remove(Parse.User.createWithoutData(userId));
+    await role.save(null, { useMasterKey: true });
+  },
+};
+
+/** Signing a removed member out everywhere: without this their open app keeps its session. */
+const sessions = {
+  async revokeAll(userId) {
+    const rows = await new Parse.Query(Parse.Session)
+      .equalTo('user', pointer('_User', userId))
+      .limit(1000)
+      .find({ useMasterKey: true });
+    await Parse.Object.destroyAll(rows, { useMasterKey: true });
   },
 };
 
@@ -321,6 +362,15 @@ const prayerPointClaims = {
       .include('user')
       .first({ useMasterKey: true });
     return row ? prayerPointClaimDto(row) : null;
+  },
+  /** Every claim this member holds in the group, freed when they are removed. */
+  async releaseClaims({ groupId, userId }) {
+    const rows = await new Parse.Query('PrayerPointClaim')
+      .equalTo('group', pointer('Group', groupId))
+      .equalTo('user', pointer('_User', userId))
+      .limit(1000)
+      .find({ useMasterKey: true });
+    await Parse.Object.destroyAll(rows, { useMasterKey: true });
   },
   async findMine(userId, groupId, month) {
     const row = await new Parse.Query('PrayerPointClaim')
@@ -841,6 +891,13 @@ const pushTokens = {
       .find({ useMasterKey: true });
     await Parse.Object.destroyAll(rows, { useMasterKey: true });
   },
+  async removeAllForUser(userId) {
+    const rows = await new Parse.Query('PushToken')
+      .equalTo('user', pointer('_User', userId))
+      .limit(1000)
+      .find({ useMasterKey: true });
+    await Parse.Object.destroyAll(rows, { useMasterKey: true });
+  },
   async forUsers(userIds) {
     if (!userIds.length) return [];
     const rows = await new Parse.Query('PushToken')
@@ -903,7 +960,7 @@ function withNotify(handler, after) {
 
 // ---------- cloud functions ----------
 
-const memberHandlers = createMemberHandlers({ memberships, users, roles, generatePassword });
+const memberHandlers = createMemberHandlers({ memberships, users, roles, sessions, pushTokens, prayerPoints: prayerPointClaims, generatePassword });
 const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, comments: prayerComments });
 const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims, requests });
 const resourceHandlers = createResourceHandlers({ memberships, resources });
@@ -913,6 +970,9 @@ const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
 Parse.Cloud.define('addMember', (request) =>
   memberHandlers.addMember(request.params, { callerId: callerId(request) }),
+);
+Parse.Cloud.define('removeMember', (request) =>
+  memberHandlers.removeMember(request.params, { callerId: callerId(request) }),
 );
 Parse.Cloud.define(
   'createPrayerRequest',

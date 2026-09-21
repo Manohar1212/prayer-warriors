@@ -87,6 +87,8 @@ const groupMemberSchema = {
     role: { type: 'String', required: true }, // 'admin' | 'member'
     status: { type: 'String', required: true, defaultValue: 'active' }, // 'active' | 'inactive'
     joinedAt: { type: 'Date' },
+    removedAt: { type: 'Date' },
+    removedBy: { type: 'Pointer', targetClass: '_User' },
   },
   classLevelPermissions: {
     find: authenticated,

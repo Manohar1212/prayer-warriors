@@ -490,6 +490,10 @@ export const en = {
   'members.added.password': 'Starting password',
   'members.added.share': 'Share details',
   'members.added.copy': 'Copy password',
+  'members.remove.action': 'Remove {name} from the group',
+  'members.remove.confirm': 'Remove {name}? They lose access to the group. What they shared stays.',
+  'members.remove.yes': 'Remove',
+  'members.remove.failed': 'Could not remove the member.',
   'members.added.copied': 'Password copied',
   'members.added.note': 'They can change it any time with "Forgot password" on the sign-in screen.',
 

@@ -12,6 +12,8 @@ export type MembersState = {
   isAdmin: boolean;
   refresh: () => Promise<void>;
   add: (input: NewMember) => Promise<AddedMember>;
+  /** Admin only: takes the member out of the group. */
+  remove: (userId: string) => Promise<void>;
 };
 
 export function useMembers(): MembersState {
@@ -28,7 +30,15 @@ export function useMembers(): MembersState {
     [refresh],
   );
 
+  const remove = useCallback(
+    async (userId: string) => {
+      await membersService.remove(userId);
+      await refresh();
+    },
+    [refresh],
+  );
+
   const isAdmin = members.some((m) => m.userId === user?.id && m.role === 'admin');
 
-  return { members, loading, error, isAdmin, refresh, add };
+  return { members, loading, error, isAdmin, refresh, add, remove };
 }

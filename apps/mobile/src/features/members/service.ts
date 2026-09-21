@@ -38,7 +38,7 @@ export function createMembersService({ fetchMemberships, cloud }: Deps): Members
         const rows = await fetchMemberships();
         return rows
           .map(toMember)
-          .filter((m): m is Member => m !== null)
+          .filter((m): m is Member => m !== null && m.status === 'active')
           .sort(byRoleThenName);
       }),
 
@@ -50,6 +50,11 @@ export function createMembersService({ fetchMemberships, cloud }: Deps): Members
           phone: input.phone,
         })) as AddedMember;
         return result;
+      }),
+
+    remove: (userId: string) =>
+      guarded(async () => {
+        await cloud.run('removeMember', { userId });
       }),
   };
 }

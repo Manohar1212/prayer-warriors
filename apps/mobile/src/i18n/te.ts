@@ -479,6 +479,10 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'members.added.password': 'ప్రారంభ పాస్‌వర్డ్',
   'members.added.share': 'వివరాలు షేర్ చేయి',
   'members.added.copy': 'పాస్‌వర్డ్ కాపీ చేయి',
+  'members.remove.action': '{name}ను గ్రూప్ నుండి తొలగించు',
+  'members.remove.confirm': '{name}ను తొలగించాలా? వారికి గ్రూప్ అందుబాటు పోతుంది. వారు పంచుకున్నవి అలాగే ఉంటాయి.',
+  'members.remove.yes': 'తొలగించు',
+  'members.remove.failed': 'సభ్యురాలిని తొలగించలేకపోయాము.',
   'members.added.copied': 'పాస్‌వర్డ్ కాపీ అయింది',
   'members.added.note': 'సైన్ ఇన్ స్క్రీన్‌లో "పాస్‌వర్డ్ మర్చిపోయారా?" ద్వారా వారు ఎప్పుడైనా మార్చుకోవచ్చు.',
 

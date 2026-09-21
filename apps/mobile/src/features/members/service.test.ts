@@ -45,6 +45,12 @@ describe('membersService', () => {
     });
   });
 
+  it('removes a member through the cloud function', async () => {
+    const { service, cloud } = svc({ userId: 'u2' });
+    await service.remove('u2');
+    expect(cloud.run).toHaveBeenCalledWith('removeMember', { userId: 'u2' });
+  });
+
   it('passes cloud messages through', async () => {
     const { service, cloud } = svc();
     cloud.run.mockRejectedValueOnce(

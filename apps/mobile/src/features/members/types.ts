@@ -29,4 +29,6 @@ export type RawMembership = {
 export type MembersService = {
   list(): Promise<Member[]>;
   add(input: NewMember): Promise<AddedMember>;
+  /** Takes the member out of the group; what they wrote stays, with their name. */
+  remove(userId: string): Promise<void>;
 };
