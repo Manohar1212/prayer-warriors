@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -34,15 +34,49 @@ const tiles: { label: TranslationKey; icon: IconName | 'pray'; bg: string; fg: s
   { label: 'home.action.leaderboard', icon: 'trophy', bg: 'bg-lavender', fg: colors.violet, href: '/quiz/leaderboard' },
 ];
 
+type RowIcon = IconName | 'pray' | 'prayNight' | 'quiz';
+
+/** A small second glyph at the disc's lower right, so one icon can say two things. */
+function Corner({ name, color }: { name: IconName; color: string }) {
+  return (
+    <View className="absolute -bottom-0.5 -right-0.5 h-[18px] w-[18px] items-center justify-center rounded-full bg-surface">
+      <Ionicons name={name} size={11} color={color} />
+    </View>
+  );
+}
+
+function RowGlyph({ icon, fg }: { icon: RowIcon; fg: string }) {
+  if (icon === 'pray') return <PrayIcon size={20} color={fg} />;
+  // Prayer, at night: praying hands with a crescent.
+  if (icon === 'prayNight') {
+    return (
+      <>
+        <PrayIcon size={20} color={fg} />
+        <Corner name="moon" color={fg} />
+      </>
+    );
+  }
+  // Knowing the Bible: an open book with a bulb.
+  if (icon === 'quiz') {
+    return (
+      <>
+        <MaterialCommunityIcons name="book-open-page-variant" size={20} color={fg} />
+        <Corner name="bulb" color={fg} />
+      </>
+    );
+  }
+  return <Ionicons name={icon} size={19} color={fg} />;
+}
+
 /**
  * One line in the day's list. The three used to be separate cards, which read as three
  * competing boxes; they are rows in one card now, so the page has a single block to scan.
  */
-function ActionRow({ icon, bg, fg, title, body, badge, onPress }: { icon: IconName | 'pray'; bg: string; fg: string; title: string; body?: string; badge?: string; onPress: () => void }) {
+function ActionRow({ icon, bg, fg, title, body, badge, onPress }: { icon: RowIcon; bg: string; fg: string; title: string; body?: string; badge?: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" onPress={onPress} className="flex-row items-center gap-3.5 px-4 py-3.5 active:opacity-70">
       <View className={`h-10 w-10 items-center justify-center rounded-full ${bg}`}>
-        {icon === 'pray' ? <PrayIcon size={20} color={fg} /> : <Ionicons name={icon} size={19} color={fg} />}
+        <RowGlyph icon={icon} fg={fg} />
       </View>
       <View className="flex-1 gap-0.5">
         <Text variant="label" className="text-[15px]">
@@ -143,7 +177,7 @@ export default function HomeScreen() {
         <ActionRow icon="pray" bg="bg-sky" fg={colors.skyDeep} title={t('home.prayerRequest')} onPress={() => router.push('/prayer/new')} />
         <View className="ml-[66px] h-px bg-border" />
         <ActionRow
-          icon={night ? 'moon' : 'calendar'}
+          icon="prayNight"
           bg="bg-lavender"
           fg={colors.violet}
           title={night ? t('prayer.night.title') : t('home.monthlyPrayer')}
@@ -153,7 +187,7 @@ export default function HomeScreen() {
         />
         <View className="ml-[66px] h-px bg-border" />
         <ActionRow
-          icon="help-circle"
+          icon="quiz"
           bg="bg-honey"
           fg={colors.gold}
           title={t('home.quiz')}
