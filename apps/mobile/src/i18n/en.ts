@@ -547,8 +547,6 @@ export const en = {
   'profile.journal': 'My private journal',
   'profile.language': 'Language',
   'profile.signOut': 'Sign out',
-  'language.title': 'Choose your language',
-  'language.subtitle': 'Select your preferred language to continue.',
   'language.en': 'English',
   'language.te': 'తెలుగు',
 } as const;

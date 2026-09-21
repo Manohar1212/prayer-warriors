@@ -4,14 +4,20 @@ import { useState } from 'react';
 import { Pressable } from 'react-native';
 
 import { useAuth } from '@/features/auth';
-import { useT } from '@/i18n';
+import { useLanguage, type Language } from '@/i18n';
 import { colors } from '@/theme/tokens';
-import { Button, Input, Text } from '@/ui';
+import { Button, Input, Segments, Text } from '@/ui';
 import { AuthShell } from '@/ui/AuthShell';
 
+const languages: { value: Language; label: string }[] = [
+  { value: 'en', label: 'English' },
+  { value: 'te', label: 'తెలుగు' },
+];
+
+/** Sign in, with the app's language chosen right here: the screen switches the moment it is tapped. */
 export default function LoginScreen() {
   const { signIn } = useAuth();
-  const t = useT();
+  const { t, language, setLanguage } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
@@ -32,7 +38,7 @@ export default function LoginScreen() {
 
   return (
     <AuthShell
-      backTo="/(auth)/language"
+      backTo="/(auth)/welcome"
       brand
       title={t('login.title')}
       subtitle={t('login.subtitle')}
@@ -42,6 +48,7 @@ export default function LoginScreen() {
         </Text>
       }
     >
+      <Segments variant="pill" options={languages} value={language} onChange={setLanguage} />
       <Input
         left="mail-outline"
         placeholder={t('common.email')}

@@ -109,8 +109,6 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'login.forgot': 'పాస్‌వర్డ్ మర్చిపోయారా?',
   'login.failed': 'సైన్ ఇన్ కాలేదు.',
   'login.invitedOnly': 'కొత్త సభ్యులను మీ గ్రూప్ అడ్మిన్ చేరుస్తారు.',
-  'language.title': 'మీ భాషను ఎంచుకోండి',
-  'language.subtitle': 'కొనసాగించడానికి మీకు నచ్చిన భాషను ఎంచుకోండి.',
   'forgot.title': 'పాస్‌వర్డ్ రీసెట్ చేయండి',
   'forgot.subtitle': 'మీ ఇమెయిల్ ఇవ్వండి, కొత్త పాస్‌వర్డ్ ఎంచుకోవడానికి లింక్ పంపుతాము.',
   'forgot.send': 'రీసెట్ లింక్ పంపు',

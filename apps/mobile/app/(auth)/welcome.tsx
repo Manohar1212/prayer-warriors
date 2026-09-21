@@ -57,7 +57,7 @@ export default function WelcomeScreen() {
           </View>
 
           <View className="gap-3">
-            <Button title={en['welcome.signIn']} variant="inverse" onPress={() => router.push('/(auth)/language')} />
+            <Button title={en['welcome.signIn']} variant="inverse" onPress={() => router.push('/(auth)/login')} />
             <Text variant="caption" color="creamSoft" className="text-center">
               {en['welcome.invitation']}
             </Text>
