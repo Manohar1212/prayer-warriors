@@ -1,7 +1,7 @@
 import { createParseAuthService } from './service';
 import type { ParseLike, ParseUserLike } from './types';
 
-type Fields = { email: string; displayName?: string; phone?: string };
+type Fields = { email: string; displayName?: string; phone?: string; mustSetPassword?: boolean; password?: string };
 
 function fakeUser(id: string, fields: Fields): ParseUserLike & { fields: Fields; saved: number } {
   const user = {
@@ -44,7 +44,34 @@ describe('createParseAuthService', () => {
       email: 'a@b.c',
       displayName: 'Ana',
       phone: null,
+      mustSetPassword: false,
     });
+  });
+
+  it('re-reads the account from the server so a newly set flag is seen', async () => {
+    const user = fakeUser('u1', { email: 'a@b.c', displayName: 'Ana' });
+    const fetch = jest.fn(async () => {
+      user.fields.mustSetPassword = true;
+    });
+    const { parse } = fakeParse(Object.assign(user, { fetch }));
+    await expect(createParseAuthService(parse).getCurrentUser()).resolves.toMatchObject({ mustSetPassword: true });
+  });
+
+  it('keeps the stored account when the server cannot be reached', async () => {
+    const user = Object.assign(fakeUser('u1', { email: 'a@b.c', displayName: 'Ana' }), { fetch: jest.fn(async () => Promise.reject(new Error('offline'))) });
+    const { parse } = fakeParse(user);
+    await expect(createParseAuthService(parse).getCurrentUser()).resolves.toMatchObject({ id: 'u1', displayName: 'Ana' });
+  });
+
+  it('sets the password, clears the flag, and signs in again with the new password', async () => {
+    const user = fakeUser('u1', { email: 'a@b.c', displayName: 'Ana', mustSetPassword: true });
+    const { parse, User } = fakeParse(user);
+    const result = await createParseAuthService(parse).setPassword('new-secret');
+    expect(user.fields.password).toBe('new-secret');
+    expect(user.fields.mustSetPassword).toBe(false);
+    expect(user.saved).toBe(1);
+    expect(User.logIn).toHaveBeenCalledWith('a@b.c', 'new-secret');
+    expect(result.mustSetPassword).toBe(false);
   });
 
   it('signs in with a trimmed, lower-cased email', async () => {

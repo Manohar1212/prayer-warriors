@@ -42,6 +42,8 @@ function createMemberHandlers({ memberships, users, roles, sessions, pushTokens,
         password,
         displayName: name,
         ...(mobile ? { phone: mobile } : {}),
+        // The starting password travels over WhatsApp, so the app asks them to choose their own.
+        mustSetPassword: true,
       });
       await roles.addUser(groupId, 'member', user.id);
       await memberships.create({ groupId, userId: user.id, role: 'member' });

@@ -4,7 +4,7 @@ import type { PropsWithChildren } from 'react';
 import { AuthProvider, useAuth } from './AuthProvider';
 import type { AuthService, AuthUser } from './types';
 
-const ana: AuthUser = { id: 'u1', email: 'a@b.c', displayName: 'Ana', phone: null };
+const ana: AuthUser = { id: 'u1', email: 'a@b.c', displayName: 'Ana', phone: null, mustSetPassword: false };
 
 function fakeService(current: AuthUser | null): AuthService {
   return {
@@ -17,6 +17,7 @@ function fakeService(current: AuthUser | null): AuthService {
       ...patch,
       displayName: patch.displayName ?? ana.displayName,
     })),
+    setPassword: jest.fn(async () => ({ ...ana, mustSetPassword: false })),
   };
 }
 

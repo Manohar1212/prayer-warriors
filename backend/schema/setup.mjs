@@ -47,6 +47,7 @@ const userSchema = {
     phone: { type: 'String' },
     avatar: { type: 'File' },
     notificationPrefs: { type: 'Object' },
+    mustSetPassword: { type: 'Boolean' }, // set on admin-made accounts until the member picks a password
   },
   classLevelPermissions: {
     find: authenticated,

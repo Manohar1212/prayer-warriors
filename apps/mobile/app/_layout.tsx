@@ -58,6 +58,9 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
       <Stack.Protected guard={gate === 'auth'}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
+      <Stack.Protected guard={gate === 'password'}>
+        <Stack.Screen name="set-password" />
+      </Stack.Protected>
       <Stack.Protected guard={gate === 'setup'}>
         <Stack.Screen name="account-setup" />
       </Stack.Protected>

@@ -26,7 +26,7 @@ const caller = { callerId: 'admin1' };
 const input = { displayName: '  Mary ', email: 'Mary@Example.com', phone: '+919876543210' };
 
 describe('addMember', () => {
-  it('creates the user, role, and membership and returns the starting password once', async () => {
+  it('creates the user, role, and membership, marks the password as temporary, and returns it once', async () => {
     const d = deps();
     const result = await createMemberHandlers(d).addMember(input, caller);
     expect(d.users.create).toHaveBeenCalledWith({
@@ -35,6 +35,7 @@ describe('addMember', () => {
       password: 'Starting123',
       displayName: 'Mary',
       phone: '+919876543210',
+      mustSetPassword: true,
     });
     expect(d.roles.addUser).toHaveBeenCalledWith('g1', 'member', 'u2');
     expect(d.memberships.create).toHaveBeenCalledWith({ groupId: 'g1', userId: 'u2', role: 'member' });

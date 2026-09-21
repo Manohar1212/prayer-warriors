@@ -19,6 +19,7 @@ export type AuthContextValue = {
   signOut(): Promise<void>;
   requestPasswordReset(email: string): Promise<void>;
   updateProfile(patch: ProfilePatch): Promise<void>;
+  setPassword(password: string): Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -72,9 +73,16 @@ export function AuthProvider({ service, children }: PropsWithChildren<{ service:
     [service],
   );
 
+  const setPassword = useCallback(
+    async (password: string) => {
+      setUser(await service.setPassword(password));
+    },
+    [service],
+  );
+
   const value = useMemo(
-    () => ({ status, user, signIn, signOut, requestPasswordReset, updateProfile }),
-    [status, user, signIn, signOut, requestPasswordReset, updateProfile],
+    () => ({ status, user, signIn, signOut, requestPasswordReset, updateProfile, setPassword }),
+    [status, user, signIn, signOut, requestPasswordReset, updateProfile, setPassword],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

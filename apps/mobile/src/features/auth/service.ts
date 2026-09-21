@@ -11,6 +11,7 @@ function toAuthUser(user: ParseUserLike): AuthUser {
     email: user.getEmail() ?? '',
     displayName: optionalString(user.get('displayName')),
     phone: optionalString(user.get('phone')),
+    mustSetPassword: user.get('mustSetPassword') === true,
   };
 }
 
@@ -31,7 +32,10 @@ export function createParseAuthService(parse: ParseLike): AuthService {
     getCurrentUser: () =>
       guarded(async () => {
         const user = await parse.User.currentAsync();
-        return user ? toAuthUser(user) : null;
+        if (!user) return null;
+        // Picks up flags set on the server since this phone signed in; offline, the stored copy will do.
+        await user.fetch?.().catch(() => undefined);
+        return toAuthUser(user);
       }),
 
     signIn: (email, password) =>
@@ -55,6 +59,18 @@ export function createParseAuthService(parse: ParseLike): AuthService {
         if (patch.phone !== undefined) user.set('phone', patch.phone.trim());
         await user.save();
         return toAuthUser(user);
+      }),
+
+    setPassword: (password) =>
+      guarded(async () => {
+        const user = await parse.User.currentAsync();
+        if (!user) throw Object.assign(new Error('signed out'), { code: 209 });
+        const email = user.getEmail() ?? '';
+        user.set('password', password);
+        user.set('mustSetPassword', false);
+        await user.save();
+        // A password change can end the old session, so sign in again with the new password.
+        return toAuthUser(await parse.User.logIn(email, password));
       }),
   };
 }
