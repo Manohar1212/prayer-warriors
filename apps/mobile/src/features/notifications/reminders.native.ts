@@ -74,7 +74,8 @@ export async function syncPrayerNightReminders(night: ReminderNight, labels: { d
     const existing = new Set<string>();
     for (const item of scheduled) {
       if (!item.identifier.startsWith(NIGHT_PREFIX)) continue;
-      if (wanted.has(item.identifier)) existing.add(item.identifier);
+      // Keep a reminder only if it still says the same thing; renamed or re-worded ones are replaced.
+      if (wanted.get(item.identifier)?.title === item.content.title) existing.add(item.identifier);
       else await Notifications.cancelScheduledNotificationAsync(item.identifier);
     }
 

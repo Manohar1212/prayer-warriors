@@ -7,7 +7,7 @@ export const CATEGORIES: { id: PrayerCategory; label: string }[] = [
   { id: 'personal', label: 'Personal' },
   { id: 'work', label: 'Work' },
   { id: 'spiritual', label: 'Spiritual' },
-  { id: 'relationships', label: 'Relationships' },
+  { id: 'relationships', label: 'Relatives' },
   { id: 'other', label: 'Other' },
 ];
 

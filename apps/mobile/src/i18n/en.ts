@@ -240,7 +240,7 @@ export const en = {
   'prayer.category.personal': 'Personal',
   'prayer.category.work': 'Work',
   'prayer.category.spiritual': 'Spiritual',
-  'prayer.category.relationships': 'Relationships',
+  'prayer.category.relationships': 'Relatives',
   'prayer.category.other': 'Other',
   'prayer.detail.title': 'Prayer request',
   'prayer.detail.notAvailable': "That prayer request isn't available.",
