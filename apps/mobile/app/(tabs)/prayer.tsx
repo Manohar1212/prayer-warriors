@@ -25,8 +25,8 @@ function RequestCard({ request, onPray, onOpen }: { request: PrayerRequest; onPr
     <Card className="gap-3">
       <Pressable accessibilityRole="button" accessibilityLabel={`Open ${request.title}`} onPress={onOpen} className="gap-3">
         <View className="flex-row items-center gap-3">
-          <View className="h-11 w-11 items-center justify-center rounded-full bg-honey">
-            <PrayIcon size={22} color={colors.gold} />
+          <View className="h-11 w-11 items-center justify-center rounded-full bg-panel">
+            <PrayIcon size={22} color={colors.primary} />
           </View>
           <View className="flex-1 gap-0.5">
             <Text variant="label" className="text-[15px]" numberOfLines={2}>
@@ -82,8 +82,8 @@ function PointRow({ point, canEdit, onClaim, onRelease, onDone, onEdit, onAnswer
   return (
     <Card className="gap-3">
       <View className="flex-row items-center gap-3">
-        <View className={`h-11 w-11 items-center justify-center rounded-full ${done ? 'bg-sage' : point.mine ? 'bg-sky' : 'bg-honey'}`}>
-          {done ? <Ionicons name="checkmark" size={20} color={colors.leaf} /> : <PrayIcon size={22} color={point.mine ? colors.skyDeep : colors.gold} />}
+        <View className={`h-11 w-11 items-center justify-center rounded-full ${done ? 'bg-sage' : point.mine ? 'bg-sky' : 'bg-panel'}`}>
+          {done ? <Ionicons name="checkmark" size={20} color={colors.leaf} /> : <PrayIcon size={22} color={point.mine ? colors.skyDeep : colors.primary} />}
         </View>
         <View className="flex-1 gap-0.5">
           <Text variant="label" className="text-[15px]">
