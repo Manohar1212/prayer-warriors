@@ -22,12 +22,17 @@ function deps({ groupId = 'g1', adminGroupId = null, request = dto(), response =
       get: jest.fn(async () => request),
       update: jest.fn(async (id, patch) => dto({ ...request, ...patch })),
       incrementPraying: jest.fn(async (id, delta) => (request ? request.prayingCount : 0) + delta),
+      remove: jest.fn(async () => undefined),
     },
     responses: {
       find: jest.fn(async () => response),
       create: jest.fn(async () => ({ id: 'resp1' })),
       remove: jest.fn(async () => undefined),
+      removeAllFor: jest.fn(async () => undefined),
     },
+    comments: { removeAllFor: jest.fn(async () => undefined) },
+    points: { unlinkRequest: jest.fn(async () => undefined) },
+    notifications: { removeByRoute: jest.fn(async () => undefined) },
     now: () => NOW,
   };
 }
@@ -109,6 +114,36 @@ describe('togglePraying', () => {
   it('rejects non-members', async () => {
     const d = deps({ groupId: null });
     await expect(createPrayerHandlers(d).togglePraying({ requestId: 'r1' }, caller)).rejects.toThrow(MESSAGES.notMember);
+  });
+});
+
+describe('deletePrayerRequest', () => {
+  it('lets the asker delete, taking the taps, comments and notifications with it and unlinking the monthly point', async () => {
+    const d = deps();
+    await expect(createPrayerHandlers(d).deletePrayerRequest({ requestId: 'r1' }, caller)).resolves.toEqual({ id: 'r1' });
+    expect(d.responses.removeAllFor).toHaveBeenCalledWith('r1');
+    expect(d.comments.removeAllFor).toHaveBeenCalledWith('r1');
+    expect(d.points.unlinkRequest).toHaveBeenCalledWith('r1');
+    expect(d.notifications.removeByRoute).toHaveBeenCalledWith('/prayer/r1');
+    expect(d.requests.remove).toHaveBeenCalledWith('r1');
+  });
+
+  it('lets a group admin delete an answered request', async () => {
+    const d = deps({ adminGroupId: 'g1', request: dto({ status: 'answered' }) });
+    await createPrayerHandlers(d).deletePrayerRequest({ requestId: 'r1' }, { callerId: 'admin' });
+    expect(d.requests.remove).toHaveBeenCalledWith('r1');
+  });
+
+  it('refuses other members and touches nothing', async () => {
+    const d = deps();
+    await expect(createPrayerHandlers(d).deletePrayerRequest({ requestId: 'r1' }, { callerId: 'u2' })).rejects.toThrow(MESSAGES.notAllowedDelete);
+    expect(d.responses.removeAllFor).not.toHaveBeenCalled();
+    expect(d.requests.remove).not.toHaveBeenCalled();
+  });
+
+  it('refuses a request from another group', async () => {
+    const d = deps({ request: dto({ groupId: 'g2' }) });
+    await expect(createPrayerHandlers(d).deletePrayerRequest({ requestId: 'r1' }, caller)).rejects.toThrow(MESSAGES.notFound);
   });
 });
 

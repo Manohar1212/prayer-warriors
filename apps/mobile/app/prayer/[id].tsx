@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, Switch, TextInput, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { useMembers } from '@/features/members';
 import { usePrayerRequests, type PrayerComment } from '@/features/prayer';
+import { goBackOr } from '@/lib/navigation';
 import { prayerPointsService, prayerService } from '@/lib/parse';
 import { timeAgo } from '@/lib/time';
 import { useLanguage, type TranslationKey } from '@/i18n';
@@ -19,6 +20,7 @@ function longDate(iso: string, locale: string): string {
 
 export default function PrayerRequestScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const { t, locale } = useLanguage();
   const { user } = useAuth();
   const { isAdmin } = useMembers();
@@ -34,6 +36,8 @@ export default function PrayerRequestScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [monthly, setMonthly] = useState<'idle' | 'busy' | 'added'>('idle');
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const loadComments = useCallback(() => {
     if (!id) return;
@@ -55,7 +59,24 @@ export default function PrayerRequestScreen() {
   }
 
   const isAnswered = request.status === 'answered';
-  const canAnswer = !isAnswered && (request.authorId === user?.id || isAdmin);
+  const canManage = request.authorId === user?.id || isAdmin;
+  const canAnswer = !isAnswered && canManage;
+
+  async function deleteRequest() {
+    if (!request) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await prayerService.remove(request.id);
+      // Leave first, so this screen never flashes "not available" as the lists refresh.
+      goBackOr(router, '/(tabs)/prayer');
+      active.refresh().catch(() => undefined);
+      answered.refresh().catch(() => undefined);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('prayer.detail.deleteFailed'));
+      setDeleting(false);
+    }
+  }
 
   async function submitAnswered() {
     if (!request) return;
@@ -238,6 +259,26 @@ export default function PrayerRequestScreen() {
           </Text>
         ) : null}
       </View>
+
+      {/* Once it is answered or no longer needed, the asker (or an admin) can take it away. */}
+      {canManage ? (
+        confirmingDelete ? (
+          <View className="gap-2 rounded-[12px] bg-panel p-3">
+            <Text variant="caption">{t('prayer.detail.deleteConfirm')}</Text>
+            <View className="flex-row gap-2">
+              <Button title={t('common.keepIt')} size="compact" variant="secondary" className="flex-1" disabled={deleting} onPress={() => setConfirmingDelete(false)} />
+              <Button title={t('common.delete')} size="compact" variant="danger" className="flex-1" loading={deleting} disabled={deleting} onPress={deleteRequest} />
+            </View>
+          </View>
+        ) : (
+          <Pressable accessibilityRole="button" onPress={() => setConfirmingDelete(true)} hitSlop={8} className="flex-row items-center justify-center gap-1.5 self-center py-2 active:opacity-60">
+            <Ionicons name="trash-outline" size={16} color={colors.roseDeep} />
+            <Text variant="label" color="roseDeep" className="text-[14px]">
+              {t('prayer.detail.delete')}
+            </Text>
+          </Pressable>
+        )
+      ) : null}
     </Screen>
   );
 }

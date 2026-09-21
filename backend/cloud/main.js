@@ -221,6 +221,10 @@ const requests = {
     await obj.save(null, { useMasterKey: true });
     return requestDto(obj);
   },
+  async remove(id) {
+    const obj = await new Parse.Query('PrayerRequest').get(id, { useMasterKey: true });
+    await obj.destroy({ useMasterKey: true });
+  },
   async incrementPraying(id, delta) {
     const obj = await new Parse.Query('PrayerRequest').get(id, { useMasterKey: true });
     obj.increment('prayingCount', delta);
@@ -250,7 +254,20 @@ const responses = {
     const row = await new Parse.Query('PrayerResponse').get(id, { useMasterKey: true });
     await row.destroy({ useMasterKey: true });
   },
+  async removeAllFor(requestId) {
+    await destroyAll(new Parse.Query('PrayerResponse').equalTo('prayerRequest', pointer('PrayerRequest', requestId)));
+  },
 };
+
+/** Destroys every row a query matches, a thousand at a time. */
+async function destroyAll(query) {
+  for (;;) {
+    const rows = await query.limit(1000).find({ useMasterKey: true });
+    if (!rows.length) return;
+    await Parse.Object.destroyAll(rows, { useMasterKey: true });
+    if (rows.length < 1000) return;
+  }
+}
 
 const prayerComments = {
   async create({ requestId, userId, groupId, body }) {
@@ -261,6 +278,9 @@ const prayerComments = {
     row.setACL(groupReadAcl(groupId));
     await row.save(null, { useMasterKey: true });
     return { id: row.id, body, userId, createdAt: row.createdAt ? row.createdAt.toISOString() : null };
+  },
+  async removeAllFor(requestId) {
+    await destroyAll(new Parse.Query('PrayerComment').equalTo('prayerRequest', pointer('PrayerRequest', requestId)));
   },
 };
 
@@ -328,6 +348,11 @@ const prayerPoints = {
     Object.entries(patch).forEach(([key, value]) => obj.set(key, value));
     await obj.save(null, { useMasterKey: true });
     return prayerPointDto(obj);
+  },
+  async unlinkRequest(requestId) {
+    const rows = await new Parse.Query('PrayerPoint').equalTo('request', pointer('PrayerRequest', requestId)).limit(1000).find({ useMasterKey: true });
+    rows.forEach((row) => row.unset('request'));
+    if (rows.length) await Parse.Object.saveAll(rows, { useMasterKey: true });
   },
 };
 
@@ -882,6 +907,9 @@ const inbox = {
     await Parse.Object.saveAll(rows, { useMasterKey: true });
     return rows.length;
   },
+  async removeByRoute(route) {
+    await destroyAll(new Parse.Query('Notification').equalTo('route', route));
+  },
 };
 
 const pushTokens = {
@@ -978,13 +1006,16 @@ function withNotify(handler, after) {
 // ---------- cloud functions ----------
 
 const memberHandlers = createMemberHandlers({ memberships, users, roles, sessions, pushTokens, prayerPoints: prayerPointClaims, generatePassword });
-const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, comments: prayerComments });
+const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, comments: prayerComments, points: prayerPoints, notifications: inbox });
 const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims, requests });
 const resourceHandlers = createResourceHandlers({ memberships, resources });
 const quizHandlers = createQuizHandlers({ memberships, results: quizResults, starts: quizStarts, bank: QUESTIONS });
 const prayerNightHandlers = createPrayerNightHandlers({ memberships, nights: prayerNights, calls: callsRepo, notify: (event) => notifier.notify(event) });
 const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
+Parse.Cloud.define('deletePrayerRequest', (request) =>
+  prayerHandlers.deletePrayerRequest(request.params, { callerId: callerId(request) }),
+);
 Parse.Cloud.define('addMember', (request) =>
   memberHandlers.addMember(request.params, { callerId: callerId(request) }),
 );

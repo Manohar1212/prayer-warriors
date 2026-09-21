@@ -97,6 +97,11 @@ export function createPrayerService(deps: Deps): PrayerService {
         return fromDto(dto);
       }),
 
+    remove: (requestId) =>
+      guarded(async () => {
+        await deps.cloud.run('deletePrayerRequest', { requestId });
+      }),
+
     prayingMembers: (requestId) => guarded(() => deps.fetchPrayingNames(requestId)),
 
     comments: (requestId) =>

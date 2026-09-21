@@ -79,6 +79,8 @@ export type PrayerService = {
   create(input: NewPrayerRequest): Promise<PrayerRequest>;
   togglePraying(requestId: string): Promise<{ praying: boolean; prayingCount: number }>;
   markAnswered(requestId: string, testimony: string): Promise<PrayerRequest>;
+  /** Asker or admin only; the request goes with its taps, comments and notifications. */
+  remove(requestId: string): Promise<void>;
   prayingMembers(requestId: string): Promise<string[]>;
   comments(requestId: string): Promise<PrayerComment[]>;
   addComment(requestId: string, body: string): Promise<PrayerComment>;

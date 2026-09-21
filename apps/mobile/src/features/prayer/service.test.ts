@@ -68,6 +68,12 @@ describe('prayerService writes', () => {
     expect(result.status).toBe('answered');
   });
 
+  it('deletes through the cloud function', async () => {
+    const { service, cloud } = svc({ id: 'r1' });
+    await service.remove('r1');
+    expect(cloud.run).toHaveBeenCalledWith('deletePrayerRequest', { requestId: 'r1' });
+  });
+
   it('lists who is praying', async () => {
     const { service } = svc();
     await expect(service.prayingMembers('r1')).resolves.toEqual(['Shiny', 'Mary']);

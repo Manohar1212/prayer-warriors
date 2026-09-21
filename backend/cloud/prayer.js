@@ -13,6 +13,7 @@ const MESSAGES = {
   notFound: "That prayer request isn't available.",
   notActive: 'This request has already been answered.',
   notAllowed: 'Only the person who asked, or an admin, can mark this answered.',
+  notAllowedDelete: 'Only the person who asked, or an admin, can delete this request.',
   testimonyTooLong: 'Keep the testimony under 1000 characters.',
   commentRequired: 'Write a few words first.',
   commentTooLong: 'Keep the comment under 500 characters.',
@@ -26,7 +27,7 @@ function text(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function createPrayerHandlers({ memberships, requests, responses, comments, now = () => new Date() }) {
+function createPrayerHandlers({ memberships, requests, responses, comments, points, notifications, now = () => new Date() }) {
   async function requireGroup(callerId) {
     const groupId = callerId ? await memberships.findGroupId(callerId) : null;
     if (!groupId) throw fail(MESSAGES.notMember);
@@ -96,6 +97,26 @@ function createPrayerHandlers({ memberships, requests, responses, comments, now 
         answeredAt: now(),
         testimony: cleanTestimony || null,
       });
+    },
+
+    /**
+     * Takes a request away for good, active or answered. What hangs off it goes too: the
+     * praying taps, the comments and the inbox notifications pointing at it. A monthly prayer
+     * point made from it stays on the list as its own item, just no longer linked.
+     */
+    async deletePrayerRequest({ requestId } = {}, { callerId } = {}) {
+      const groupId = await requireGroup(callerId);
+      const request = await requireRequestInGroup(requestId, groupId);
+      const isAuthor = request.authorId === callerId;
+      const isAdmin = !isAuthor && (await memberships.findAdminGroupId(callerId)) === groupId;
+      if (!isAuthor && !isAdmin) throw fail(MESSAGES.notAllowedDelete);
+
+      await responses.removeAllFor(request.id);
+      await comments.removeAllFor(request.id);
+      await points.unlinkRequest(request.id);
+      await notifications.removeByRoute(`/prayer/${request.id}`);
+      await requests.remove(request.id);
+      return { id: request.id };
     },
 
     async addComment({ requestId, body } = {}, { callerId } = {}) {
