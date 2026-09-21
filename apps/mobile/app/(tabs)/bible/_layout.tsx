@@ -12,6 +12,8 @@ export default function BibleLayout() {
         headerShadowVisible: false,
         headerTitleStyle: { fontFamily: fonts.sansSemiBold, fontSize: 17, color: colors.ink },
         headerTintColor: colors.primary,
+        // Just the arrow: the previous screen's name beside it repeated the title.
+        headerBackButtonDisplayMode: 'minimal',
         contentStyle: { backgroundColor: colors.cream },
       }}
     >
