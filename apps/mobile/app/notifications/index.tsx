@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, type Href } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { useNotifications, type AppNotification, type NotificationType } from '@/features/notifications';
 import { timeAgo } from '@/lib/time';
 import { useLanguage } from '@/i18n';
 import { colors } from '@/theme/tokens';
-import { Screen, Text } from '@/ui';
+import { Button, Screen, Text } from '@/ui';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -54,7 +55,23 @@ function Row({ item, onPress }: { item: AppNotification; onPress: () => void }) 
 export default function NotificationsScreen() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { items, loading, error, markRead, markAllRead } = useNotifications();
+  const { items, loading, error, markRead, markAllRead, clearAll } = useNotifications();
+  const [confirmingClear, setConfirmingClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [clearError, setClearError] = useState<string | null>(null);
+
+  async function clear() {
+    setClearing(true);
+    setClearError(null);
+    try {
+      await clearAll();
+      setConfirmingClear(false);
+    } catch (err) {
+      setClearError(err instanceof Error ? err.message : t('notifications.clearFailed'));
+    } finally {
+      setClearing(false);
+    }
+  }
   const unread = items.filter((n) => !n.readAt).length;
 
   const open = (item: AppNotification) => {
@@ -75,11 +92,33 @@ export default function NotificationsScreen() {
                 </Text>
               </Pressable>
             ) : null}
+            {items.length > 0 ? (
+              <Pressable accessibilityRole="button" onPress={() => setConfirmingClear(true)} hitSlop={8}>
+                <Text variant="label" color="primary" className="text-[13px]">
+                  {t('notifications.clearAll')}
+                </Text>
+              </Pressable>
+            ) : null}
             <Pressable accessibilityRole="button" accessibilityLabel={t('notifications.settings')} onPress={() => router.push('/notifications/settings')} hitSlop={8}>
               <Ionicons name="options-outline" size={22} color={colors.primary} />
             </Pressable>
           </View>
         </View>
+
+        {confirmingClear && items.length > 0 ? (
+          <View className="mt-3 gap-2 rounded-[12px] bg-panel p-3">
+            <Text variant="caption">{t('notifications.clearConfirm')}</Text>
+            <View className="flex-row gap-2">
+              <Button title={t('notifications.keepThem')} size="compact" variant="secondary" className="flex-1" disabled={clearing} onPress={() => setConfirmingClear(false)} />
+              <Button title={t('notifications.clear')} size="compact" variant="danger" className="flex-1" loading={clearing} disabled={clearing} onPress={clear} />
+            </View>
+            {clearError ? (
+              <Text variant="caption" color="roseDeep">
+                {clearError}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
 
         {error ? (
           <Text variant="body" color="roseDeep">

@@ -51,6 +51,8 @@ export type NotificationsService = {
   unreadCount(): Promise<number>;
   markRead(ids: string[]): Promise<void>;
   markAllRead(): Promise<void>;
+  /** Deletes all of the reader's own notifications. */
+  clearAll(): Promise<void>;
   getPrefs(): Promise<NotificationPrefs>;
   updatePrefs(patch: Partial<NotificationPrefs>): Promise<NotificationPrefs>;
   registerToken(token: string, platform: PushPlatform, deviceName: string): Promise<void>;

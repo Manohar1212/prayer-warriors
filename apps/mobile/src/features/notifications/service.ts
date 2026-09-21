@@ -54,6 +54,11 @@ export function createNotificationsService({ fetchNotifications, countUnread, fe
         await cloud.run('markAllNotificationsRead');
       }),
 
+    clearAll: () =>
+      guarded(async () => {
+        await cloud.run('clearNotifications');
+      }),
+
     getPrefs: () => guarded(async () => withDefaults(await fetchPrefs())),
 
     updatePrefs: (patch) => guarded(async () => withDefaults((await cloud.run('updateNotificationPrefs', patch)) as Record<string, unknown>)),

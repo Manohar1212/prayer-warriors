@@ -11,6 +11,7 @@ export type NotificationsState = {
   refresh: () => Promise<void>;
   markRead: (id: string) => Promise<void>;
   markAllRead: () => Promise<void>;
+  clearAll: () => Promise<void>;
 };
 
 export function useNotifications(): NotificationsState {
@@ -31,7 +32,13 @@ export function useNotifications(): NotificationsState {
     await notificationsService.markAllRead().catch(() => undefined);
   }, [setData]);
 
-  return { items: data ?? [], loading, error, refresh, markRead, markAllRead };
+  // Unlike marking read, this waits for the server: a failed clear must not look like it worked.
+  const clearAll = useCallback(async () => {
+    await notificationsService.clearAll();
+    setData(() => []);
+  }, [setData]);
+
+  return { items: data ?? [], loading, error, refresh, markRead, markAllRead, clearAll };
 }
 
 /** Unread badge count; refreshes whenever the host screen gains focus. */

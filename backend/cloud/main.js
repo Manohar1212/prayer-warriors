@@ -910,6 +910,11 @@ const inbox = {
   async removeByRoute(route) {
     await destroyAll(new Parse.Query('Notification').equalTo('route', route));
   },
+  async clearFor(userId) {
+    const count = await new Parse.Query('Notification').equalTo('recipient', pointer('_User', userId)).count({ useMasterKey: true });
+    await destroyAll(new Parse.Query('Notification').equalTo('recipient', pointer('_User', userId)));
+    return count;
+  },
 };
 
 const pushTokens = {
@@ -1105,7 +1110,7 @@ Parse.Cloud.define('joinCall', async (request) => {
 ['endCall', 'leaveCall'].forEach((name) =>
   Parse.Cloud.define(name, async (request) => (await callHandlers())[name](request.params, { callerId: callerId(request) })),
 );
-['registerPushToken', 'unregisterPushToken', 'markNotificationsRead', 'markAllNotificationsRead', 'updateNotificationPrefs'].forEach((name) =>
+['registerPushToken', 'unregisterPushToken', 'markNotificationsRead', 'markAllNotificationsRead', 'clearNotifications', 'updateNotificationPrefs'].forEach((name) =>
   Parse.Cloud.define(name, (request) => notificationHandlers[name](request.params, { callerId: callerId(request) })),
 );
 ['listPrayerPoints', 'listAnsweredPrayerPoints', 'addPrayerPoint', 'addRequestToMonthly', 'updatePrayerPoint', 'removePrayerPoint', 'claimPrayerPoint', 'releasePrayerPoint', 'markPrayerPointDone', 'markPrayerPointAnswered'].forEach((name) =>

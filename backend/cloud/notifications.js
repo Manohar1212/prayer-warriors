@@ -225,6 +225,12 @@ function createNotificationHandlers({ memberships, inbox, tokens, users }) {
       return { updated: await inbox.markAllRead(callerId) };
     },
 
+    /** Empties the caller's own inbox; nobody else's notifications are touched. */
+    async clearNotifications(_params, { callerId } = {}) {
+      await requireGroup(callerId);
+      return { removed: await inbox.clearFor(callerId) };
+    },
+
     async updateNotificationPrefs(prefs, { callerId } = {}) {
       await requireGroup(callerId);
       if (!prefs || typeof prefs !== 'object' || Array.isArray(prefs)) throw fail(MESSAGES.invalidPrefs);

@@ -41,6 +41,11 @@ describe('notificationsService', () => {
     await service.markAllRead();
     expect(cloud.run).toHaveBeenCalledWith('markAllNotificationsRead');
   });
+  it('clears all through the cloud function', async () => {
+    const { service, cloud } = svc();
+    await service.clearAll();
+    expect(cloud.run).toHaveBeenCalledWith('clearNotifications');
+  });
   it('reads prefs with defaults for missing keys', async () => {
     await expect(svc({}, null).service.getPrefs()).resolves.toEqual(DEFAULT_PREFS);
     await expect(svc({}, { calls: false, bogus: 1 }).service.getPrefs()).resolves.toEqual({ ...DEFAULT_PREFS, calls: false });

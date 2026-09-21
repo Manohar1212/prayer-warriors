@@ -151,7 +151,7 @@ describe('handlers', () => {
   function hdeps({ groupId = 'g1', prefs = undefined } = {}) {
     return {
       memberships: { findGroupId: jest.fn(async () => groupId) },
-      inbox: { markRead: jest.fn(async (userId, ids) => ids.length), markAllRead: jest.fn(async () => 3) },
+      inbox: { markRead: jest.fn(async (userId, ids) => ids.length), markAllRead: jest.fn(async () => 3), clearFor: jest.fn(async () => 5) },
       tokens: { upsert: jest.fn(async () => undefined), removeForUser: jest.fn(async () => undefined) },
       users: { getPrefs: jest.fn(async () => prefs), setPrefs: jest.fn(async (id, p) => p) },
     };
@@ -197,6 +197,18 @@ describe('handlers', () => {
     const d = hdeps();
     await expect(createNotificationHandlers(d).markAllNotificationsRead({}, me)).resolves.toEqual({ updated: 3 });
     expect(d.inbox.markAllRead).toHaveBeenCalledWith('u1');
+  });
+
+  it('clearNotifications empties only the caller inbox', async () => {
+    const d = hdeps();
+    await expect(createNotificationHandlers(d).clearNotifications({}, me)).resolves.toEqual({ removed: 5 });
+    expect(d.inbox.clearFor).toHaveBeenCalledWith('u1');
+  });
+
+  it('clearNotifications refuses non-members', async () => {
+    const d = hdeps({ groupId: null });
+    await expect(createNotificationHandlers(d).clearNotifications({}, me)).rejects.toThrow(MESSAGES.notMember);
+    expect(d.inbox.clearFor).not.toHaveBeenCalled();
   });
 
   it('updateNotificationPrefs merges booleans over defaults and stored values', async () => {
