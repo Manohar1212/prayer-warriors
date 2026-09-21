@@ -1,5 +1,5 @@
 import { monthlyReport, summarise, toCsv, toTransactions } from './summary';
-import type { Contribution, Expense } from './types';
+import type { Contribution, Expense, MonthTotal } from './types';
 
 const c = (o: Partial<Contribution>): Contribution => ({
   id: 'c', memberId: 'u1', memberName: 'Sarah', amountPaise: 500000, transactionDate: '2026-09-05T00:00:00.000Z',
@@ -21,19 +21,25 @@ const expenses = [
   e({ id: 'e3', category: 'food', paidTo: 'Caterer', amountPaise: 200000, transactionDate: '2026-09-07T00:00:00.000Z' }),
 ];
 
+// What the server's fundsTotals would return for the contributions above.
+const collected: MonthTotal[] = [
+  { month: '2026-08', collectedPaise: 3200000 },
+  { month: '2026-09', collectedPaise: 800000 },
+];
+
 describe('summarise', () => {
   it('computes all-time balance', () => {
-    expect(summarise(contributions, expenses)).toEqual({ collectedPaise: 4000000, spentPaise: 1550000, netPaise: 2450000 });
+    expect(summarise(collected, expenses)).toEqual({ collectedPaise: 4000000, spentPaise: 1550000, netPaise: 2450000 });
   });
   it('computes a date range', () => {
     const sept = { from: '2026-09-01', to: '2026-09-30' };
-    expect(summarise(contributions, expenses, sept)).toEqual({ collectedPaise: 800000, spentPaise: 550000, netPaise: 250000 });
+    expect(summarise(collected, expenses, sept)).toEqual({ collectedPaise: 800000, spentPaise: 550000, netPaise: 250000 });
   });
 });
 
 describe('monthlyReport', () => {
   it('builds opening, grouped lines, and closing', () => {
-    const report = monthlyReport(contributions, expenses, 2026, 9);
+    const report = monthlyReport(contributions, collected, expenses, 2026, 9);
     expect(report.openingPaise).toBe(2200000);
     expect(report.contributions).toEqual([
       { label: 'Sarah', amountPaise: 500000 },
@@ -49,7 +55,21 @@ describe('monthlyReport', () => {
   });
 });
 
+describe('monthlyReport for a member', () => {
+  it('has the same totals with no names behind them', () => {
+    const report = monthlyReport([], collected, expenses, 2026, 9);
+    expect(report.contributions).toEqual([]);
+    expect(report).toMatchObject({ openingPaise: 2200000, collectedPaise: 800000, spentPaise: 550000, closingPaise: 2450000 });
+  });
+});
+
 describe('toTransactions', () => {
+  it('calls the reader\'s own contributions "You"', () => {
+    const tx = toTransactions(contributions, [], { id: 'u2', label: 'You' });
+    expect(tx.find((t) => t.id === 'c2')?.title).toBe('You');
+    expect(tx.find((t) => t.id === 'c3')?.title).toBe('Sarah');
+  });
+
   it('merges newest first with signed amounts', () => {
     const tx = toTransactions(contributions, expenses);
     expect(tx.map((t) => t.id)).toEqual(['e3', 'e2', 'c2', 'c3', 'e1', 'c1']);

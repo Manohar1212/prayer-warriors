@@ -16,9 +16,10 @@ function expense(o = {}) {
   };
 }
 
-function deps({ adminGroupId = 'g1', isMember = true, contrib = contribution(), exp = expense() } = {}) {
+function deps({ adminGroupId = 'g1', memberGroupId = 'g1', isMember = true, contrib = contribution(), exp = expense() } = {}) {
   return {
     memberships: {
+      findGroupId: jest.fn(async () => memberGroupId),
       findAdminGroupId: jest.fn(async () => adminGroupId),
       isActiveMember: jest.fn(async () => isMember),
     },
@@ -31,6 +32,11 @@ function deps({ adminGroupId = 'g1', isMember = true, contrib = contribution(), 
       getExpense: jest.fn(async () => exp),
       updateExpense: jest.fn(async (id, patch) => expense({ ...exp, ...patch })),
       deleteExpense: jest.fn(async () => undefined),
+      listContributionAmounts: jest.fn(async () => [
+        { amountPaise: 50000, transactionDate: '2026-09-08T00:00:00.000Z' },
+        { amountPaise: 20000, transactionDate: '2026-08-30T00:00:00.000Z' },
+        { amountPaise: 30000, transactionDate: '2026-09-01T00:00:00.000Z' },
+      ]),
     },
     audit: { record: jest.fn(async () => undefined) },
     now: () => NOW,
@@ -38,6 +44,19 @@ function deps({ adminGroupId = 'g1', isMember = true, contrib = contribution(), 
 }
 
 const contribInput = { memberId: 'u2', amountPaise: 500000, transactionDate: '2026-09-01', paymentMethod: 'cash', reference: ' Sept ', note: '' };
+
+describe('fundsTotals', () => {
+  it('gives any member the amount collected each month, oldest first, with no names', async () => {
+    const d = deps({ adminGroupId: null });
+    const result = await createFinanceHandlers(d).fundsTotals({}, { callerId: 'u2' });
+    expect(d.ledger.listContributionAmounts).toHaveBeenCalledWith('g1');
+    expect(result).toEqual({ months: [{ month: '2026-08', collectedPaise: 20000 }, { month: '2026-09', collectedPaise: 80000 }] });
+  });
+  it('refuses people outside any group', async () => {
+    await expect(createFinanceHandlers(deps({ memberGroupId: null })).fundsTotals({}, { callerId: 'x' })).rejects.toThrow(MESSAGES.membersOnly);
+    await expect(createFinanceHandlers(deps()).fundsTotals({}, {})).rejects.toThrow(MESSAGES.membersOnly);
+  });
+});
 
 describe('addContribution', () => {
   it('creates and audits', async () => {

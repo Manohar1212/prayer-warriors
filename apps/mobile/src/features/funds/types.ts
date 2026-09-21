@@ -85,9 +85,14 @@ export type AuditEntry = {
   createdAt: string;
 };
 
+/** What a month brought in, from the server. Everyone gets these; only admins get the names behind them. */
+export type MonthTotal = { month: string; collectedPaise: number }; // month: YYYY-MM
+
 export type Ledger = {
+  /** All of them for an admin; a member only receives their own. */
   contributions: Contribution[];
   expenses: Expense[];
+  monthlyCollected: MonthTotal[];
 };
 
 export type RawContribution = {

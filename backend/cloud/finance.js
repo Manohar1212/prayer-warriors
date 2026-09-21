@@ -21,6 +21,7 @@ const MESSAGES = {
   reasonRequired: 'Say why this record is changing.',
   reasonTooLong: 'Keep the reason under 200 characters.',
   notFound: "That record isn't available.",
+  membersOnly: 'Only group members can see the funds.',
 };
 
 function fail(message) {
@@ -127,6 +128,23 @@ function createFinanceHandlers({ memberships, ledger, audit, now = () => new Dat
   }
 
   return {
+    /**
+     * What each month brought in, with no names: members cannot read other people's
+     * contributions, so this is where their balance and monthly figures come from.
+     */
+    async fundsTotals(_input = {}, { callerId } = {}) {
+      const groupId = callerId ? await memberships.findGroupId(callerId) : null;
+      if (!groupId) throw fail(MESSAGES.membersOnly);
+      const byMonth = new Map();
+      for (const c of await ledger.listContributionAmounts(groupId)) {
+        const month = c.transactionDate.slice(0, 7);
+        byMonth.set(month, (byMonth.get(month) || 0) + c.amountPaise);
+      }
+      return {
+        months: [...byMonth.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([month, collectedPaise]) => ({ month, collectedPaise })),
+      };
+    },
+
     async addContribution(input = {}, { callerId } = {}) {
       const groupId = await requireAdminGroup(callerId);
       const fields = await validateContributionFields(input, groupId);

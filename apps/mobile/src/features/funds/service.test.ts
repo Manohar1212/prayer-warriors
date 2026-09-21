@@ -24,6 +24,12 @@ describe('fundsService', () => {
     expect(ledger.contributions[0]).toMatchObject({ memberName: 'Sarah', amountPaise: 500000 });
     expect(ledger.expenses[0]).toMatchObject({ paidTo: 'Hall' });
   });
+  it('brings the monthly totals from the server, dropping anything malformed', async () => {
+    const { service, cloud } = svc({ months: [{ month: '2026-09', collectedPaise: 100000 }, { month: 7 }] });
+    const ledger = await service.list();
+    expect(cloud.run).toHaveBeenCalledWith('fundsTotals', {});
+    expect(ledger.monthlyCollected).toEqual([{ month: '2026-09', collectedPaise: 100000 }]);
+  });
   it('adds a contribution through the cloud function', async () => {
     const { service, cloud } = svc({ id: 'c2' });
     await service.addContribution({ memberId: 'u1', amountPaise: 100, transactionDate: '2026-09-08', paymentMethod: 'bank', reference: '', note: '' });

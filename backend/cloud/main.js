@@ -660,13 +660,24 @@ async function fetchRow(className, id) {
   return new Parse.Query(className).get(id, { useMasterKey: true }).catch(() => null);
 }
 
-function ledgerRepo(className, toDto) {
+/**
+ * Who gave what is private: a contribution is readable by the group's admins and the member
+ * who gave it. Everyone else sees the month's total through fundsTotals.
+ */
+function contributionAcl(groupId, memberId) {
+  const acl = new Parse.ACL();
+  acl.setRoleReadAccess(`group:${groupId}:admin`, true);
+  if (memberId) acl.setReadAccess(memberId, true);
+  return acl;
+}
+
+function ledgerRepo(className, toDto, aclFor = (obj, groupId) => groupReadAcl(groupId)) {
   return {
     async create({ groupId, ...fields }) {
       const obj = new Parse.Object(className);
       obj.set('group', pointer('Group', groupId));
       applyFields(obj, fields);
-      obj.setACL(groupReadAcl(groupId));
+      obj.setACL(aclFor(obj, groupId));
       await obj.save(null, { useMasterKey: true });
       return toDto(obj);
     },
@@ -677,6 +688,8 @@ function ledgerRepo(className, toDto) {
     async update(id, patch) {
       const obj = await new Parse.Query(className).get(id, { useMasterKey: true });
       applyFields(obj, patch);
+      // A contribution moved to another member must follow them.
+      obj.setACL(aclFor(obj, refId(obj.get('group'))));
       await obj.save(null, { useMasterKey: true });
       return toDto(obj);
     },
@@ -687,7 +700,7 @@ function ledgerRepo(className, toDto) {
   };
 }
 
-const contributionsRepo = ledgerRepo('Contribution', contributionDto);
+const contributionsRepo = ledgerRepo('Contribution', contributionDto, (obj, groupId) => contributionAcl(groupId, refId(obj.get('member'))));
 const expensesRepo = ledgerRepo('Expense', expenseDto);
 
 const ledger = {
@@ -699,6 +712,10 @@ const ledger = {
   getExpense: (id) => expensesRepo.get(id),
   updateExpense: (id, p) => expensesRepo.update(id, p),
   deleteExpense: (id) => expensesRepo.remove(id),
+  async listContributionAmounts(groupId) {
+    const rows = await new Parse.Query('Contribution').equalTo('group', pointer('Group', groupId)).select('amountPaise', 'transactionDate').limit(10000).find({ useMasterKey: true });
+    return rows.map((r) => ({ amountPaise: r.get('amountPaise') || 0, transactionDate: iso(r.get('transactionDate')) || '' }));
+  },
 };
 
 const audit = {
@@ -1026,7 +1043,7 @@ Parse.Cloud.define(
     notifier.notify({ type: 'expense', groupId: dto.groupId, actorId, category: dto.category, amountPaise: dto.amountPaise }),
   ),
 );
-['updateContribution', 'deleteContribution', 'updateExpense', 'deleteExpense'].forEach((name) =>
+['fundsTotals', 'updateContribution', 'deleteContribution', 'updateExpense', 'deleteExpense'].forEach((name) =>
   Parse.Cloud.define(name, (request) => financeHandlers[name](request.params, { callerId: callerId(request) })),
 );
 Parse.Cloud.define(

@@ -1,4 +1,4 @@
-import { categoryLabel, methodLabel, type Contribution, type Expense, type Transaction } from './types';
+import { categoryLabel, methodLabel, type Contribution, type Expense, type MonthTotal, type Transaction } from './types';
 
 export type DateRange = { from: string; to: string }; // YYYY-MM-DD inclusive
 
@@ -27,8 +27,12 @@ function inRange(iso: string, range?: DateRange): boolean {
 
 const sum = (values: number[]) => values.reduce((a, b) => a + b, 0);
 
-export function summarise(contributions: Contribution[], expenses: Expense[], range?: DateRange): Summary {
-  const collectedPaise = sum(contributions.filter((c) => inRange(c.transactionDate, range)).map((c) => c.amountPaise));
+/**
+ * Collected comes from the monthly totals, since a member cannot see each contribution; spent
+ * comes from the expenses, which everyone can. Ranges are whole months or all time.
+ */
+export function summarise(collected: MonthTotal[], expenses: Expense[], range?: DateRange): Summary {
+  const collectedPaise = sum(collected.filter((m) => !range || (m.month >= range.from.slice(0, 7) && m.month <= range.to.slice(0, 7))).map((m) => m.collectedPaise));
   const spentPaise = sum(expenses.filter((e) => inRange(e.transactionDate, range)).map((e) => e.amountPaise));
   return { collectedPaise, spentPaise, netPaise: collectedPaise - spentPaise };
 }
@@ -47,13 +51,16 @@ export function monthRange(year: number, month: number): DateRange {
   return { from: `${year}-${mm}-01`, to: `${year}-${mm}-${String(lastDay).padStart(2, '0')}` };
 }
 
-export function monthlyReport(contributions: Contribution[], expenses: Expense[], year: number, month: number): MonthlyReport {
+/** `contributions` only feeds the per-person lines: pass them for an admin, an empty list for a member. */
+export function monthlyReport(contributions: Contribution[], collected: MonthTotal[], expenses: Expense[], year: number, month: number): MonthlyReport {
   const range = monthRange(year, month);
-  const before: DateRange = { from: '0000-01-01', to: `${range.from.slice(0, 8)}00` };
-  const opening = summarise(contributions, expenses, before).netPaise;
+  const thisMonth = range.from.slice(0, 7);
+  const openingCollected = sum(collected.filter((m) => m.month < thisMonth).map((m) => m.collectedPaise));
+  const openingSpent = sum(expenses.filter((e) => day(e.transactionDate) < range.from).map((e) => e.amountPaise));
+  const opening = openingCollected - openingSpent;
   const inMonthC = contributions.filter((c) => inRange(c.transactionDate, range));
   const inMonthE = expenses.filter((e) => inRange(e.transactionDate, range));
-  const summary = summarise(inMonthC, inMonthE);
+  const summary = summarise(collected, inMonthE, range);
   return {
     year,
     month,
@@ -65,12 +72,13 @@ export function monthlyReport(contributions: Contribution[], expenses: Expense[]
   };
 }
 
-export function toTransactions(contributions: Contribution[], expenses: Expense[]): Transaction[] {
+/** `you` names the reader's own contributions ("You") instead of showing their name back to them. */
+export function toTransactions(contributions: Contribution[], expenses: Expense[], you?: { id: string; label: string }): Transaction[] {
   const rows: Transaction[] = [
     ...contributions.map((c) => ({
       id: c.id,
       kind: 'contribution' as const,
-      title: c.memberName,
+      title: you && c.memberId === you.id ? you.label : c.memberName,
       subtitle: methodLabel(c.paymentMethod),
       signedPaise: c.amountPaise,
       date: c.transactionDate,

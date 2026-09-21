@@ -5,6 +5,7 @@ import type {
   Expense,
   ExpenseCategory,
   FundsService,
+  MonthTotal,
   NewContribution,
   NewExpense,
   PaymentMethod,
@@ -19,6 +20,14 @@ type Deps = {
   fetchAudit: () => Promise<RawAuditEntry[]>;
   cloud: { run(name: string, params?: Record<string, unknown>): Promise<unknown> };
 };
+
+function toMonthTotals(result: unknown): MonthTotal[] {
+  const months = (result as { months?: unknown } | null)?.months;
+  if (!Array.isArray(months)) return [];
+  return months
+    .filter((m): m is MonthTotal => typeof m?.month === 'string' && typeof m?.collectedPaise === 'number')
+    .map((m) => ({ month: m.month, collectedPaise: m.collectedPaise }));
+}
 
 function toContribution(row: RawContribution): Contribution {
   return {
@@ -77,8 +86,9 @@ export function createFundsService(deps: Deps): FundsService {
   return {
     list: () =>
       guarded(async () => {
-        const [c, e] = await Promise.all([deps.fetchContributions(), deps.fetchExpenses()]);
-        return { contributions: c.map(toContribution), expenses: e.map(toExpense) };
+        // The server only returns the contributions this person may see; the totals cover the rest.
+        const [c, e, totals] = await Promise.all([deps.fetchContributions(), deps.fetchExpenses(), deps.cloud.run('fundsTotals', {})]);
+        return { contributions: c.map(toContribution), expenses: e.map(toExpense), monthlyCollected: toMonthTotals(totals) };
       }),
     addContribution: (input: NewContribution) => run('addContribution', { ...input }),
     updateContribution: (id, patch, reason) => run('updateContribution', { contributionId: id, ...patch, reason }),

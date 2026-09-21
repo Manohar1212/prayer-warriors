@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { Platform, Pressable, Share, View } from 'react-native';
 
 import { formatRupees, monthlyReport, reportCsv, useFunds } from '@/features/funds';
+import { useMembers } from '@/features/members';
 import { useLanguage } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Button, Card, Screen, Text } from '@/ui';
@@ -27,13 +28,16 @@ function Line({ label, amountPaise, strong = false, negative = false }: { label:
 
 export default function ReportScreen() {
   const { t } = useLanguage();
-  const { contributions, expenses } = useFunds();
+  const { contributions, monthlyCollected, expenses } = useFunds();
+  const { isAdmin } = useMembers();
+  // Who gave what is for admins; a member sees the month's total only, not even a list of their own.
+  const named = useMemo(() => (isAdmin ? contributions : []), [isAdmin, contributions]);
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [status, setStatus] = useState<string | null>(null);
 
-  const report = useMemo(() => monthlyReport(contributions, expenses, year, month), [contributions, expenses, year, month]);
+  const report = useMemo(() => monthlyReport(named, monthlyCollected, expenses, year, month), [named, monthlyCollected, expenses, year, month]);
   const isCurrent = year === now.getFullYear() && month === now.getMonth() + 1;
 
   function shift(delta: number) {
@@ -44,7 +48,7 @@ export default function ReportScreen() {
 
   async function exportCsv() {
     setStatus(null);
-    const csv = reportCsv(report, contributions, expenses);
+    const csv = reportCsv(report, named, expenses);
     const name = `prayer-warriors-${year}-${String(month).padStart(2, '0')}.csv`;
     try {
       if (Platform.OS === 'web') {
@@ -85,8 +89,12 @@ export default function ReportScreen() {
         <Text variant="title" className="mb-1">
           {t('funds.report.contributions')}
         </Text>
-        {report.contributions.length ? report.contributions.map((l) => <Line key={l.label} label={l.label} amountPaise={l.amountPaise} />) : <Text variant="muted">{t('funds.report.none')}</Text>}
-        <View className="my-1 h-px bg-border" />
+        {isAdmin ? (
+          <>
+            {report.contributions.length ? report.contributions.map((l) => <Line key={l.label} label={l.label} amountPaise={l.amountPaise} />) : <Text variant="muted">{t('funds.report.none')}</Text>}
+            <View className="my-1 h-px bg-border" />
+          </>
+        ) : null}
         <Line label={t('funds.report.totalCollected')} amountPaise={report.collectedPaise} strong />
       </Card>
 

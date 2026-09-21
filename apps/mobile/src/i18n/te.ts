@@ -421,6 +421,7 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'bible.first200': 'మొదటి 200 ఫలితాలు చూపిస్తున్నాము',
 
   'funds.title': 'నిధులు',
+  'funds.you': 'మీరు',
   'funds.subtitle': 'గ్రూప్ విరాళాలు, ఖర్చులు',
   'funds.balance': 'ప్రస్తుత నిల్వ',
   'funds.collected': '{month} వసూలు',

@@ -431,6 +431,7 @@ export const en = {
 
   // ---- funds
   'funds.title': 'Funds',
+  'funds.you': 'You',
   'funds.subtitle': 'Group contributions and expenses',
   'funds.balance': 'Current balance',
   'funds.collected': '{month} collected',
