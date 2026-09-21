@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 
 /** Small persisted preference backed by AsyncStorage with a module-level cache. */
-function usePersisted<T extends string>(key: string, fallback: T, valid: readonly T[]): [T, (v: T) => void] {
+export function usePersisted<T extends string>(key: string, fallback: T, valid: readonly T[]): [T, (v: T) => void] {
   const [value, setValue] = useState<T>((cache.get(key) as T) ?? fallback);
 
   useEffect(() => {

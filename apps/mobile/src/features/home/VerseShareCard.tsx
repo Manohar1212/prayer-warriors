@@ -21,9 +21,8 @@ export type VerseShareCardProps = {
   prayerReference: string;
   /** The same sky as the card on screen, so what goes out matches what you saw. */
   sky: SceneVariant;
-  /** The verse in the other language, so the card reads in both English and Telugu. */
+  /** The same passage in the reader's second language (Telugu, Tamil, Kannada, Malayalam or Hindi). */
   second?: { text: string; reference: string } | null;
-  telugu?: boolean;
 };
 
 const W = 360;
@@ -34,11 +33,11 @@ const MIN_H = 500;
  * title and day above and the Lord's Prayer line and emblem below. 360pt wide and at least
  * 500pt tall; it grows with long verses so nothing is ever cut off. Captured at 3×.
  */
-export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function VerseShareCard({ text, reference, title, date, prayer, prayerReference, sky, second = null, telugu = false }, ref) {
+export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function VerseShareCard({ text, reference, title, date, prayer, prayerReference, sky, second = null }, ref) {
   const both = Boolean(second);
   const long = text.length > 170;
-  const verseSize = both ? (telugu ? 16 : 18) : telugu ? (long ? 18 : 21) : long ? 20 : 24;
-  const verseLine = both ? (telugu ? 26 : 26) : telugu ? (long ? 30 : 34) : long ? 30 : 35;
+  const verseSize = both ? 18 : long ? 20 : 24;
+  const verseLine = both ? 26 : long ? 30 : 35;
   return (
     <View ref={ref} collapsable={false} style={{ width: W, minHeight: MIN_H, backgroundColor: '#1E2D42', overflow: 'hidden' }}>
       <Scene variant={sky} shape="tall" dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
@@ -65,7 +64,7 @@ export const VerseShareCard = forwardRef<View, VerseShareCardProps>(function Ver
           {second ? (
             <>
               <View style={{ width: 28, height: 1, backgroundColor: 'rgba(255,255,255,0.5)', marginVertical: 2 }} />
-              <Text variant="scripture" color="cream" style={{ textAlign: 'center', fontSize: telugu ? 18 : 16, lineHeight: telugu ? 26 : 27 }}>
+              <Text variant="scripture" color="cream" style={{ textAlign: 'center', fontSize: 16, lineHeight: 27 }}>
                 {quoted(second.text)}
               </Text>
               <Text variant="label" color="cream" style={{ fontSize: 14, textAlign: 'center' }}>

@@ -40,6 +40,16 @@ export const DAILY_VERSES: DailyVerse[] = [
   { code: 'PSA', chapter: 100, from: 4, to: 5 },
 ];
 
+/** "16" or "16-18": the verse part of a reference. */
+export function verseRange(p: DailyVerse): string {
+  return p.from === p.to ? `${p.from}` : `${p.from}-${p.to}`;
+}
+
+/** "1TH 5:16-18": how a passage is looked up in the bundled translations. */
+export function passageKey(p: DailyVerse): string {
+  return `${p.code} ${p.chapter}:${verseRange(p)}`;
+}
+
 export function pickDailyVerse(date: Date): DailyVerse {
   const start = new Date(date.getFullYear(), 0, 0);
   const day = Math.floor((date.getTime() - start.getTime()) / 86_400_000);
