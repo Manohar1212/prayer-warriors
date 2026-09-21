@@ -4,7 +4,6 @@ import { useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
-import { useBibleLanguage } from '@/features/bible';
 import { isJoinable, useCalls } from '@/features/calls';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
 import { nightCallOpen, nightWhen, usePrayerNight, type PrayerNight } from '@/features/prayer';
@@ -66,9 +65,9 @@ function ActionRow({ icon, bg, fg, title, body, badge, onPress }: { icon: IconNa
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { t, locale } = useLanguage();
+  // The promise card speaks the app's language; the Bible's own switch only changes the Bible.
+  const { t, locale, language: lang } = useLanguage();
   const { user } = useAuth();
-  const [lang] = useBibleLanguage();
   const verse = useVerseOfTheDay(lang);
   const { next: nextCall } = useCalls();
   const { quiz, refresh: refreshQuiz } = useDailyQuiz(quizService);
