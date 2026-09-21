@@ -1,68 +1,67 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useT } from '@/i18n';
-import { colors } from '@/theme/tokens';
+import { en } from '@/i18n/en';
+import { te } from '@/i18n/te';
+import { colors, fonts } from '@/theme/tokens';
 import { Button, Text } from '@/ui';
 import { CrossMark } from '@/ui/CrossMark';
-import { Scene } from '@/ui/Scene';
 
-/** Two full-screen pages over the sunrise: the name and the verse, then the invitation. */
+/**
+ * The front door: first light over the mountains. The name sits in the open sky, which the
+ * photograph already lights, so no wash is needed over it; the verse rests on the dark ridge
+ * below, where a soft fade seats the text. Both languages are shown because the group reads
+ * both and has not chosen one yet.
+ */
 export default function WelcomeScreen() {
   const router = useRouter();
-  const t = useT();
-  const { width } = useWindowDimensions();
-  const [page, setPage] = useState(0);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#1E2D42' }}>
-      <StatusBar style="light" />
-      <Scene variant="cross" shape="tall" dim style={StyleSheet.absoluteFill} />
+    <View style={{ flex: 1, backgroundColor: '#D9DEE6' }}>
+      <StatusBar style="dark" />
+      {/* Anchored to the bottom so the ridge, not the empty sky, fills the screen. */}
+      <Image
+        source={require('../../assets/promise/mountains-tall.jpg')}
+        resizeMode="cover"
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '118%' }}
+      />
+      {/* The ridge is already dark; this only deepens it so cream text holds at any brightness. */}
+      <LinearGradient
+        colors={['rgba(12,20,34,0)', 'rgba(12,20,34,0.55)', 'rgba(12,20,34,0.92)']}
+        locations={[0.5, 0.74, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / width))}
-          style={{ flex: 1 }}
-        >
-          <View style={{ width }} className="flex-1 items-center justify-between px-8 pb-6 pt-10">
-            <View className="items-center gap-3 pt-6">
-              <CrossMark size={56} color={colors.surface} />
-              <Text variant="display" color="cream" className="text-[30px] leading-[36px]">
-                Prayer Warriors
-              </Text>
-              <Text variant="caption" color="creamSoft" style={{ letterSpacing: 3 }}>
-                PRAY · GROW · SERVE
-              </Text>
-            </View>
-            <View className="items-center gap-2">
-              <Text variant="body" color="cream" className="max-w-[280px] text-center text-[16px] leading-[24px]">
-                {t('welcome.verse')}
-              </Text>
-              <Text variant="caption" color="creamSoft">
-                {t('welcome.verseRef')}
-              </Text>
-            </View>
-          </View>
-          <View style={{ width }} className="flex-1 items-center justify-center px-10">
-            <CrossMark size={44} color={colors.surface} />
-            <Text variant="title" color="cream" className="mt-5 max-w-[300px] text-center text-[24px] leading-[32px]">
-              {t('welcome.tagline')}
+        <View className="items-center gap-3 px-8 pt-12">
+          <CrossMark size={40} color={colors.primary} />
+          <Text variant="display" className="text-center text-[32px] leading-[38px]" style={{ letterSpacing: -0.4 }}>
+            Prayer Warriors
+          </Text>
+        </View>
+
+        <View className="mt-auto gap-6 px-8 pb-4">
+          <View className="gap-3">
+            <Text variant="body" color="cream" className="text-center text-[17px] leading-[26px]">
+              {en['welcome.verse']}
             </Text>
-            <View className="mt-5 h-[3px] w-10 rounded-full bg-surface/80" />
+            <Text color="creamSoft" className="text-center text-[15px] leading-[26px]" style={{ fontFamily: fonts.teluguSans }}>
+              {te['welcome.verse']}
+            </Text>
+            <Text variant="caption" color="creamSoft" className="text-center">
+              {en['welcome.verseRef']}
+            </Text>
           </View>
-        </ScrollView>
-        <View className="items-center gap-5 px-6 pb-2">
-          <View className="flex-row gap-2">
-            {[0, 1].map((i) => (
-              <View key={i} className={`h-1.5 rounded-full ${page === i ? 'w-6 bg-surface' : 'w-1.5 bg-surface/50'}`} />
-            ))}
+
+          <View className="gap-3">
+            <Button title={en['welcome.signIn']} variant="inverse" onPress={() => router.push('/(auth)/language')} />
+            <Text variant="caption" color="creamSoft" className="text-center">
+              {en['welcome.invitation']}
+            </Text>
           </View>
-          <Button title={t('common.continue')} variant="inverse" onPress={() => router.push('/(auth)/language')} className="w-full" />
         </View>
       </SafeAreaView>
     </View>
