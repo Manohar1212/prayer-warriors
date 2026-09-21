@@ -35,29 +35,31 @@ const tiles: { label: TranslationKey; icon: IconName | 'pray'; bg: string; fg: s
   { label: 'home.action.leaderboard', icon: 'trophy', bg: 'bg-lavender', fg: colors.violet, href: '/quiz/leaderboard' },
 ];
 
-function ActionCard({ icon, bg, fg, title, body, badge, onPress }: { icon: IconName | 'pray'; bg: string; fg: string; title: string; body: string; badge?: string; onPress: () => void }) {
+/**
+ * One line in the day's list. The three used to be separate cards, which read as three
+ * competing boxes; they are rows in one card now, so the page has a single block to scan.
+ */
+function ActionRow({ icon, bg, fg, title, body, badge, onPress }: { icon: IconName | 'pray'; bg: string; fg: string; title: string; body?: string; badge?: string; onPress: () => void }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} className="active:opacity-80">
-      <Card className="flex-row items-center gap-3.5 p-4">
-        <View className={`h-12 w-12 items-center justify-center rounded-full ${bg}`}>
-          {icon === 'pray' ? <PrayIcon size={24} color={fg} /> : <Ionicons name={icon} size={22} color={fg} />}
-        </View>
-        <View className="flex-1 gap-0.5">
-          <Text variant="label" className="text-[15px]">
-            {title}
+    <Pressable accessibilityRole="button" onPress={onPress} className="flex-row items-center gap-3.5 px-4 py-3.5 active:opacity-70">
+      <View className={`h-10 w-10 items-center justify-center rounded-full ${bg}`}>
+        {icon === 'pray' ? <PrayIcon size={20} color={fg} /> : <Ionicons name={icon} size={19} color={fg} />}
+      </View>
+      <View className="flex-1 gap-0.5">
+        <Text variant="label" className="text-[15px]">
+          {title}
+        </Text>
+        {body ? <Text variant="caption">{body}</Text> : null}
+      </View>
+      {badge ? (
+        <View className="rounded-full bg-primary px-3 py-1.5">
+          <Text variant="label" color="cream" className="text-[12px]">
+            {badge}
           </Text>
-          <Text variant="caption">{body}</Text>
         </View>
-        {badge ? (
-          <View className="rounded-full bg-primary px-3 py-1.5">
-            <Text variant="label" color="cream" className="text-[12px]">
-              {badge}
-            </Text>
-          </View>
-        ) : (
-          <Ionicons name="chevron-forward" size={18} color={colors.muted} />
-        )}
-      </Card>
+      ) : (
+        <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+      )}
     </Pressable>
   );
 }
@@ -114,21 +116,34 @@ export default function HomeScreen() {
       {/* Today's promise on the sunrise. */}
       <Pressable accessibilityRole="button" accessibilityLabel={t('home.dailyPromise')} onPress={() => router.push('/promise')} className="overflow-hidden rounded-[16px] active:opacity-90" style={{ height: 176 }}>
         <Scene variant={sky} dim style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-        <View className="flex-1 justify-end gap-1 p-5">
-          <Text variant="label" color="cream" className={lang === 'te' ? 'text-[17px] leading-[27px]' : 'text-[18px] leading-[26px]'} numberOfLines={3}>
-            {verse ? verse.text : '…'}
+        <View className="flex-1 justify-end gap-1.5 p-5">
+          <Text variant="caption" color="creamSoft">
+            {t('home.dailyPromise')}
           </Text>
           {verse ? (
-            <Text variant="caption" color="creamSoft">
-              {verse.reference}
-            </Text>
-          ) : null}
+            <>
+              <Text variant="label" color="cream" className={lang === 'te' ? 'text-[17px] leading-[27px]' : 'text-[18px] leading-[26px]'} numberOfLines={3}>
+                {verse.text}
+              </Text>
+              <Text variant="caption" color="creamSoft">
+                {verse.reference}
+              </Text>
+            </>
+          ) : (
+            /* The verse comes from the offline Bible, which takes a moment on first open. */
+            <View className="gap-2 pb-1">
+              <View className="h-3.5 w-11/12 rounded-full bg-white/25" />
+              <View className="h-3.5 w-7/12 rounded-full bg-white/15" />
+            </View>
+          )}
         </View>
       </Pressable>
 
-      <View className="gap-3">
-        <ActionCard icon="pray" bg="bg-sky" fg={colors.skyDeep} title={t('home.prayerRequest')} body={t('home.prayerRequestBody')} onPress={() => router.push('/prayer/new')} />
-        <ActionCard
+      {/* The day in one block: ask for prayer, the month's prayer, today's quiz. */}
+      <Card className="gap-0 p-0">
+        <ActionRow icon="pray" bg="bg-sky" fg={colors.skyDeep} title={t('home.prayerRequest')} onPress={() => router.push('/prayer/new')} />
+        <View className="ml-[66px] h-px bg-border" />
+        <ActionRow
           icon={night ? 'moon' : 'calendar'}
           bg="bg-lavender"
           fg={colors.violet}
@@ -137,7 +152,8 @@ export default function HomeScreen() {
           badge={nightCallOpenNow ? t('home.join') : (nightCountdown ?? undefined)}
           onPress={() => (nightCallOpenNow && night?.callId ? router.push({ pathname: '/calls/[id]', params: { id: night.callId } }) : router.push({ pathname: '/(tabs)/prayer', params: { tab: 'monthly' } }))}
         />
-        <ActionCard
+        <View className="ml-[66px] h-px bg-border" />
+        <ActionRow
           icon="help-circle"
           bg="bg-honey"
           fg={colors.gold}
@@ -146,7 +162,7 @@ export default function HomeScreen() {
           badge={quiz?.result ? t('home.quizScore', { score: quiz.result.score, total: quiz.questions.length }) : t('home.quizPlay')}
           onPress={() => router.push('/quiz')}
         />
-      </View>
+      </Card>
 
       <View className="flex-row justify-between">
         {tiles.map((tile) => (

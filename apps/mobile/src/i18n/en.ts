@@ -83,7 +83,7 @@ export const en = {
   'home.shareVerse': 'Share',
   'home.dailyBread': 'Daily Promise',
   'home.quiz': 'Daily Bible Quiz',
-  'home.quizBody': '3 questions today, in English and Telugu',
+  'home.quizBody': '3 questions today',
   'home.quizDone': 'You scored {score} of {total} today',
   'home.quizStreak': '{n}-day streak',
   'home.quizPlay': 'Play',

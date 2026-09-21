@@ -138,7 +138,7 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'home.shareVerse': 'పంచుకోండి',
   'home.dailyBread': 'అనుదిన వాగ్దానం',
   'home.quiz': 'అనుదిన బైబిల్ క్విజ్',
-  'home.quizBody': 'ఈ రోజు 3 ప్రశ్నలు, తెలుగు మరియు ఇంగ్లీషులో',
+  'home.quizBody': 'ఈ రోజు 3 ప్రశ్నలు',
   'home.quizDone': 'ఈ రోజు మీ స్కోరు {total}కి {score}',
   'home.quizStreak': '{n} రోజుల స్ట్రీక్',
   'home.quizPlay': 'ఆడండి',
