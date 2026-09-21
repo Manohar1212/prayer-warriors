@@ -44,13 +44,13 @@ export function SongReader({ number, title, subtitle, body, numberLabel, previou
   return (
     <View className="gap-5">
       <View className="gap-1">
-        <Text variant="label" color="gold" className="text-[13px] uppercase tracking-[1px]">
-          {numberLabel}
-        </Text>
         <Text variant="display" className="text-[24px] leading-[31px]">
           {title}
         </Text>
-        {subtitle ? <Text variant="muted">{subtitle}</Text> : null}
+        {/* The number and the book belong together on one quiet line, under the title. */}
+        <Text variant="caption" color="muted">
+          {subtitle ? `${numberLabel} · ${subtitle}` : numberLabel}
+        </Text>
       </View>
 
       <View className="flex-row items-center gap-2">

@@ -39,28 +39,41 @@ function Thumb({ type }: { type: ResourceType }) {
   );
 }
 
-/** A line in a songbook: number, title, opening line. */
-function SongRow({ number, title, line, onOpen }: { number: number; title: string; line: string; onOpen: () => void }) {
+/**
+ * A line in a songbook, set like a hymn book index: the number in its own column, the title
+ * in full. No card, no chevron and no preview - a hymn's first line is its title, so a preview
+ * only repeated it, and six hundred bordered cards read as a wall.
+ */
+function SongRow({ number, title, line, onOpen }: { number: number; title: string; line?: string; onOpen: () => void }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${number}. ${title}`} onPress={onOpen} className="active:opacity-80">
-      <Card className="flex-row items-center gap-3 py-3.5">
-        <View className="h-11 w-11 items-center justify-center rounded-full bg-honey">
-          <Text variant="label" color="gold" className={number >= 100 ? 'text-[13px]' : 'text-[15px]'}>
-            {number}
-          </Text>
-        </View>
-        <View className="flex-1 gap-0.5">
-          <Text variant="label" className="text-[16px]" numberOfLines={1}>
-            {title}
-          </Text>
+    <Pressable accessibilityRole="button" accessibilityLabel={`${number}. ${title}`} onPress={onOpen} className="flex-row items-baseline gap-3 px-1 py-3 active:opacity-60">
+      <Text variant="caption" color="muted" className="w-8 text-right text-[13px]">
+        {number}
+      </Text>
+      <View className="flex-1 gap-0.5">
+        <Text variant="body" className="text-[16px] leading-[23px]" numberOfLines={2}>
+          {title}
+        </Text>
+        {line ? (
           <Text variant="caption" numberOfLines={1}>
             {line}
           </Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.muted} />
-      </Card>
+        ) : null}
+      </View>
     </Pressable>
   );
+}
+
+/** Hairline between index lines, indented past the number column. */
+function RowDivider() {
+  return <View className="ml-12 h-px bg-border" />;
+}
+
+/** A shared song's second line: who sings it, or its opening line when that is not the title again. */
+function subtitleOf(song: Song): string | undefined {
+  if (song.reference) return song.reference;
+  const opening = song.body ? firstLine(song.body) : '';
+  return opening && opening !== song.title ? opening : undefined;
 }
 
 type Row = Resource | Song | Hymn;
@@ -135,9 +148,10 @@ export default function ResourcesScreen() {
         keyExtractor={(r) => (isHymn(r) ? `${book}-${r.n}` : r.id)}
         initialNumToRender={12}
         windowSize={7}
-        contentContainerClassName="flex-grow gap-3 px-4 pb-24 pt-1"
+        contentContainerClassName="flex-grow px-4 pb-24 pt-1"
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} tintColor={colors.primary} />}
+        ItemSeparatorComponent={songLike ? RowDivider : () => <View className="h-3" />}
         ListHeaderComponent={
           <View className="gap-3 pb-1">
             <TabHeader title={t('resources.title')} subtitle={t('resources.subtitle')} right={<HeaderActions />} />
@@ -147,7 +161,7 @@ export default function ResourcesScreen() {
               ))}
             </ScrollView>
             {songLike ? (
-              <Text variant="caption" color="muted" className="px-1">
+              <Text variant="caption" color="muted" className="px-1 text-[12px]">
                 {book === 'akk' ? `${t('resources.book.akkFull')} · ` : ''}
                 {t('resources.book.count', { n: book === 'group' ? numberSongs(resources).length : loadHymnBook(book).length })}
               </Text>
@@ -184,9 +198,9 @@ export default function ResourcesScreen() {
         }
         renderItem={({ item }) =>
           isHymn(item) ? (
-            <SongRow number={item.n} title={item.title} line={firstLine(item.body)} onOpen={() => router.push({ pathname: '/resources/hymn', params: { book, n: String(item.n) } })} />
+            <SongRow number={item.n} title={item.title} onOpen={() => router.push({ pathname: '/resources/hymn', params: { book, n: String(item.n) } })} />
           ) : isSong(item) ? (
-            <SongRow number={item.number} title={item.title} line={item.body ? firstLine(item.body) : item.reference || '—'} onOpen={() => router.push({ pathname: '/resources/song', params: { id: item.id } })} />
+            <SongRow number={item.number} title={item.title} line={subtitleOf(item)} onOpen={() => router.push({ pathname: '/resources/song', params: { id: item.id } })} />
           ) : (
             <ResourceCard resource={item} onOpen={() => router.push({ pathname: '/resources/[id]', params: { id: item.id } })} />
           )

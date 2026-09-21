@@ -377,7 +377,7 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'resources.song.larger': 'పెద్ద అక్షరాలు',
   'resources.song.previous': 'ముందు పాట',
   'resources.song.next': 'తరువాత పాట',
-  'resources.song.searchPlaceholder': 'నంబర్, లేదా తెలుగు / ఇంగ్లీష్ అక్షరాలలో పదం',
+  'resources.song.searchPlaceholder': 'నంబర్ లేదా పదంతో వెతకండి',
   'resources.edit.title': 'పాట సవరించు',
   'resources.edit.submit': 'మార్పులు సేవ్ చేయి',
   'resources.edit.failed': 'మార్పులు సేవ్ కాలేదు.',
