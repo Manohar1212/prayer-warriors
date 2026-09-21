@@ -371,7 +371,7 @@ export const en = {
   'resources.song.title': 'Song',
   'resources.book.group': 'Our songs',
   'resources.book.akk': 'Keerthanalu',
-  'resources.book.telugu': 'Telugu Songs',
+  'resources.book.telugu': 'Telugu',
   'resources.book.akkFull': 'Andhra Kraisthava Keerthanalu',
   'resources.book.count': '{n} songs',
   'resources.book.noMatch': 'No song matches "{query}".',

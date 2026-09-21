@@ -365,7 +365,7 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'resources.song.title': 'పాట',
   'resources.book.group': 'మా పాటలు',
   'resources.book.akk': 'కీర్తనలు',
-  'resources.book.telugu': 'తెలుగు పాటలు',
+  'resources.book.telugu': 'తెలుగు',
   'resources.book.akkFull': 'ఆంధ్ర క్రైస్తవ కీర్తనలు',
   'resources.book.count': '{n} పాటలు',
   'resources.book.noMatch': '"{query}"కి సరిపోయే పాట లేదు.',

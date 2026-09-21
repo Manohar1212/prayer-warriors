@@ -11,8 +11,8 @@ import { colors, gradients } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Card, Chip, EmptyState, Fab, Screen, TabHeader, Text } from '@/ui';
 
-/** One row of choices: the three song books, shared verses and prayers, and the Bible. */
-type Tab = SongBook | 'scripture' | 'prayer' | 'bible';
+/** One row of choices: the three song books, then shared verses and prayers. */
+type Tab = SongBook | 'scripture' | 'prayer';
 
 const emptyCopy: Record<ResourceType, { title: TranslationKey; body: TranslationKey }> = {
   song: { title: 'resources.emptySongTitle', body: 'resources.emptySongBody' },
@@ -129,12 +129,10 @@ export default function ResourcesScreen() {
     ...HYMN_BOOKS.map((b) => ({ value: b.id as Tab, label: t(b.label) })),
     { value: 'scripture', label: t('resources.scripture') },
     { value: 'prayer', label: t('resources.prayers') },
-    { value: 'bible', label: t('resources.bible') },
   ];
 
   const onTab = (tab: Tab) => {
-    if (tab === 'bible') router.push({ pathname: '/bible', params: { from: 'resources' } });
-    else if (tab === 'scripture' || tab === 'prayer') setType(tab);
+    if (tab === 'scripture' || tab === 'prayer') setType(tab);
     else {
       setType('song');
       setBook(tab);
