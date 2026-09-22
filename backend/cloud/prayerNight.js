@@ -11,6 +11,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const REMINDER_DAYS = 7;
 const NOTICE_DAYS = 14;
 const CALL_TITLE = 'All-night prayer';
+const ORDER_MAX_ITEMS = 30;
+const ORDER_MAX_LENGTH = 120;
 
 const MESSAGES = {
   notMember: "You're not a member of this group yet.",
@@ -19,6 +21,8 @@ const MESSAGES = {
   inPast: 'Pick a date and time that is still ahead.',
   notFound: 'That prayer night is not on the calendar.',
   noteTooLong: 'Keep the note under 300 characters.',
+  adminOnlyOrder: 'Only an admin can change the order of the night.',
+  orderTooLong: `Keep the order to ${ORDER_MAX_ITEMS} steps of up to ${ORDER_MAX_LENGTH} characters each.`,
 };
 
 function fail(message) {
@@ -55,7 +59,7 @@ function view(night, now) {
   };
 }
 
-function createPrayerNightHandlers({ memberships, nights, calls = null, notify = async () => undefined, now = () => new Date() }) {
+function createPrayerNightHandlers({ memberships, nights, groups = null, calls = null, notify = async () => undefined, now = () => new Date() }) {
   /** Keeps one group call on the calendar at the night's time: moved with it, cancelled with it. */
   async function syncCall(night, { groupId, scheduledAt, createdById, cancel = false }) {
     if (!calls) return night.callId || null;
@@ -122,7 +126,8 @@ function createPrayerNightHandlers({ memberships, nights, calls = null, notify =
       const existing = await nights.findByMonth(groupId, month);
       const callId = await syncCall(existing || {}, { groupId, scheduledAt: at, createdById: callerId });
       const saved = existing
-        ? await nights.update(existing.id, { scheduledAt: at, note: cleanNote, cancelledAt: null, lastReminderDay: '', callId })
+        ? // A new date is a new night: its picks must clear again once it is over.
+          await nights.update(existing.id, { scheduledAt: at, note: cleanNote, cancelledAt: null, lastReminderDay: '', callId, pointsResetAt: null })
         : await nights.create({ groupId, month, scheduledAt: at, note: cleanNote, createdById: callerId, callId });
       const days = daysUntil(at, now());
       await notify({ type: existing ? 'prayerNightMoved' : 'prayerNight', groupId, actorId: callerId, nightId: saved.id, scheduledAt: at.toISOString(), daysUntil: days, note: cleanNote });
@@ -138,6 +143,22 @@ function createPrayerNightHandlers({ memberships, nights, calls = null, notify =
       await nights.update(night.id, { cancelledAt: now() });
       await notify({ type: 'prayerNightCancelled', groupId, actorId: callerId, nightId: night.id, scheduledAt: new Date(night.scheduledAt).toISOString() });
       return { cancelled: true };
+    },
+
+    /** The steps of the night (songs, worship, testimonies, ...), the same every month. */
+    async getNightOrder(_params, { callerId } = {}) {
+      const groupId = await requireGroup(callerId);
+      return { items: (await groups.getNightOrder(groupId)) || [] };
+    },
+
+    /** Admin: replace the steps of the night; blank lines are dropped. */
+    async setNightOrder({ items } = {}, { callerId } = {}) {
+      const groupId = await requireGroup(callerId);
+      if ((await memberships.findAdminGroupId(callerId)) !== groupId) throw fail(MESSAGES.adminOnlyOrder);
+      const clean = (Array.isArray(items) ? items : []).filter((i) => typeof i === 'string').map((i) => i.trim()).filter(Boolean);
+      if (clean.length > ORDER_MAX_ITEMS || clean.some((i) => i.length > ORDER_MAX_LENGTH)) throw fail(MESSAGES.orderTooLong);
+      await groups.setNightOrder(groupId, clean);
+      return { items: clean };
     },
 
     /** For a daily Cloud Job: send the reminder for every group's night in its last week. */

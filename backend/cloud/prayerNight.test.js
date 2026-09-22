@@ -17,6 +17,7 @@ function deps({ upcoming = null, byMonth = null, rows = [], call = null } = {}) 
       update: jest.fn(async (id, patch) => ({ id, ...patch })),
     },
     memberships: { findGroupId: jest.fn(async () => 'g1'), findAdminGroupId: jest.fn(async (id) => (id === 'admin' ? 'g1' : null)) },
+    groups: { getNightOrder: jest.fn(async () => ['పాటలు', 'ఆరాధన']), setNightOrder: jest.fn(async () => undefined) },
     nights: {
       findUpcoming: jest.fn(async () => upcoming),
       findByMonth: jest.fn(async () => byMonth),
@@ -57,7 +58,7 @@ describe('schedulePrayerNight', () => {
     expect(d.nights.create).not.toHaveBeenCalled();
     expect(d.calls.create).not.toHaveBeenCalled();
     expect(d.calls.update).toHaveBeenCalledWith('c1', { scheduledAt: new Date('2026-10-10T16:30:00.000Z'), title: 'All-night prayer' });
-    expect(d.nights.update).toHaveBeenCalledWith('n1', { scheduledAt: new Date('2026-10-10T16:30:00.000Z'), note: '', cancelledAt: null, lastReminderDay: '', callId: 'c1' });
+    expect(d.nights.update).toHaveBeenCalledWith('n1', { scheduledAt: new Date('2026-10-10T16:30:00.000Z'), note: '', cancelledAt: null, lastReminderDay: '', callId: 'c1', pointsResetAt: null });
     expect(result.scheduledAt).toBe('2026-10-10T16:30:00.000Z');
     expect(d.notify).toHaveBeenCalledWith(expect.objectContaining({ type: 'prayerNightMoved' }));
   });
@@ -111,5 +112,27 @@ describe('cancelPrayerNight', () => {
     expect(d.nights.update).toHaveBeenCalledWith('n1', { cancelledAt: NOW });
     expect(d.notify).toHaveBeenCalledWith(expect.objectContaining({ type: 'prayerNightCancelled' }));
     await expect(createPrayerNightHandlers(deps({ upcoming: night() })).cancelPrayerNight({ nightId: 'zzz' }, admin)).rejects.toThrow(MESSAGES.notFound);
+  });
+});
+
+describe('order of the night', () => {
+  it('lets any member read the steps', async () => {
+    const d = deps();
+    await expect(createPrayerNightHandlers(d).getNightOrder({}, { callerId: 'm1' })).resolves.toEqual({ items: ['పాటలు', 'ఆరాధన'] });
+    expect(d.groups.getNightOrder).toHaveBeenCalledWith('g1');
+  });
+
+  it('lets an admin replace them, trimming and dropping blank lines', async () => {
+    const d = deps();
+    const result = await createPrayerNightHandlers(d).setNightOrder({ items: [' సిద్ధపాటు ప్రార్థన ', '', 'పాటలు', 7] }, { callerId: 'admin' });
+    expect(result).toEqual({ items: ['సిద్ధపాటు ప్రార్థన', 'పాటలు'] });
+    expect(d.groups.setNightOrder).toHaveBeenCalledWith('g1', ['సిద్ధపాటు ప్రార్థన', 'పాటలు']);
+  });
+
+  it('refuses members and overlong orders', async () => {
+    const d = deps();
+    await expect(createPrayerNightHandlers(d).setNightOrder({ items: ['x'] }, { callerId: 'm1' })).rejects.toThrow(MESSAGES.adminOnlyOrder);
+    await expect(createPrayerNightHandlers(d).setNightOrder({ items: ['x'.repeat(121)] }, { callerId: 'admin' })).rejects.toThrow(MESSAGES.orderTooLong);
+    expect(d.groups.setNightOrder).not.toHaveBeenCalled();
   });
 });

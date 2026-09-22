@@ -75,7 +75,13 @@ function createPrayerHandlers({ memberships, requests, responses, comments, poin
         const prayingCount = await requests.incrementPraying(request.id, -1);
         return { praying: false, prayingCount };
       }
-      await responses.create(request.id, callerId, groupId);
+      const created = await responses.create(request.id, callerId, groupId);
+      // A double tap can race past the check above; the first row stands, a second one goes.
+      const rows = responses.listFor ? await responses.listFor(request.id, callerId) : [created];
+      if (rows.length > 1 && rows[0].id !== created.id) {
+        await responses.remove(created.id);
+        return { praying: true, prayingCount: (await requests.get(request.id)).prayingCount };
+      }
       const prayingCount = await requests.incrementPraying(request.id, 1);
       return { praying: true, prayingCount };
     },

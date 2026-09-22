@@ -14,7 +14,7 @@ const MESSAGES = {
   titleTooLong: 'Keep it under 120 characters.',
   notFound: "That prayer point isn't available.",
   taken: 'Someone has already picked this point for the month.',
-  alreadyHave: 'You already carry a point this month. Give it back first to pick another.',
+  alreadyHave: 'Finish the point you carry first (tap Done), then pick the next.',
   notYours: 'This point is not yours to change.',
   alreadyDone: 'This point is already marked done.',
   notHolder: 'Only the member carrying this point, or an admin, can mark it answered.',
@@ -24,6 +24,7 @@ const MESSAGES = {
   requestNotFound: "That prayer request isn't available.",
   requestNotActive: 'Only an open request can join the monthly list.',
   requestAlreadyMonthly: 'This request is already on the monthly list.',
+  badOrder: 'The list changed while you were arranging it. Open it again and retry.',
 };
 
 function fail(message) {
@@ -42,7 +43,37 @@ function monthKeyFor(date) {
   return `${year}-${month}`;
 }
 
-function createPrayerPointHandlers({ memberships, points, claims, requests, now = () => new Date() }) {
+/** How long after its start a night counts as over; a 10 pm night clears at 10 am. */
+const NIGHT_MS = 12 * 60 * 60 * 1000;
+
+function createPrayerPointHandlers({ memberships, points, claims, requests, nights = null, now = () => new Date() }) {
+  /**
+   * Once the all-night prayer is over, every pick and Done mark is cleared, so the list is open
+   * for the next night. Only the latest finished night is looked at, and it is marked when its
+   * reset has run, so an older night can never clear picks made after it.
+   */
+  /**
+   * The month a pick belongs to, read 12 hours back: a night that starts at 10 pm on the 30th
+   * keeps its picks through the early hours of the 1st instead of losing them at midnight.
+   */
+  function claimMonth() {
+    return monthKeyFor(new Date(now().getTime() - NIGHT_MS));
+  }
+
+  /** A pick is only "open" while its point is still on the list and not yet answered. */
+  async function openClaimBlocks(claim) {
+    const point = await points.get(claim.pointId);
+    return Boolean(point && point.active !== false && !point.answeredAt);
+  }
+
+  async function resetAfterNight(groupId) {
+    if (!nights) return;
+    const night = await nights.findLatestStartedBefore(groupId, new Date(now().getTime() - NIGHT_MS));
+    if (!night || night.pointsResetAt) return;
+    await claims.removeForGroup(groupId);
+    await nights.update(night.id, { pointsResetAt: now() });
+  }
+
   async function requireGroup(callerId) {
     const groupId = callerId ? await memberships.findGroupId(callerId) : null;
     if (!groupId) throw fail(MESSAGES.notMember);
@@ -74,7 +105,8 @@ function createPrayerPointHandlers({ memberships, points, claims, requests, now 
 
     async listPrayerPoints(_params, { callerId } = {}) {
       const groupId = await requireGroup(callerId);
-      const month = monthKeyFor(now());
+      await resetAfterNight(groupId);
+      const month = claimMonth();
       const [list, monthClaims] = await Promise.all([points.listActive(groupId), claims.listForMonth(groupId, month)]);
       const byPoint = new Map(monthClaims.map((c) => [c.pointId, c]));
       return {
@@ -114,6 +146,21 @@ function createPrayerPointHandlers({ memberships, points, claims, requests, now 
       return points.create({ groupId, title: request.title, order, active: true, requestId: request.id });
     },
 
+    /** Admin: put the monthly points in a new order, given every active point's id, top first. */
+    async reorderPrayerPoints({ ids } = {}, { callerId } = {}) {
+      const groupId = await requireAdminGroup(callerId);
+      const active = await points.listActive(groupId);
+      const wanted = Array.isArray(ids) ? ids.filter((id) => typeof id === 'string') : [];
+      const known = new Set(active.map((p) => p.id));
+      // Every active point exactly once, nothing else: a stale list must not drop or revive points.
+      if (wanted.length !== active.length || new Set(wanted).size !== wanted.length || wanted.some((id) => !known.has(id))) throw fail(MESSAGES.badOrder);
+      const current = new Map(active.map((p) => [p.id, p.order]));
+      for (let i = 0; i < wanted.length; i += 1) {
+        if (current.get(wanted[i]) !== i + 1) await points.update(wanted[i], { order: i + 1 });
+      }
+      return { ids: wanted };
+    },
+
     async updatePrayerPoint({ pointId, title } = {}, { callerId } = {}) {
       const groupId = await requireAdminGroup(callerId);
       const point = await requirePoint(pointId, groupId);
@@ -124,22 +171,47 @@ function createPrayerPointHandlers({ memberships, points, claims, requests, now 
       const groupId = await requireAdminGroup(callerId);
       const point = await requirePoint(pointId, groupId);
       await points.update(point.id, { active: false });
+      // Whoever was praying it is free to pick another.
+      const held = await claims.find(point.id, claimMonth());
+      if (held && !held.doneAt) await claims.remove(held.id);
       return { id: point.id, removed: true };
     },
 
     async claimPrayerPoint({ pointId } = {}, { callerId } = {}) {
       const groupId = await requireGroup(callerId);
+      await resetAfterNight(groupId);
       const point = await requirePoint(pointId, groupId);
-      const month = monthKeyFor(now());
+      const month = claimMonth();
       if (await claims.find(point.id, month)) throw fail(MESSAGES.taken);
-      if (await claims.findMine(callerId, groupId, month)) throw fail(MESSAGES.alreadyHave);
-      return claims.create({ pointId: point.id, userId: callerId, groupId, month });
+      // One at a time: pray one through (Done), then pick the next, as many as the night allows.
+      const open = await claims.findOpenMine(callerId, groupId, month);
+      if (open) {
+        // A point removed or answered while you held it no longer counts; let it go.
+        if (await openClaimBlocks(open)) throw fail(MESSAGES.alreadyHave);
+        await claims.remove(open.id);
+      }
+      const created = await claims.create({ pointId: point.id, userId: callerId, groupId, month });
+      // Two taps at once can both pass the checks above: the earliest pick of the point stands, and
+      // a member keeps only their earliest open pick. A losing pick is taken back.
+      if (claims.listForPoint) {
+        const [first] = await claims.listForPoint(point.id, month);
+        if (first && first.id !== created.id) {
+          await claims.remove(created.id);
+          throw fail(MESSAGES.taken);
+        }
+        const [mineFirst] = await claims.listOpenMine(callerId, groupId, month);
+        if (mineFirst && mineFirst.id !== created.id) {
+          await claims.remove(created.id);
+          throw fail(MESSAGES.alreadyHave);
+        }
+      }
+      return created;
     },
 
     async releasePrayerPoint({ pointId } = {}, { callerId } = {}) {
       const groupId = await requireGroup(callerId);
       const point = await requirePoint(pointId, groupId);
-      const claim = await claims.find(point.id, monthKeyFor(now()));
+      const claim = await claims.find(point.id, claimMonth());
       if (!claim || claim.userId !== callerId) throw fail(MESSAGES.notYours);
       if (claim.doneAt) throw fail(MESSAGES.alreadyDone);
       await claims.remove(claim.id);
@@ -163,7 +235,7 @@ function createPrayerPointHandlers({ memberships, points, claims, requests, now 
       if (cleanTestimony.length > 1000) throw fail(MESSAGES.testimonyTooLong);
       const adminGroupId = await memberships.findAdminGroupId(callerId);
       if (adminGroupId !== groupId) {
-        const claim = await claims.find(point.id, monthKeyFor(now()));
+        const claim = await claims.find(point.id, claimMonth());
         if (!claim || claim.userId !== callerId) throw fail(MESSAGES.notHolder);
         if (!claim.doneAt) throw fail(MESSAGES.notDoneYet);
       }
@@ -178,7 +250,7 @@ function createPrayerPointHandlers({ memberships, points, claims, requests, now 
     async markPrayerPointDone({ pointId } = {}, { callerId } = {}) {
       const groupId = await requireGroup(callerId);
       const point = await requirePoint(pointId, groupId);
-      const claim = await claims.find(point.id, monthKeyFor(now()));
+      const claim = await claims.find(point.id, claimMonth());
       if (!claim || claim.userId !== callerId) throw fail(MESSAGES.notYours);
       if (claim.doneAt) throw fail(MESSAGES.alreadyDone);
       return claims.markDone(claim.id, now());

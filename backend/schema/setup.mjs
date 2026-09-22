@@ -67,6 +67,7 @@ const groupSchema = {
     name: { type: 'String', required: true },
     description: { type: 'String' },
     createdBy: { type: 'Pointer', targetClass: '_User' },
+    nightOrder: { type: 'Array' }, // the steps of the monthly all-night prayer, in order
   },
   classLevelPermissions: {
     find: authenticated,

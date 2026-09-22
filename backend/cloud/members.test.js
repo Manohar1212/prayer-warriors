@@ -99,6 +99,17 @@ describe('addMember', () => {
     expect(d.users.create).not.toHaveBeenCalled();
   });
 
+  it('brings back a removed member on the same account with a fresh starting password', async () => {
+    const d = deps({ existing: { id: 'u5' }, target: null });
+    d.users.rejoin = jest.fn(async () => ({ id: 'u5' }));
+    const result = await createMemberHandlers(d).addMember(input, caller);
+    expect(d.users.rejoin).toHaveBeenCalledWith('u5', { password: 'Starting123', displayName: 'Mary', phone: '+919876543210' });
+    expect(d.roles.addUser).toHaveBeenCalledWith('g1', 'member', 'u5');
+    expect(d.memberships.create).toHaveBeenCalledWith({ groupId: 'g1', userId: 'u5', role: 'member' });
+    expect(d.users.create).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ id: 'u5', startingPassword: 'Starting123' });
+  });
+
   it('rejects a duplicate email', async () => {
     const d = deps({ existing: { id: 'u9' } });
     await expect(createMemberHandlers(d).addMember(input, caller)).rejects.toThrow(

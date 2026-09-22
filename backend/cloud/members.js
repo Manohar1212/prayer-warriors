@@ -46,9 +46,17 @@ function createMemberHandlers({ memberships, users, roles, sessions, pushTokens,
       const mobile = typeof phone === 'string' && phone.trim() ? phone.trim() : null;
       if (mobile && !E164.test(mobile)) throw fail(MESSAGES.invalidPhone);
 
-      if (await users.findByEmail(address)) throw fail(MESSAGES.duplicate);
-
       const password = generatePassword();
+      const known = await users.findByEmail(address);
+      if (known) {
+        // Someone removed earlier comes back: same account and history, a fresh starting password.
+        if (await memberships.findActive(known.id)) throw fail(MESSAGES.duplicate);
+        await users.rejoin(known.id, { password, displayName: name, phone: mobile });
+        await roles.addUser(groupId, 'member', known.id);
+        await memberships.create({ groupId, userId: known.id, role: 'member' });
+        return { id: known.id, displayName: name, email: address, phone: mobile, startingPassword: password };
+      }
+
       const user = await users.create({
         username: address,
         email: address,

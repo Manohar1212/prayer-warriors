@@ -33,7 +33,7 @@ function deps({ groupId = 'g1', adminGroupId = null, points = [point()], claims 
     claims: {
       listForMonth: jest.fn(async () => claims),
       find: jest.fn(async () => found),
-      findMine: jest.fn(async () => mine),
+      findOpenMine: jest.fn(async () => mine),
       create: jest.fn(async (fields) => claimRow({ id: 'c-new', ...fields })),
       remove: jest.fn(async () => undefined),
       markDone: jest.fn(async (id, at) => claimRow({ id, doneAt: at.toISOString() })),
@@ -110,9 +110,30 @@ describe('claimPrayerPoint', () => {
     await expect(createPrayerPointHandlers(d).claimPrayerPoint({ pointId: 'p1' }, caller)).rejects.toThrow(MESSAGES.taken);
   });
 
-  it('refuses a second point in the same month', async () => {
-    const d = deps({ mine: claimRow({ pointId: 'p9' }) });
+  it('refuses a new point while one is still being prayed (not yet Done)', async () => {
+    const d = deps({ points: [point({ id: 'p1' }), point({ id: 'p9' })], mine: claimRow({ pointId: 'p9' }) });
     await expect(createPrayerPointHandlers(d).claimPrayerPoint({ pointId: 'p1' }, caller)).rejects.toThrow(MESSAGES.alreadyHave);
+  });
+
+  it('frees a pick whose point was removed or answered, instead of blocking the member', async () => {
+    const d = deps({ points: [point({ id: 'p1' }), point({ id: 'p9', active: false })], mine: claimRow({ id: 'old', pointId: 'p9' }) });
+    await createPrayerPointHandlers(d).claimPrayerPoint({ pointId: 'p1' }, caller);
+    expect(d.claims.remove).toHaveBeenCalledWith('old');
+    expect(d.claims.create).toHaveBeenCalledWith(expect.objectContaining({ pointId: 'p1' }));
+  });
+
+  it('keeps a night on the 30th in its own month through the early hours of the 1st', async () => {
+    const d = deps();
+    d.now = () => new Date('2026-09-30T19:30:00.000Z'); // 01:00 on 1 October in India
+    await createPrayerPointHandlers(d).listPrayerPoints({}, caller);
+    expect(d.claims.listForMonth).toHaveBeenCalledWith('g1', '2026-09');
+  });
+
+  it('lets a member pick the next point once the last one is Done', async () => {
+    const d = deps({ mine: null });
+    await createPrayerPointHandlers(d).claimPrayerPoint({ pointId: 'p1' }, caller);
+    expect(d.claims.findOpenMine).toHaveBeenCalledWith('u1', 'g1', expect.any(String));
+    expect(d.claims.create).toHaveBeenCalledWith(expect.objectContaining({ pointId: 'p1', userId: 'u1' }));
   });
 
   it('refuses removed points', async () => {
@@ -210,5 +231,89 @@ describe('addRequestToMonthly', () => {
     const d = deps({ points: [point({ requestId: 'r1' })] });
     const result = await createPrayerPointHandlers(d).listPrayerPoints({}, caller);
     expect(result.points[0].requestId).toBe('r1');
+  });
+});
+
+describe('reset after the all-night prayer', () => {
+  function withNight(night) {
+    const d = deps();
+    d.claims.removeForGroup = jest.fn(async () => undefined);
+    d.nights = {
+      findLatestStartedBefore: jest.fn(async () => night),
+      update: jest.fn(async () => undefined),
+    };
+    return d;
+  }
+
+  it('clears every pick once a night is over, and records that it did', async () => {
+    const d = withNight({ id: 'n1', scheduledAt: '2026-09-01T16:30:00.000Z', pointsResetAt: null });
+    await createPrayerPointHandlers(d).listPrayerPoints({}, caller);
+    expect(d.nights.findLatestStartedBefore).toHaveBeenCalledWith('g1', new Date(NOW.getTime() - 12 * 60 * 60 * 1000));
+    expect(d.claims.removeForGroup).toHaveBeenCalledWith('g1');
+    expect(d.nights.update).toHaveBeenCalledWith('n1', { pointsResetAt: NOW });
+  });
+
+  it('does not clear again for a night already reset', async () => {
+    const d = withNight({ id: 'n1', scheduledAt: '2026-09-01T16:30:00.000Z', pointsResetAt: '2026-09-02T05:00:00.000Z' });
+    await createPrayerPointHandlers(d).claimPrayerPoint({ pointId: 'p1' }, caller);
+    expect(d.claims.removeForGroup).not.toHaveBeenCalled();
+  });
+
+  it('leaves picks alone while no night has finished yet', async () => {
+    const d = withNight(null);
+    await createPrayerPointHandlers(d).listPrayerPoints({}, caller);
+    expect(d.claims.removeForGroup).not.toHaveBeenCalled();
+    expect(d.nights.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('reorderPrayerPoints', () => {
+  const three = [point({ id: 'p1', order: 1 }), point({ id: 'p2', order: 2 }), point({ id: 'p3', order: 3 })];
+
+  it('lets an admin set a new order, writing only the points that moved', async () => {
+    const d = deps({ adminGroupId: 'g1', points: three });
+    await expect(createPrayerPointHandlers(d).reorderPrayerPoints({ ids: ['p1', 'p3', 'p2'] }, caller)).resolves.toEqual({ ids: ['p1', 'p3', 'p2'] });
+    expect(d.points.update.mock.calls).toEqual([['p3', { order: 2 }], ['p2', { order: 3 }]]);
+  });
+
+  it('refuses members', async () => {
+    const d = deps({ points: three });
+    await expect(createPrayerPointHandlers(d).reorderPrayerPoints({ ids: ['p3', 'p2', 'p1'] }, caller)).rejects.toThrow(MESSAGES.notAdmin);
+  });
+
+  it('refuses a list that misses, repeats or invents points', async () => {
+    const d = deps({ adminGroupId: 'g1', points: three });
+    const h = createPrayerPointHandlers(d);
+    await expect(h.reorderPrayerPoints({ ids: ['p1', 'p2'] }, caller)).rejects.toThrow(MESSAGES.badOrder);
+    await expect(h.reorderPrayerPoints({ ids: ['p1', 'p1', 'p2'] }, caller)).rejects.toThrow(MESSAGES.badOrder);
+    await expect(h.reorderPrayerPoints({ ids: ['p1', 'p2', 'x9'] }, caller)).rejects.toThrow(MESSAGES.badOrder);
+    expect(d.points.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('removePrayerPoint', () => {
+  it('frees the member who was praying it', async () => {
+    const d = deps({ adminGroupId: 'g1', found: claimRow({ id: 'c7', pointId: 'p1', userId: 'u2' }) });
+    await createPrayerPointHandlers(d).removePrayerPoint({ pointId: 'p1' }, caller);
+    expect(d.points.update).toHaveBeenCalledWith('p1', { active: false });
+    expect(d.claims.remove).toHaveBeenCalledWith('c7');
+  });
+});
+
+describe('double taps on Pick', () => {
+  it('lets the earliest pick of a point stand and takes back a later one', async () => {
+    const d = deps();
+    d.claims.listForPoint = jest.fn(async () => [claimRow({ id: 'c-first', userId: 'u2' }), claimRow({ id: 'c-new' })]);
+    d.claims.listOpenMine = jest.fn(async () => [claimRow({ id: 'c-new' })]);
+    await expect(createPrayerPointHandlers(d).claimPrayerPoint({ pointId: 'p1' }, caller)).rejects.toThrow(MESSAGES.taken);
+    expect(d.claims.remove).toHaveBeenCalledWith('c-new');
+  });
+
+  it('keeps a member to one open pick when two different points are tapped at once', async () => {
+    const d = deps();
+    d.claims.listForPoint = jest.fn(async () => [claimRow({ id: 'c-new' })]);
+    d.claims.listOpenMine = jest.fn(async () => [claimRow({ id: 'c-other', pointId: 'p2' }), claimRow({ id: 'c-new' })]);
+    await expect(createPrayerPointHandlers(d).claimPrayerPoint({ pointId: 'p1' }, caller)).rejects.toThrow(MESSAGES.alreadyHave);
+    expect(d.claims.remove).toHaveBeenCalledWith('c-new');
   });
 });

@@ -132,6 +132,16 @@ const users = {
     const rows = await new Parse.Query(Parse.User).containedIn('objectId', ids).limit(1000).find({ useMasterKey: true });
     return rows.map((u) => ({ id: u.id, displayName: u.get('displayName') || null, notificationPrefs: u.get('notificationPrefs') || null }));
   },
+  /** A removed member coming back: a fresh starting password, and the first-login step again. */
+  async rejoin(userId, { password, displayName, phone }) {
+    const user = await new Parse.Query(Parse.User).get(userId, { useMasterKey: true });
+    user.set('password', password);
+    user.set('displayName', displayName);
+    if (phone) user.set('phone', phone);
+    user.set('mustSetPassword', true);
+    await user.save(null, { useMasterKey: true });
+    return { id: user.id };
+  },
   async findPhones(ids) {
     if (!ids.length) return [];
     const rows = await new Parse.Query(Parse.User).containedIn('objectId', ids).select('phone').limit(1000).find({ useMasterKey: true });
@@ -259,6 +269,11 @@ const responses = {
     const row = await new Parse.Query('PrayerResponse').get(id, { useMasterKey: true });
     await row.destroy({ useMasterKey: true });
   },
+  /** Rows for one member on one request, earliest first. */
+  async listFor(requestId, userId) {
+    const rows = await new Parse.Query('PrayerResponse').equalTo('prayerRequest', pointer('PrayerRequest', requestId)).equalTo('user', pointer('_User', userId)).ascending('createdAt').limit(10).find({ useMasterKey: true });
+    return rows.map((r) => ({ id: r.id }));
+  },
   async removeAllFor(requestId) {
     await destroyAll(new Parse.Query('PrayerResponse').equalTo('prayerRequest', pointer('PrayerRequest', requestId)));
   },
@@ -376,6 +391,10 @@ function prayerPointClaimDto(obj) {
 }
 
 const prayerPointClaims = {
+  /** Every pick in the group, cleared once the all-night prayer is over. */
+  async removeForGroup(groupId) {
+    await destroyAll(new Parse.Query('PrayerPointClaim').equalTo('group', pointer('Group', groupId)));
+  },
   async listForMonth(groupId, month) {
     const rows = await new Parse.Query('PrayerPointClaim')
       .equalTo('group', pointer('Group', groupId))
@@ -402,11 +421,29 @@ const prayerPointClaims = {
       .find({ useMasterKey: true });
     await Parse.Object.destroyAll(rows, { useMasterKey: true });
   },
-  async findMine(userId, groupId, month) {
+  /** Every pick of a point this month, earliest first: the first one wins a double tap. */
+  async listForPoint(pointId, month) {
+    const rows = await new Parse.Query('PrayerPointClaim').equalTo('prayerPoint', pointer('PrayerPoint', pointId)).equalTo('month', month).ascending('createdAt').limit(10).find({ useMasterKey: true });
+    return rows.map(prayerPointClaimDto);
+  },
+  async listOpenMine(userId, groupId, month) {
+    const rows = await new Parse.Query('PrayerPointClaim')
+      .equalTo('user', pointer('_User', userId))
+      .equalTo('group', pointer('Group', groupId))
+      .equalTo('month', month)
+      .doesNotExist('doneAt')
+      .ascending('createdAt')
+      .limit(10)
+      .find({ useMasterKey: true });
+    return rows.map(prayerPointClaimDto);
+  },
+  /** The caller's pick this month that is not yet Done, if any. */
+  async findOpenMine(userId, groupId, month) {
     const row = await new Parse.Query('PrayerPointClaim')
       .equalTo('user', pointer('_User', userId))
       .equalTo('group', pointer('Group', groupId))
       .equalTo('month', month)
+      .doesNotExist('doneAt')
       .first({ useMasterKey: true });
     return row ? prayerPointClaimDto(row) : null;
   },
@@ -446,10 +483,21 @@ function prayerNightDto(obj) {
     cancelledAt: cancelledAt ? cancelledAt.toISOString() : null,
     lastReminderDay: obj.get('lastReminderDay') || '',
     callId: refId(obj.get('call')),
+    pointsResetAt: obj.get('pointsResetAt') ? obj.get('pointsResetAt').toISOString() : null,
   };
 }
 
 const prayerNights = {
+  /** The latest night that started before `before` (cancelled ones aside). */
+  async findLatestStartedBefore(groupId, before) {
+    const obj = await new Parse.Query('PrayerNight')
+      .equalTo('group', pointer('Group', groupId))
+      .doesNotExist('cancelledAt')
+      .lessThanOrEqualTo('scheduledAt', before)
+      .descending('scheduledAt')
+      .first({ useMasterKey: true });
+    return obj ? prayerNightDto(obj) : null;
+  },
   async findUpcoming(groupId, since) {
     const obj = await new Parse.Query('PrayerNight')
       .equalTo('group', pointer('Group', groupId))
@@ -542,6 +590,15 @@ const quizStarts = {
 };
 
 const quizResults = {
+  /** A member's results for one day, earliest first (there should be one; a double tap may add two). */
+  async listFor(userId, day) {
+    const rows = await new Parse.Query('QuizResult').equalTo('user', pointer('_User', userId)).equalTo('day', day).ascending('createdAt').limit(10).find({ useMasterKey: true });
+    return rows.map(quizResultDto);
+  },
+  async remove(id) {
+    const row = await new Parse.Query('QuizResult').get(id, { useMasterKey: true });
+    await row.destroy({ useMasterKey: true });
+  },
   async find(userId, day) {
     const row = await new Parse.Query('QuizResult')
       .equalTo('user', pointer('_User', userId))
@@ -1017,10 +1074,24 @@ function withNotify(handler, after) {
 
 const memberHandlers = createMemberHandlers({ memberships, users, roles, sessions, pushTokens, prayerPoints: prayerPointClaims, generatePassword });
 const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, comments: prayerComments, points: prayerPoints, notifications: inbox });
-const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims, requests });
+const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims, requests, nights: prayerNights });
 const resourceHandlers = createResourceHandlers({ memberships, resources });
 const quizHandlers = createQuizHandlers({ memberships, results: quizResults, starts: quizStarts, bank: QUESTIONS });
-const prayerNightHandlers = createPrayerNightHandlers({ memberships, nights: prayerNights, calls: callsRepo, notify: (event) => notifier.notify(event) });
+/** Group-wide settings that are not rows of their own: for now, the order of the all-night prayer. */
+const groupSettings = {
+  async getNightOrder(groupId) {
+    const group = await new Parse.Query('Group').get(groupId, { useMasterKey: true }).catch(() => null);
+    const items = group ? group.get('nightOrder') : null;
+    return Array.isArray(items) ? items.filter((i) => typeof i === 'string') : [];
+  },
+  async setNightOrder(groupId, items) {
+    const group = await new Parse.Query('Group').get(groupId, { useMasterKey: true });
+    group.set('nightOrder', items);
+    await group.save(null, { useMasterKey: true });
+  },
+};
+
+const prayerNightHandlers = createPrayerNightHandlers({ memberships, nights: prayerNights, groups: groupSettings, calls: callsRepo, notify: (event) => notifier.notify(event) });
 const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
 Parse.Cloud.define('deletePrayerRequest', (request) =>
@@ -1121,10 +1192,10 @@ Parse.Cloud.define('joinCall', async (request) => {
 ['registerPushToken', 'unregisterPushToken', 'markNotificationsRead', 'markAllNotificationsRead', 'clearNotifications', 'updateNotificationPrefs'].forEach((name) =>
   Parse.Cloud.define(name, (request) => notificationHandlers[name](request.params, { callerId: callerId(request) })),
 );
-['listPrayerPoints', 'listAnsweredPrayerPoints', 'addPrayerPoint', 'addRequestToMonthly', 'updatePrayerPoint', 'removePrayerPoint', 'claimPrayerPoint', 'releasePrayerPoint', 'markPrayerPointDone', 'markPrayerPointAnswered'].forEach((name) =>
+['listPrayerPoints', 'listAnsweredPrayerPoints', 'addPrayerPoint', 'addRequestToMonthly', 'updatePrayerPoint', 'reorderPrayerPoints', 'removePrayerPoint', 'claimPrayerPoint', 'releasePrayerPoint', 'markPrayerPointDone', 'markPrayerPointAnswered'].forEach((name) =>
   Parse.Cloud.define(name, (request) => prayerPointHandlers[name](request.params, { callerId: callerId(request) })),
 );
-['getPrayerNight', 'schedulePrayerNight', 'cancelPrayerNight'].forEach((name) =>
+['getPrayerNight', 'schedulePrayerNight', 'cancelPrayerNight', 'getNightOrder', 'setNightOrder'].forEach((name) =>
   Parse.Cloud.define(name, (request) => prayerNightHandlers[name](request.params, { callerId: callerId(request) })),
 );
 // Schedule daily (e.g. 08:00 IST) in the Back4App dashboard; members opening the app also trigger the day's reminder.
@@ -1137,8 +1208,29 @@ Parse.Cloud.define('ping', () => 'pong');
 // ---------- triggers ----------
 
 // A phone number belongs to at most one member.
+/** What a member may change on their own account from the app; everything else is server-only. */
+const SELF_EDITABLE = new Set(['displayName', 'phone', 'password', 'mustSetPassword']);
+
 Parse.Cloud.beforeSave(Parse.User, async (request) => {
   const user = request.object;
+  if (!request.master) {
+    const dirty = user.dirtyKeys();
+    const blocked = dirty.filter((key) => !SELF_EDITABLE.has(key));
+    if (blocked.length) throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'That cannot be changed from the app.');
+    if (user.dirty('displayName')) {
+      const name = typeof user.get('displayName') === 'string' ? user.get('displayName').trim() : '';
+      if (!name || name.length > 40) throw new Parse.Error(Parse.Error.VALIDATION_ERROR, 'Keep your name between 1 and 40 characters.');
+      user.set('displayName', name);
+    }
+    if (user.dirty('phone')) {
+      const value = user.get('phone');
+      if (value && !(typeof value === 'string' && /^\+[1-9]\d{7,14}$/.test(value))) throw new Parse.Error(Parse.Error.VALIDATION_ERROR, "That doesn't look like a valid mobile number.");
+    }
+    // The first-login flag clears only together with a new password, never on its own.
+    if (user.dirty('mustSetPassword') && (user.get('mustSetPassword') !== false || !dirty.includes('password'))) {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Choose a new password first.');
+    }
+  }
   const phone = user.get('phone');
   if (!phone || !user.dirty('phone')) return;
   const clash = await new Parse.Query(Parse.User)

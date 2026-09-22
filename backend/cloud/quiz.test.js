@@ -58,8 +58,18 @@ describe('question bank', () => {
 });
 
 describe('getDailyQuiz', () => {
-  it('returns today questions without answers', async () => {
-    const result = await createQuizHandlers(deps()).getDailyQuiz({}, caller);
+  it('hides the questions until the quiz screen starts, so nobody reads them before the clock', async () => {
+    const d = deps();
+    const home = await createQuizHandlers(d).getDailyQuiz({}, caller);
+    expect(home.questions).toHaveLength(0);
+    expect(home.questionCount).toBe(3);
+    expect(d.starts.create).not.toHaveBeenCalled();
+  });
+
+  it('returns today questions without answers once started, and starts the clock', async () => {
+    const d = deps();
+    const result = await createQuizHandlers(d).getDailyQuiz({ start: true }, caller);
+    expect(d.starts.create).toHaveBeenCalledWith(expect.objectContaining({ userId: caller.callerId, day: TODAY }));
     expect(result.day).toBe(TODAY);
     expect(result.questions).toHaveLength(3);
     expect(result.questions[0]).not.toHaveProperty('answer');
@@ -81,6 +91,15 @@ describe('getDailyQuiz', () => {
 });
 
 describe('submitQuiz', () => {
+  it('takes back a second result from a double tap', async () => {
+    const d = deps();
+    d.results.listFor = jest.fn(async () => [{ id: 'r-first' }, { id: 'r-new' }]);
+    d.results.remove = jest.fn(async () => undefined);
+    const qs = questionsForDay(bank, TODAY);
+    await expect(createQuizHandlers(d).submitQuiz({ day: TODAY, answers: qs.map((q) => q.answer) }, caller)).rejects.toThrow(MESSAGES.alreadyPlayed);
+    expect(d.results.remove).toHaveBeenCalledWith('r-new');
+  });
+
   it('scores against the day questions and saves one result', async () => {
     const d = deps();
     const qs = questionsForDay(bank, TODAY);

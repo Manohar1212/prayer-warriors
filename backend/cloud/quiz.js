@@ -89,16 +89,23 @@ function createQuizHandlers({ memberships, results, starts, bank, now = () => ne
   return {
     MESSAGES,
 
-    /** Today's questions (without answers) and the caller's result if they already played. */
-    async getDailyQuiz(_params, { callerId } = {}) {
+    /**
+     * Today's quiz and the caller's result if they already played. The questions themselves are
+     * only handed out with `start` (the quiz screen), which also starts the clock, so nobody can
+     * read them first and then play against the timer. Home asks without it.
+     */
+    async getDailyQuiz({ start = false } = {}, { callerId } = {}) {
       const groupId = await requireGroup(callerId);
       const day = dayKeyFor(now());
       const questions = questionsForDay(bank, day);
       const mine = await results.find(callerId, day);
+      if (!mine && start && !(await starts.find(callerId, day))) await starts.create({ groupId, userId: callerId, day, startedAt: now() });
+      const visible = mine || start ? questions : [];
       const played = await results.listForUser(callerId, monthOf(day));
       return {
         day,
-        questions: questions.map(publicQuestion),
+        questions: visible.map(publicQuestion),
+        questionCount: questions.length,
         result: mine ? { score: mine.score, answers: mine.answers, correct: questions.map((q) => q.answer), durationMs: typeof mine.durationMs === 'number' ? mine.durationMs : null } : null,
         streak: streaksFor(played.map((r) => r.day), day).current,
         groupId,
@@ -130,6 +137,14 @@ function createQuizHandlers({ memberships, results, starts, bank, now = () => ne
       const start = await starts.find(callerId, today);
       const durationMs = start ? Math.max(0, at.getTime() - new Date(start.startedAt).getTime()) : null;
       const saved = await results.create({ groupId, userId: callerId, day: today, score, answers, durationMs });
+      // A double tap can save twice: the first result stands, the second is taken back.
+      if (results.listFor) {
+        const [first] = await results.listFor(callerId, today);
+        if (first && first.id !== saved.id) {
+          await results.remove(saved.id);
+          throw fail(MESSAGES.alreadyPlayed);
+        }
+      }
       return { day: today, score, correct, durationMs, id: saved.id };
     },
 
