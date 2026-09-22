@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useCachedQuery } from '../../lib/useCachedQuery';
 import { mapParseError } from '../auth/errors';
@@ -55,7 +55,8 @@ async function guarded<T>(work: () => Promise<T>): Promise<T> {
 
 export function createQuizService({ cloud }: Deps) {
   return {
-    today: () => guarded(() => cloud.run('getDailyQuiz')) as Promise<DailyQuiz>,
+    /** With `start` (the quiz screen) the server starts the clock and hands out the questions. */
+    today: (start = false) => guarded(() => cloud.run('getDailyQuiz', start ? { start: true } : {})) as Promise<DailyQuiz>,
     /** Marks the first open of today's quiz; the server keeps the earliest one. */
     start: () => guarded(() => cloud.run('startQuiz')) as Promise<{ day: string; startedAt: string }>,
     submit: (day: string, answers: number[]) => guarded(() => cloud.run('submitQuiz', { day, answers })) as Promise<{ day: string; score: number; correct: number[]; durationMs: number | null }>,
@@ -79,15 +80,8 @@ export type DailyQuizState = {
  * today's questions, which starts the fastest-finger clock. Home shows the same data without it.
  */
 export function useDailyQuiz(service: QuizService, { startClock = false }: { startClock?: boolean } = {}): DailyQuizState {
-  const { data: quiz, loading, error, refresh, setData } = useCachedQuery<DailyQuiz>('quiz:today', () => service.today(), { fallback: 'Could not load the quiz.' });
-  const startedFor = useRef<string | null>(null);
-  const unplayedDay = quiz && !quiz.result ? quiz.day : null;
-
-  useEffect(() => {
-    if (!startClock || !unplayedDay || startedFor.current === unplayedDay) return;
-    startedFor.current = unplayedDay;
-    service.start().catch(() => undefined);
-  }, [startClock, unplayedDay, service]);
+  // Home and the quiz screen cache apart: Home's copy has no questions until you have played.
+  const { data: quiz, loading, error, refresh, setData } = useCachedQuery<DailyQuiz>(startClock ? 'quiz:play' : 'quiz:today', () => service.today(startClock), { fallback: 'Could not load the quiz.' });
 
   const submit = useCallback(
     async (answers: number[]) => {

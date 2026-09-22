@@ -6,11 +6,10 @@ import { Platform, Pressable, Share, View } from 'react-native';
 
 import { formatRupees, monthlyReport, reportCsv, useFunds } from '@/features/funds';
 import { useMembers } from '@/features/members';
-import { useLanguage } from '@/i18n';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors } from '@/theme/tokens';
 import { Button, Card, Screen, Text } from '@/ui';
 
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 function Line({ label, amountPaise, strong = false, negative = false }: { label: string; amountPaise: number; strong?: boolean; negative?: boolean }) {
   return (
@@ -18,8 +17,9 @@ function Line({ label, amountPaise, strong = false, negative = false }: { label:
       <Text variant={strong ? 'label' : 'body'} className="flex-1 text-[15px]">
         {label}
       </Text>
-      <Text variant="label" color={negative ? 'roseDeep' : strong ? 'primary' : 'ink'} className="text-[15px]">
-        {negative ? '−' : ''}
+      {/* Nothing spent is ₹0, not a red −₹0. */}
+      <Text variant="label" color={negative && amountPaise ? 'roseDeep' : strong ? 'primary' : 'ink'} className="text-[15px]">
+        {negative && amountPaise ? '−' : ''}
         {formatRupees(amountPaise)}
       </Text>
     </View>
@@ -27,7 +27,7 @@ function Line({ label, amountPaise, strong = false, negative = false }: { label:
 }
 
 export default function ReportScreen() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { contributions, monthlyCollected, expenses } = useFunds();
   const { isAdmin } = useMembers();
   // Who gave what is for admins; a member sees the month's total only, not even a list of their own.
@@ -60,7 +60,7 @@ export default function ReportScreen() {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', dialogTitle: name });
       } else {
-        setStatus(`Saved to ${file.uri}`);
+        setStatus(t('funds.report.savedTo', { path: file.uri }));
       }
     } catch (err) {
       setStatus(err instanceof Error ? err.message : t('funds.report.exportFailed'));
@@ -70,13 +70,13 @@ export default function ReportScreen() {
   return (
     <Screen edges={['bottom']} scroll backdrop className="gap-6 pt-6">
       <View className="flex-row items-center justify-between">
-        <Pressable accessibilityRole="button" accessibilityLabel="Previous month" onPress={() => shift(-1)} hitSlop={8} className="p-2">
+        <Pressable accessibilityRole="button" accessibilityLabel={t('funds.report.previousMonth')} onPress={() => shift(-1)} hitSlop={8} className="p-2">
           <Ionicons name="chevron-back" size={22} color={colors.primary} />
         </Pressable>
         <Text variant="title">
-          {MONTHS[month - 1]} {year}
+          {new Date(year, month - 1, 1).toLocaleDateString(locale, { month: 'long', year: 'numeric' })}
         </Text>
-        <Pressable accessibilityRole="button" accessibilityLabel="Next month" onPress={() => shift(1)} hitSlop={8} disabled={isCurrent} className="p-2">
+        <Pressable accessibilityRole="button" accessibilityLabel={t('funds.report.nextMonth')} onPress={() => shift(1)} hitSlop={8} disabled={isCurrent} className="p-2">
           <Ionicons name="chevron-forward" size={22} color={isCurrent ? colors.border : colors.primary} />
         </Pressable>
       </View>
@@ -102,7 +102,7 @@ export default function ReportScreen() {
         <Text variant="title" className="mb-1">
           {t('funds.report.expenses')}
         </Text>
-        {report.expenses.length ? report.expenses.map((l) => <Line key={l.label} label={l.label} amountPaise={l.amountPaise} negative />) : <Text variant="muted">{t('funds.report.none')}</Text>}
+        {report.expenses.length ? report.expenses.map((l) => <Line key={l.label} label={l.labelKey ? t(l.labelKey as TranslationKey) : l.label} amountPaise={l.amountPaise} negative />) : <Text variant="muted">{t('funds.report.none')}</Text>}
         <View className="my-1 h-px bg-border" />
         <Line label={t('funds.report.totalSpent')} amountPaise={report.spentPaise} strong negative />
       </Card>

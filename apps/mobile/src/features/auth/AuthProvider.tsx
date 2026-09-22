@@ -10,6 +10,7 @@ import {
 
 import type { AuthStatus } from './gate';
 import type { AuthService, AuthUser, ProfilePatch } from './types';
+import { onSessionExpired } from '../../lib/session';
 import { clearQueryCache } from '../../lib/useCachedQuery';
 
 export type AuthContextValue = {
@@ -54,12 +55,21 @@ export function AuthProvider({ service, children }: PropsWithChildren<{ service:
     [service],
   );
 
+  // Always completes: offline or with an expired session the server call fails, but the phone
+  // has already forgotten the session, so the member must land on sign-in either way.
   const signOut = useCallback(async () => {
-    await service.signOut();
-    clearQueryCache();
-    setUser(null);
-    setStatus('signedOut');
+    try {
+      await service.signOut();
+    } catch {
+      // Nothing to undo; the local session is gone.
+    } finally {
+      clearQueryCache();
+      setUser(null);
+      setStatus('signedOut');
+    }
   }, [service]);
+
+  useEffect(() => onSessionExpired(() => void signOut()), [signOut]);
 
   const requestPasswordReset = useCallback(
     (email: string) => service.requestPasswordReset(email),

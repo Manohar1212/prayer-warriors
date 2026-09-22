@@ -53,7 +53,7 @@ function Podium({ entry, place }: { entry: LeaderboardEntry | undefined; place: 
   );
 }
 
-function Stat({ label, value, icon }: { label: string; value: string; icon: keyof typeof Ionicons.glyphMap }) {
+function Stat({ label, value, icon, note }: { label: string; value: string; icon: keyof typeof Ionicons.glyphMap; note?: string }) {
   return (
     <View className="flex-1 items-center gap-0.5">
       <Ionicons name={icon} size={16} color={colors.skyDeep} />
@@ -63,34 +63,30 @@ function Stat({ label, value, icon }: { label: string; value: string; icon: keyo
       <Text variant="caption" color="muted">
         {label}
       </Text>
+      {note ? (
+        <Text variant="caption" color="muted" className="text-[11px]">
+          {note}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
-function Row({ entry, daysInMonth, streakText, t }: { entry: LeaderboardEntry; daysInMonth: number; streakText: (n: number) => string; t: (k: 'quiz.pts' | 'quiz.daysOf' | 'quiz.todayScore' | 'common.you', v?: Record<string, string | number>) => string }) {
-  const alive = entry.streak > 0;
+/** A line in the full list: place, face, name and points. The details live in the cards above. */
+function Row({ entry, you, pts }: { entry: LeaderboardEntry; you: string; pts: string }) {
   return (
     <View className={`flex-row items-center gap-3 px-4 py-3 ${entry.me ? 'bg-sky' : ''}`}>
       <Text variant="label" color="muted" className="w-6 text-center">
         {entry.rank}
       </Text>
-      <Avatar name={entry.userName} size={38} />
-      <View className="flex-1">
-        <Text variant="label" className="text-[15px]" numberOfLines={1}>
-          {entry.userName}
-          {entry.me ? ` · ${t('common.you')}` : ''}
-        </Text>
-        <Text variant="caption">
-          {t('quiz.pts', { n: entry.points })} · {formatDuration(entry.timeMs)} · {t('quiz.daysOf', { n: entry.days, total: daysInMonth })}
-          {entry.today === null ? '' : ` · ${t('quiz.todayScore', { n: entry.today })}`}
-        </Text>
-      </View>
-      <View className={`flex-row items-center gap-1 rounded-full px-2.5 py-1 ${alive ? 'bg-honey' : 'bg-panel'}`}>
-        <Ionicons name={alive ? 'flame' : 'flame-outline'} size={14} color={alive ? colors.gold : colors.muted} />
-        <Text variant="label" color={alive ? 'ink' : 'muted'} className="text-[13px]">
-          {streakText(entry.streak)}
-        </Text>
-      </View>
+      <Avatar name={entry.userName} size={36} />
+      <Text variant="label" className="flex-1 text-[15px]" numberOfLines={1}>
+        {entry.userName}
+        {entry.me ? ` · ${you}` : ''}
+      </Text>
+      <Text variant="label" className="text-[15px]">
+        {pts}
+      </Text>
     </View>
   );
 }
@@ -98,7 +94,6 @@ function Row({ entry, daysInMonth, streakText, t }: { entry: LeaderboardEntry; d
 export default function LeaderboardScreen() {
   const { t, locale } = useLanguage();
   const { board, loading, error, refresh, setMonth } = useLeaderboard(quizService);
-  const streakText = (n: number) => (n === 1 ? t('quiz.streakDay') : t('quiz.streakDays', { n }));
 
   if (!board && loading) {
     return (
@@ -164,7 +159,8 @@ export default function LeaderboardScreen() {
               <View className="flex-row">
                 <Stat icon="checkmark-circle-outline" label={t('quiz.points')} value={String(me.points)} />
                 <Stat icon="timer-outline" label={t('quiz.time')} value={formatDuration(me.timeMs)} />
-                <Stat icon="flame" label={t('quiz.streak')} value={String(me.streak)} />
+                {/* The run can restart after a missed day; the best run this month stays on record. */}
+                <Stat icon="flame" label={t('quiz.streak')} value={String(me.streak)} note={me.best > me.streak ? t('quiz.bestStreak', { n: me.best }) : undefined} />
                 <Stat icon="ribbon" label={t('quiz.rank')} value={`#${me.rank}`} />
               </View>
             ) : (
@@ -178,13 +174,10 @@ export default function LeaderboardScreen() {
             <Text variant="label" color="muted" className="px-1 text-[12px] uppercase tracking-[1px]">
               {t('quiz.everyone')}
             </Text>
-            <Text variant="caption" color="muted" className="px-1">
-              {t('quiz.rankRule')}
-            </Text>
             <Card className="overflow-hidden" style={{ padding: 0 }}>
               {board.entries.map((entry, i) => (
                 <View key={entry.userId} className={i > 0 ? 'border-t border-border' : ''}>
-                  <Row entry={entry} daysInMonth={board.daysInMonth} streakText={streakText} t={t} />
+                  <Row entry={entry} you={t('common.you')} pts={t('quiz.pts', { n: entry.points })} />
                 </View>
               ))}
             </Card>

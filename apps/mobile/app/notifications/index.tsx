@@ -14,11 +14,16 @@ type IconName = keyof typeof Ionicons.glyphMap;
 const icons: Record<NotificationType, { name: IconName; bg: string; fg: string }> = {
   prayerRequest: { name: 'heart', bg: 'bg-lavender', fg: colors.primary },
   praying: { name: 'hand-left', bg: 'bg-lavender', fg: colors.primary },
+  comment: { name: 'chatbubble', bg: 'bg-lavender', fg: colors.primary },
+  prayerNight: { name: 'moon', bg: 'bg-lavender', fg: colors.violet },
+  prayerNightMoved: { name: 'moon', bg: 'bg-lavender', fg: colors.violet },
+  prayerNightCancelled: { name: 'moon-outline', bg: 'bg-lavender', fg: colors.violet },
+  prayerNightReminder: { name: 'moon', bg: 'bg-lavender', fg: colors.violet },
   answered: { name: 'sparkles', bg: 'bg-honey', fg: colors.gold },
   callScheduled: { name: 'calendar', bg: 'bg-lavender', fg: colors.primary },
   callStarted: { name: 'call', bg: 'bg-lavender', fg: colors.primary },
   callCancelled: { name: 'call-outline', bg: 'bg-lavender', fg: colors.primary },
-  resource: { name: 'book', bg: 'bg-sky', fg: colors.skyDeep },
+  resource: { name: 'musical-notes', bg: 'bg-sky', fg: colors.skyDeep },
   contribution: { name: 'wallet', bg: 'bg-sage', fg: colors.leaf },
   expense: { name: 'receipt', bg: 'bg-honey', fg: colors.gold },
 };

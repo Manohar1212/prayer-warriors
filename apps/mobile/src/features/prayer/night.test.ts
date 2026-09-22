@@ -13,4 +13,12 @@ describe('createPrayerNightService', () => {
       ['cancelPrayerNight', { nightId: 'n1' }],
     ]);
   });
+
+  it('reads and saves the order of the night, keeping only text steps', async () => {
+    const cloud = { run: jest.fn(async () => ({ items: ['పాటలు', 3, 'ఆరాధన'] })) };
+    const service = createPrayerNightService({ cloud });
+    await expect(service.getOrder()).resolves.toEqual(['పాటలు', 'ఆరాధన']);
+    await service.setOrder(['పాటలు', 'ఆరాధన']);
+    expect(cloud.run).toHaveBeenLastCalledWith('setNightOrder', { items: ['పాటలు', 'ఆరాధన'] });
+  });
 });

@@ -52,6 +52,8 @@ export type Transaction = {
   kind: 'contribution' | 'expense';
   title: string;
   subtitle: string;
+  /** The label key for `subtitle` (payment method or expense category), shown in the app language. */
+  subtitleKey: string;
   signedPaise: number;
   date: string;
 };

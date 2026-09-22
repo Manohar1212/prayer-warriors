@@ -22,11 +22,11 @@ describe('createQuizService', () => {
     const cloud = { run: jest.fn(async () => ({ day: '2026-09-17', score: 1, correct: [1] })) };
     const service = createQuizService({ cloud });
     await service.today();
-    await service.start();
+    await service.today(true);
     await service.submit('2026-09-17', [1]);
     await service.leaderboard();
     await service.leaderboard('2026-08');
-    expect(cloud.run.mock.calls).toEqual([['getDailyQuiz'], ['startQuiz'], ['submitQuiz', { day: '2026-09-17', answers: [1] }], ['getQuizLeaderboard', {}], ['getQuizLeaderboard', { month: '2026-08' }]]);
+    expect(cloud.run.mock.calls).toEqual([['getDailyQuiz', {}], ['getDailyQuiz', { start: true }], ['submitQuiz', { day: '2026-09-17', answers: [1] }], ['getQuizLeaderboard', {}], ['getQuizLeaderboard', { month: '2026-08' }]]);
   });
 });
 
@@ -34,26 +34,19 @@ describe('useDailyQuiz clock', () => {
   beforeEach(() => clearQueryCache());
   const cloudFor = (today: typeof quiz) => ({ run: jest.fn(async (name: string) => (name === 'getDailyQuiz' ? today : name === 'startQuiz' ? { day: today.day, startedAt: '2026-09-17T02:00:00.000Z' } : {})) });
 
-  it('starts the server clock once when the quiz screen opens an unplayed quiz', async () => {
+  it('asks the server to start the clock when the quiz screen opens', async () => {
     const cloud = cloudFor(quiz);
-    const { result, rerender } = await renderHook(() => useDailyQuiz(createQuizService({ cloud }), { startClock: true }));
+    const { result } = await renderHook(() => useDailyQuiz(createQuizService({ cloud }), { startClock: true }));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    await rerender({});
-    await waitFor(() => expect(cloud.run).toHaveBeenCalledWith('startQuiz'));
-    expect(cloud.run.mock.calls.filter(([name]) => name === 'startQuiz')).toHaveLength(1);
+    expect(cloud.run).toHaveBeenCalledWith('getDailyQuiz', { start: true });
   });
 
-  it('does not start the clock from Home or once today is already played', async () => {
+  it('does not start the clock from Home', async () => {
     const home = cloudFor(quiz);
     const { result } = await renderHook(() => useDailyQuiz(createQuizService({ cloud: home })));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(home.run).not.toHaveBeenCalledWith('startQuiz');
-
-    clearQueryCache();
-    const played = cloudFor({ ...quiz, result: { score: 1, answers: [1], correct: [1], durationMs: 30000 } });
-    const shown = await renderHook(() => useDailyQuiz(createQuizService({ cloud: played }), { startClock: true }));
-    await waitFor(() => expect(shown.result.current.loading).toBe(false));
-    expect(played.run).not.toHaveBeenCalledWith('startQuiz');
+    expect(home.run).toHaveBeenCalledWith('getDailyQuiz', {});
+    expect(home.run).not.toHaveBeenCalledWith('getDailyQuiz', { start: true });
   });
 });
 

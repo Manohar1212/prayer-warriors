@@ -46,8 +46,8 @@ describe('monthlyReport', () => {
       { label: 'Mary', amountPaise: 300000 },
     ]);
     expect(report.expenses).toEqual([
-      { label: 'Hall', amountPaise: 350000 },
-      { label: 'Food', amountPaise: 200000 },
+      { label: 'Hall', amountPaise: 350000, labelKey: 'funds.category.hall' },
+      { label: 'Food', amountPaise: 200000, labelKey: 'funds.category.food' },
     ]);
     expect(report.collectedPaise).toBe(800000);
     expect(report.spentPaise).toBe(550000);

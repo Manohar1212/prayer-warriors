@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
-import { isJoinable, useCalls } from '@/features/calls';
+import { callTitle, isJoinable, useCalls } from '@/features/calls';
 import { useMembers, type Member } from '@/features/members';
 import { callsService } from '@/lib/parse';
 import { useLanguage } from '@/i18n';
@@ -105,7 +105,7 @@ function MemberRow({ member, isYou, last, canRemove, onRemove }: { member: Membe
 
 function callWhen(iso: string, locale: string): string {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(locale, { weekday: 'long', hour: 'numeric', minute: '2-digit' });
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(locale, { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 }
 
 export default function CommunityScreen() {
@@ -174,7 +174,7 @@ export default function CommunityScreen() {
                   </View>
                   <View className="flex-1 gap-0.5">
                     <Text variant="label" className="text-[16px]">
-                      {next.title}
+                      {callTitle(next.title, t)}
                     </Text>
                     <Text variant="caption" color={live ? 'leaf' : 'primary'}>
                       {live ? (onCall.length === 1 ? t('community.oneOnCall') : t('community.onCall', { count: onCall.length })) : callWhen(next.scheduledAt, locale)}
@@ -208,7 +208,7 @@ export default function CommunityScreen() {
                       </View>
                       <View className="flex-1 gap-0.5">
                         <Text variant="label" className="text-[15px]">
-                          {c.title}
+                          {callTitle(c.title, t)}
                         </Text>
                         <Text variant="caption">
                           {new Date(c.scheduledAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' })} · {c.participantCount} {t('common.joined')}
@@ -226,10 +226,12 @@ export default function CommunityScreen() {
               <Text variant="title" className="text-[17px]">
                 {members.length === 1 ? t('community.member') : t('community.members', { count: members.length })}
               </Text>
-              {isAdmin ? <Button title={t('community.addMember')} size="compact" icon="add" onPress={() => router.push('/add-member')} /> : null}
+              {isAdmin ? <Button title={t('community.addMember')} size="compact" variant="secondary" icon="add" onPress={() => router.push('/add-member')} /> : null}
             </View>
             {loading && !members.length ? (
               <ActivityIndicator color={colors.primary} className="mt-6" />
+            ) : !members.length ? (
+              <Text variant="muted">{t('community.noMembers')}</Text>
             ) : (
               <Card className="py-1">
                 {members.map((m, i) => (

@@ -51,6 +51,25 @@ describe('AuthProvider', () => {
     expect(result.current.user).toBeNull();
   });
 
+  it('still signs out when the server call fails (offline or expired session)', async () => {
+    const service = fakeService(ana);
+    (service.signOut as jest.Mock).mockRejectedValueOnce(Object.assign(new Error('x'), { code: 209 }));
+    const { result } = await renderHook(() => useAuth(), { wrapper: wrapperFor(service) });
+    await waitFor(() => expect(result.current.status).toBe('signedIn'));
+    await act(() => result.current.signOut());
+    expect(result.current.status).toBe('signedOut');
+    expect(result.current.user).toBeNull();
+  });
+
+  it('returns to sign-in when any screen hears the session has expired', async () => {
+    const { reportIfSessionExpired } = jest.requireActual('../../lib/session') as typeof import('../../lib/session');
+    const service = fakeService(ana);
+    const { result } = await renderHook(() => useAuth(), { wrapper: wrapperFor(service) });
+    await waitFor(() => expect(result.current.status).toBe('signedIn'));
+    await act(async () => reportIfSessionExpired(Object.assign(new Error('x'), { code: 209 })));
+    await waitFor(() => expect(result.current.status).toBe('signedOut'));
+  });
+
   it('updates the user after a profile change', async () => {
     const service = fakeService({ ...ana, displayName: null });
     const { result } = await renderHook(() => useAuth(), { wrapper: wrapperFor(service) });

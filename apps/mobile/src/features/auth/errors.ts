@@ -10,7 +10,8 @@ const messages: Record<number, string> = {
 export function mapParseError(err: unknown): Error {
   if (err instanceof Error) {
     const code = (err as { code?: unknown }).code;
-    if (typeof code === 'number' && messages[code]) return new Error(messages[code]);
+    // Keep the code: the app recognises an expired session (209) by it, whatever the wording.
+    if (typeof code === 'number' && messages[code]) return Object.assign(new Error(messages[code]), { code });
     return err;
   }
   return new Error('Something went wrong. Please try again.');

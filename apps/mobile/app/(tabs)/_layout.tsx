@@ -9,7 +9,8 @@ const tabs: { name: string; title: TranslationKey; icons: TabIcon }[] = [
   { name: 'index', title: 'tab.home', icons: { icon: 'home-outline', active: 'home' } },
   { name: 'prayer', title: 'tab.prayer', icons: { pray: true } },
   { name: 'community', title: 'tab.community', icons: { icon: 'people-outline', active: 'people' } },
-  { name: 'resources', title: 'tab.resources', icons: { icon: 'book-outline', active: 'book' } },
+  // Notes, not a book: the book icon is the Bible's (Home) and the diary's.
+  { name: 'resources', title: 'tab.resources', icons: { icon: 'musical-notes-outline', active: 'musical-notes' } },
   { name: 'funds', title: 'tab.funds', icons: { icon: 'wallet-outline', active: 'wallet' } },
 ];
 

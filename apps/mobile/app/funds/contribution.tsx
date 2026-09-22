@@ -124,7 +124,7 @@ export default function ContributionScreen() {
           ))}
         </View>
       </View>
-      <Input label={t('funds.contribution.reference')} value={reference} onChangeText={setReference} maxLength={120} placeholder="September contribution" />
+      <Input label={t('funds.contribution.reference')} value={reference} onChangeText={setReference} maxLength={120} placeholder={t('funds.contribution.referencePlaceholder')} />
       <Input label={t('funds.contribution.note')} value={note} onChangeText={setNote} maxLength={500} multiline style={{ minHeight: 70, textAlignVertical: 'top' }} />
       {existing ? <Input label={t('common.reasonForChange')} value={reason} onChangeText={setReason} maxLength={200} /> : null}
       {error ? (

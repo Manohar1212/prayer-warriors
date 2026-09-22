@@ -1,4 +1,4 @@
-import { createPrayerPointsService } from './points';
+import { createPrayerPointsService, joinPointTitle, splitPointTitle } from './points';
 
 describe('createPrayerPointsService', () => {
   const raw = {
@@ -42,5 +42,23 @@ describe('createPrayerPointsService', () => {
       ['listAnsweredPrayerPoints'],
       ['addRequestToMonthly', { requestId: 'r1' }],
     ]);
+  });
+});
+
+describe('splitPointTitle', () => {
+  it('separates the point from the names it carries', () => {
+    expect(splitPointTitle('వివాహాల కొరకు ప్రార్థన — నాని, చిన్నతల్లి , వినయ్,')).toEqual({ heading: 'వివాహాల కొరకు ప్రార్థన', names: ['నాని', 'చిన్నతల్లి', 'వినయ్'] });
+  });
+  it('leaves a point without names alone', () => {
+    expect(splitPointTitle('దేశం కొరకు ప్రార్థన')).toEqual({ heading: 'దేశం కొరకు ప్రార్థన', names: [] });
+  });
+});
+
+describe('joinPointTitle', () => {
+  it('puts names back after the point, and round-trips with splitPointTitle', () => {
+    const joined = joinPointTitle(' వివాహాల కొరకు ప్రార్థన ', ['నాని', '', ' చిన్నతల్లి ']);
+    expect(joined).toBe('వివాహాల కొరకు ప్రార్థన — నాని, చిన్నతల్లి');
+    expect(splitPointTitle(joined)).toEqual({ heading: 'వివాహాల కొరకు ప్రార్థన', names: ['నాని', 'చిన్నతల్లి'] });
+    expect(joinPointTitle('దేశం కొరకు ప్రార్థన', [])).toBe('దేశం కొరకు ప్రార్థన');
   });
 });

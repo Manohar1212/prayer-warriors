@@ -27,11 +27,19 @@ async function guarded<T>(work: () => Promise<T>): Promise<T> {
   }
 }
 
+function toOrder(result: unknown): string[] {
+  const items = (result as { items?: unknown } | null)?.items;
+  return Array.isArray(items) ? items.filter((i): i is string => typeof i === 'string') : [];
+}
+
 export function createPrayerNightService({ cloud }: Deps) {
   return {
     get: () => guarded(() => cloud.run('getPrayerNight')) as Promise<PrayerNight | null>,
     schedule: (scheduledAt: Date, note: string) => guarded(() => cloud.run('schedulePrayerNight', { scheduledAt: scheduledAt.toISOString(), note })) as Promise<ScheduledPrayerNight>,
     cancel: (nightId: string) => guarded(() => cloud.run('cancelPrayerNight', { nightId })) as Promise<{ cancelled: boolean }>,
+    /** The steps of the night, the same every month. */
+    getOrder: () => guarded(async () => toOrder(await cloud.run('getNightOrder'))),
+    setOrder: (items: string[]) => guarded(async () => toOrder(await cloud.run('setNightOrder', { items }))),
   };
 }
 
@@ -45,4 +53,10 @@ export function usePrayerNight(service: PrayerNightService, onLoaded?: (night: P
     onLoaded: (result) => onLoaded?.(result.night),
   });
   return { night: data?.night ?? null, loading, error, refresh };
+}
+
+/** The order of the night, cached like the night itself. */
+export function useNightOrder(service: PrayerNightService) {
+  const { data, loading, error, refresh } = useCachedQuery<string[]>('prayer:nightOrder', () => service.getOrder(), { fallback: 'Could not load the order of the night.' });
+  return { items: data ?? [], loading, error, refresh };
 }

@@ -41,3 +41,13 @@ export function isJoinable(call: GroupCall, now: Date): boolean {
   if (call.status !== 'scheduled') return false;
   return now.getTime() >= new Date(call.scheduledAt).getTime() - 15 * 60 * 1000;
 }
+
+/**
+ * Two call titles come from the server in English: the all-night prayer's call and the default
+ * name for a scheduled call. Show those in the app language; anything an admin typed stays as is.
+ */
+export function callTitle(title: string, t: (key: 'prayer.night.title' | 'calls.schedule.defaultTitle') => string): string {
+  if (title === 'All-night prayer') return t('prayer.night.title');
+  if (title === 'Group prayer') return t('calls.schedule.defaultTitle');
+  return title;
+}

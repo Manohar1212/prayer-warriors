@@ -16,8 +16,9 @@ export function nightCallOpen(night: PrayerNight, now: Date): boolean {
   return Boolean(night.callId) && now.getTime() >= new Date(night.scheduledAt).getTime() - JOIN_WINDOW_MS;
 }
 
-export function nightWhen(night: PrayerNight, locale: string): string {
-  return new Date(night.scheduledAt).toLocaleString(locale, { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
+/** "Saturday, 26 September at 10:00 pm"; `short` gives "Sat, 26 Sep, 10:00 pm" for narrow rows. */
+export function nightWhen(night: PrayerNight, locale: string, short = false): string {
+  return new Date(night.scheduledAt).toLocaleString(locale, short ? { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' } : { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
 }
 
 /** The month's all-night prayer: date, countdown, and the admin's way to set or move it. */

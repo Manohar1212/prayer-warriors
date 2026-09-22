@@ -4,7 +4,8 @@ export type DateRange = { from: string; to: string }; // YYYY-MM-DD inclusive
 
 export type Summary = { collectedPaise: number; spentPaise: number; netPaise: number };
 
-export type ReportLine = { label: string; amountPaise: number };
+/** `labelKey`, when set, is the translation key for `label` (expense categories). */
+export type ReportLine = { label: string; amountPaise: number; labelKey?: string };
 
 export type MonthlyReport = Summary & {
   year: number;
@@ -68,7 +69,10 @@ export function monthlyReport(contributions: Contribution[], collected: MonthTot
     openingPaise: opening,
     closingPaise: opening + summary.netPaise,
     contributions: groupBy(inMonthC, (c) => c.memberName, (c) => c.amountPaise),
-    expenses: groupBy(inMonthE, (e) => categoryLabel(e.category), (e) => e.amountPaise),
+    expenses: groupBy(inMonthE, (e) => categoryLabel(e.category), (e) => e.amountPaise).map((line) => {
+      const id = inMonthE.find((e) => categoryLabel(e.category) === line.label)?.category ?? 'other';
+      return { ...line, labelKey: `funds.category.${id}` };
+    }),
   };
 }
 
@@ -80,6 +84,7 @@ export function toTransactions(contributions: Contribution[], expenses: Expense[
       kind: 'contribution' as const,
       title: you && c.memberId === you.id ? you.label : c.memberName,
       subtitle: methodLabel(c.paymentMethod),
+      subtitleKey: `funds.method.${c.paymentMethod || 'other'}`,
       signedPaise: c.amountPaise,
       date: c.transactionDate,
     })),
@@ -88,6 +93,7 @@ export function toTransactions(contributions: Contribution[], expenses: Expense[
       kind: 'expense' as const,
       title: e.paidTo,
       subtitle: categoryLabel(e.category),
+      subtitleKey: `funds.category.${e.category || 'other'}`,
       signedPaise: -e.amountPaise,
       date: e.transactionDate,
     })),

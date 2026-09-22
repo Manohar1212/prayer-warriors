@@ -111,7 +111,7 @@ export default function ChapterScreen() {
               <View key={v.verse}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Verse ${v.label}`}
+                  accessibilityLabel={t('bible.verseLabel', { n: v.label })}
                   accessibilityState={{ selected: active }}
                   onPress={() => setSelected(active ? null : v.verse)}
                   className={`rounded-xl px-2 py-1.5 ${active ? 'bg-honey' : ''}`}
@@ -147,11 +147,11 @@ export default function ChapterScreen() {
 
         {verses && verses.length ? (
           <View className="mt-2 flex-row items-center justify-between gap-3">
-            <Pressable accessibilityRole="button" accessibilityLabel="Previous chapter" onPress={() => go(-1)} disabled={chapter <= 1} className={`flex-1 flex-row items-center justify-center gap-1 rounded-[14px] border border-border bg-surface py-3 ${chapter <= 1 ? 'opacity-40' : ''}`}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('bible.previousChapter')} onPress={() => go(-1)} disabled={chapter <= 1} className={`flex-1 flex-row items-center justify-center gap-1 rounded-[14px] border border-border bg-surface py-3 ${chapter <= 1 ? 'opacity-40' : ''}`}>
               <Ionicons name="chevron-back" size={18} color={colors.primary} />
               <Text variant="label" color="primary">{t('bible.previous')}</Text>
             </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel="Next chapter" onPress={() => go(1)} disabled={chapter >= total} className={`flex-1 flex-row items-center justify-center gap-1 rounded-[14px] bg-primary py-3 ${chapter >= total ? 'opacity-40' : ''}`}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('bible.nextChapter')} onPress={() => go(1)} disabled={chapter >= total} className={`flex-1 flex-row items-center justify-center gap-1 rounded-[14px] bg-primary py-3 ${chapter >= total ? 'opacity-40' : ''}`}>
               <Text variant="label" color="cream">{t('bible.next')}</Text>
               <Ionicons name="chevron-forward" size={18} color={colors.cream} />
             </Pressable>

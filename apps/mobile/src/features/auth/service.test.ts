@@ -57,6 +57,13 @@ describe('createParseAuthService', () => {
     await expect(createParseAuthService(parse).getCurrentUser()).resolves.toMatchObject({ mustSetPassword: true });
   });
 
+  it('forgets an expired session and starts from sign-in', async () => {
+    const user = Object.assign(fakeUser('u1', { email: 'a@b.c', displayName: 'Ana' }), { fetch: jest.fn(async () => Promise.reject(Object.assign(new Error('x'), { code: 209 }))) });
+    const { parse, User } = fakeParse(user);
+    await expect(createParseAuthService(parse).getCurrentUser()).resolves.toBeNull();
+    expect(User.logOut).toHaveBeenCalled();
+  });
+
   it('keeps the stored account when the server cannot be reached', async () => {
     const user = Object.assign(fakeUser('u1', { email: 'a@b.c', displayName: 'Ana' }), { fetch: jest.fn(async () => Promise.reject(new Error('offline'))) });
     const { parse } = fakeParse(user);

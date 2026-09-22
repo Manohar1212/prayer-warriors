@@ -13,6 +13,7 @@ import { Track } from 'livekit-client';
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { useT } from '../../i18n';
 import { colors } from '../../theme/tokens';
 import { Button, Text } from '../../ui';
 import type { CallRoomProps } from './CallRoom.types';
@@ -38,6 +39,7 @@ function Stage({ canEnd, onLeave, onEnd }: Pick<CallRoomProps, 'canEnd' | 'onLea
   const { localParticipant, isMicrophoneEnabled, isCameraEnabled } = useLocalParticipant();
   const tracks = useTracks([Track.Source.Camera]);
   const [speaker, setSpeaker] = useState(true);
+  const t = useT();
 
   useEffect(() => {
     AudioSession.startAudioSession();
@@ -49,14 +51,14 @@ function Stage({ canEnd, onLeave, onEnd }: Pick<CallRoomProps, 'canEnd' | 'onLea
   return (
     <View className="flex-1 gap-4">
       <View className="flex-row flex-wrap gap-2">
-        {tracks.filter(isTrackReference).map((t) => (
-          <View key={t.participant.identity + t.publication.trackSid} className="h-40 w-[48%] overflow-hidden rounded-2xl bg-primary-dark">
-            <VideoTrack trackRef={t} style={{ flex: 1 }} />
+        {tracks.filter(isTrackReference).map((track) => (
+          <View key={track.participant.identity + track.publication.trackSid} className="h-40 w-[48%] overflow-hidden rounded-2xl bg-primary-dark">
+            <VideoTrack trackRef={track} style={{ flex: 1 }} />
           </View>
         ))}
       </View>
       <View className="gap-2">
-        <Text variant="title">{participants.length === 1 ? 'Just you so far' : `${participants.length} on the call`}</Text>
+        <Text variant="title">{participants.length === 1 ? t('calls.room.justYou') : t('calls.room.count', { n: participants.length })}</Text>
         <View className="flex-row flex-wrap gap-2">
           {participants.map((p) => (
             <View key={p.identity} className={`flex-row items-center gap-2 rounded-full px-3 py-1.5 ${p.isSpeaking ? 'bg-sage' : 'bg-surface border border-border'}`}>
@@ -69,12 +71,12 @@ function Stage({ canEnd, onLeave, onEnd }: Pick<CallRoomProps, 'canEnd' | 'onLea
         </View>
       </View>
       <View className="mt-auto flex-row justify-around">
-        <Control icon={isMicrophoneEnabled ? 'mic' : 'mic-off'} label={isMicrophoneEnabled ? 'Mute' : 'Unmute'} active={isMicrophoneEnabled} onPress={() => localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled)} />
-        <Control icon={isCameraEnabled ? 'videocam' : 'videocam-off'} label="Camera" active={isCameraEnabled} onPress={() => localParticipant.setCameraEnabled(!isCameraEnabled)} />
-        <Control icon={speaker ? 'volume-high' : 'volume-low'} label="Speaker" active={speaker} onPress={() => { const next = !speaker; setSpeaker(next); AudioSession.configureAudio({ ios: { defaultOutput: next ? 'speaker' : 'earpiece' } }).catch(() => undefined); }} />
-        <Control icon="call" label="Leave" danger onPress={() => { room.disconnect(); onLeave(); }} />
+        <Control icon={isMicrophoneEnabled ? 'mic' : 'mic-off'} label={isMicrophoneEnabled ? t('calls.room.mute') : t('calls.room.unmute')} active={isMicrophoneEnabled} onPress={() => localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled)} />
+        <Control icon={isCameraEnabled ? 'videocam' : 'videocam-off'} label={t('calls.room.camera')} active={isCameraEnabled} onPress={() => localParticipant.setCameraEnabled(!isCameraEnabled)} />
+        <Control icon={speaker ? 'volume-high' : 'volume-low'} label={t('calls.room.speaker')} active={speaker} onPress={() => { const next = !speaker; setSpeaker(next); AudioSession.configureAudio({ ios: { defaultOutput: next ? 'speaker' : 'earpiece' } }).catch(() => undefined); }} />
+        <Control icon="call" label={t('calls.room.leave')} danger onPress={() => { room.disconnect(); onLeave(); }} />
       </View>
-      {canEnd ? <Button title="End call for everyone" variant="ghost" onPress={onEnd} /> : null}
+      {canEnd ? <Button title={t('calls.endForEveryone')} variant="ghost" onPress={onEnd} /> : null}
     </View>
   );
 }

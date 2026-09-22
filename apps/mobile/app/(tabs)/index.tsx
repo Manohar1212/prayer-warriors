@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
-import { isJoinable, useCalls } from '@/features/calls';
+import { callTitle, isJoinable, useCalls } from '@/features/calls';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
 import { nightCallOpen, nightWhen, usePrayerNight, type PrayerNight } from '@/features/prayer';
 import { syncPrayerNightReminders } from '@/features/notifications';
@@ -181,7 +181,7 @@ export default function HomeScreen() {
           bg="bg-lavender"
           fg={colors.violet}
           title={night ? t('prayer.night.title') : t('home.monthlyPrayer')}
-          body={night ? nightWhen(night, locale) : t('home.monthlyPrayerBody')}
+          body={night ? nightWhen(night, locale, true) : t('home.monthlyPrayerBody')}
           badge={nightCallOpenNow ? t('home.join') : (nightCountdown ?? undefined)}
           onPress={() => (nightCallOpenNow && night?.callId ? router.push({ pathname: '/calls/[id]', params: { id: night.callId } }) : router.push({ pathname: '/(tabs)/prayer', params: { tab: 'monthly' } }))}
         />
@@ -218,7 +218,7 @@ export default function HomeScreen() {
             </View>
             <View className="flex-1 gap-0.5">
               <Text variant="label" className="text-[15px]" numberOfLines={1}>
-                {nextCall.title}
+                {callTitle(nextCall.title, t)}
               </Text>
               <Text variant="caption">{new Date(nextCall.scheduledAt).toLocaleString(locale, { weekday: 'long', hour: 'numeric', minute: '2-digit' })}</Text>
             </View>

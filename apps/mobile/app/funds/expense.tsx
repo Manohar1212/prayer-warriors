@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { categoryLabel, EXPENSE_CATEGORIES, formatRupees, parseRupees, useFunds, type ExpenseCategory } from '@/features/funds';
+import { EXPENSE_CATEGORIES, formatRupees, parseRupees, useFunds, type ExpenseCategory } from '@/features/funds';
 import { isIsoDate, longDate, todayIso } from '@/features/funds/dates';
 import { useMembers } from '@/features/members';
 import { useLanguage, type TranslationKey } from '@/i18n';
@@ -12,7 +12,7 @@ import { fonts } from '@/theme/tokens';
 import { Button, Card, Chip, Input, Screen, Text } from '@/ui';
 
 export default function ExpenseScreen() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { isAdmin } = useMembers();
@@ -54,7 +54,7 @@ export default function ExpenseScreen() {
           <Text variant="muted">{t('funds.expense.paidTo')}</Text>
           <Text variant="title">{existing.paidTo}</Text>
           <Text variant="muted">
-            {categoryLabel(existing.category)} on {longDate(existing.transactionDate)}
+            {t('funds.expense.onDate', { category: t(`funds.category.${existing.category}` as TranslationKey), date: longDate(existing.transactionDate, locale) })}
           </Text>
           {existing.description ? <Text>{existing.description}</Text> : null}
         </Card>
@@ -107,12 +107,12 @@ export default function ExpenseScreen() {
         <Text variant="label">{t('common.category')}</Text>
         <View className="flex-row flex-wrap gap-2">
           {EXPENSE_CATEGORIES.map((c) => (
-            <Chip key={c.id} label={c.label} selected={category === c.id} onPress={() => setCategory(c.id)} />
+            <Chip key={c.id} label={t(`funds.category.${c.id}` as TranslationKey)} selected={category === c.id} onPress={() => setCategory(c.id)} />
           ))}
         </View>
       </View>
       <Input label={t('common.amount')} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="3500" error={amount && !amountPaise ? t('common.invalidAmount') : null} />
-      <Input label={t('funds.expense.paidTo')} value={paidTo} onChangeText={setPaidTo} maxLength={120} placeholder="Community hall" />
+      <Input label={t('funds.expense.paidTo')} value={paidTo} onChangeText={setPaidTo} maxLength={120} placeholder={t('funds.expense.paidToPlaceholder')} />
       <Input label={t('funds.expense.description')} value={description} onChangeText={setDescription} maxLength={500} multiline style={{ minHeight: 70, textAlignVertical: 'top' }} />
       <Input label={t('common.date')} value={date} onChangeText={setDate} autoCapitalize="none" error={date && !dateOk ? t('common.invalidDate') : null} />
       {existing ? <Input label={t('common.reasonForChange')} value={reason} onChangeText={setReason} maxLength={200} /> : null}

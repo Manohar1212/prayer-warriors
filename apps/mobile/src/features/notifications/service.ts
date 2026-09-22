@@ -8,7 +8,7 @@ type Deps = {
   cloud: { run(name: string, params?: Record<string, unknown>): Promise<unknown> };
 };
 
-const TYPES: NotificationType[] = ['prayerRequest', 'praying', 'answered', 'callScheduled', 'callStarted', 'callCancelled', 'resource', 'contribution', 'expense'];
+const TYPES: NotificationType[] = ['prayerRequest', 'praying', 'answered', 'comment', 'prayerNight', 'prayerNightMoved', 'prayerNightCancelled', 'prayerNightReminder', 'callScheduled', 'callStarted', 'callCancelled', 'resource', 'contribution', 'expense'];
 
 function toNotification(row: RawNotification): AppNotification {
   return {

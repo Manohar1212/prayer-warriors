@@ -6,13 +6,13 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from '
 import { formatRupees, useFunds, type Transaction } from '@/features/funds';
 import { useMembers } from '@/features/members';
 import { shortDate } from '@/lib/time';
-import { useLanguage } from '@/i18n';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { colors, fonts, gradients } from '@/theme/tokens';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
 import { Card, Screen, TabHeader, Text } from '@/ui';
 
 function TransactionRow({ tx, onPress, last }: { tx: Transaction; onPress: () => void; last: boolean }) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const credit = tx.kind === 'contribution';
   return (
     <Pressable accessibilityRole="button" onPress={onPress} className={`flex-row items-center gap-3 py-3 ${last ? '' : 'border-b border-border'}`}>
@@ -24,7 +24,7 @@ function TransactionRow({ tx, onPress, last }: { tx: Transaction; onPress: () =>
           {tx.title}
         </Text>
         <Text variant="caption">
-          {tx.subtitle} · {shortDate(tx.date, locale)}
+          {t(tx.subtitleKey as TranslationKey)} · {shortDate(tx.date, locale)}
         </Text>
       </View>
       <Text variant="label" color={credit ? 'leaf' : 'roseDeep'} className="text-[15px]">
@@ -58,7 +58,7 @@ export default function FundsScreen() {
                 {t('funds.balance')}
               </Text>
               <Text color="cream" style={{ fontFamily: fonts.numeric, fontSize: 28, lineHeight: 34 }}>
-                {formatRupees(balancePaise)}
+                {loading ? '…' : formatRupees(balancePaise)}
               </Text>
             </View>
           </View>
@@ -68,7 +68,7 @@ export default function FundsScreen() {
                 {t('funds.collected', { month: monthName })}
               </Text>
               <Text variant="label" color="cream" className="text-[15px]">
-                {formatRupees(thisMonth.collectedPaise)}
+                {loading ? '…' : formatRupees(thisMonth.collectedPaise)}
               </Text>
             </View>
             <View className="flex-row items-center justify-between">
@@ -76,7 +76,7 @@ export default function FundsScreen() {
                 {t('funds.expenses', { month: monthName })}
               </Text>
               <Text variant="label" color="cream" className="text-[15px]">
-                {formatRupees(thisMonth.spentPaise)}
+                {loading ? '…' : formatRupees(thisMonth.spentPaise)}
               </Text>
             </View>
           </View>

@@ -1,4 +1,9 @@
 export type NotificationType =
+  | 'comment'
+  | 'prayerNight'
+  | 'prayerNightMoved'
+  | 'prayerNightCancelled'
+  | 'prayerNightReminder'
   | 'prayerRequest'
   | 'praying'
   | 'answered'

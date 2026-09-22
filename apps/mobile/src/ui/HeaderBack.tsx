@@ -3,6 +3,7 @@ import { useRouter, type Href } from 'expo-router';
 import { Pressable } from 'react-native';
 
 import { goBackOr } from '../lib/navigation';
+import { useT } from '../i18n';
 import { colors } from '../theme/tokens';
 import { Chevron } from './Chevron';
 
@@ -18,10 +19,11 @@ type Props = {
 /** Back or close control for a header. */
 export function HeaderBack({ modal = false, fallback = '/(tabs)', onDark = false }: Props) {
   const router = useRouter();
+  const t = useT();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={modal ? 'Close' : 'Back'}
+      accessibilityLabel={modal ? t('common.close') : t('common.back')}
       onPress={() => goBackOr(router, fallback)}
       hitSlop={10}
       className={`h-9 w-9 items-center justify-center rounded-full ${onDark ? 'bg-surface/15' : ''}`}

@@ -15,7 +15,7 @@ function isTime(value: string): boolean {
 export default function ScheduleCallScreen() {
   const { t } = useLanguage();
   const router = useRouter();
-  const [title, setTitle] = useState('Group prayer');
+  const [title, setTitle] = useState(() => t('calls.schedule.defaultTitle'));
   const [date, setDate] = useState(todayIso());
   const [time, setTime] = useState('19:00');
   const [error, setError] = useState<string | null>(null);

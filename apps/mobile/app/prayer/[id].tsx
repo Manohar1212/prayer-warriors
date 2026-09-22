@@ -49,6 +49,20 @@ export default function PrayerRequestScreen() {
     prayerService.prayingMembers(id).then(setNames).catch(() => setNames([]));
   }, [id, request?.prayingCount]);
   useEffect(loadComments, [loadComments]);
+  // Already on the monthly list? Then show it as added rather than offering to add it again.
+  useEffect(() => {
+    if (!id || !isAdmin) return;
+    let live = true;
+    prayerPointsService
+      .list()
+      .then((r) => {
+        if (live && r.points.some((p) => p.requestId === id)) setMonthly('added');
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [id, isAdmin]);
 
   if (!request) {
     return (
@@ -221,7 +235,7 @@ export default function PrayerRequestScreen() {
                       {c.authorName}
                     </Text>
                     <Text variant="caption" className="text-[12px]">
-                      {timeAgo(c.createdAt, undefined, t)}
+                      {timeAgo(c.createdAt, undefined, t, locale)}
                     </Text>
                   </View>
                   <Text className="text-[15px] leading-[22px]">{c.body}</Text>

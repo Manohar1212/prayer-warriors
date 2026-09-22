@@ -1,9 +1,11 @@
 import { Stack } from 'expo-router';
 
+import { useT } from '@/i18n';
 import { colors, fonts } from '@/theme/tokens';
 
 /** The Bible lives inside the tab navigator so the tab bar stays visible while reading. */
 export default function BibleLayout() {
+  const t = useT();
   return (
     <Stack
       screenOptions={{
@@ -17,8 +19,8 @@ export default function BibleLayout() {
         contentStyle: { backgroundColor: colors.cream },
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'Bible' }} />
-      <Stack.Screen name="search" options={{ title: 'Search the Bible' }} />
+      <Stack.Screen name="index" options={{ title: t('bible.title') }} />
+      <Stack.Screen name="search" options={{ title: t('bible.search') }} />
       <Stack.Screen name="[book]/index" options={{ title: '' }} />
       <Stack.Screen name="[book]/[chapter]" options={{ title: '' }} />
     </Stack>

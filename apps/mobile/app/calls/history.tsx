@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { useCalls } from '@/features/calls';
+import { callTitle, useCalls } from '@/features/calls';
 import { useLanguage } from '@/i18n';
 import { Badge, Card, Screen, Text } from '@/ui';
 
@@ -30,7 +30,7 @@ export default function CallHistoryScreen() {
                   </Text>
                 </View>
                 <Text variant="title" className="text-[16px]">
-                  {c.title}
+                  {callTitle(c.title, t)}
                 </Text>
                 <Text variant="muted" className="text-[13px]">
                   {c.participantCount} {t('common.joined')}

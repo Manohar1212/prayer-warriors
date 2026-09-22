@@ -6,6 +6,7 @@ import { goBackOr } from '../../lib/navigation';
 import { colors } from '../../theme/tokens';
 import { Chevron } from '../../ui/Chevron';
 import { Text } from '../../ui/Text';
+import { useT } from '../../i18n';
 
 type Crumb = { label: string; href: Href };
 
@@ -32,6 +33,7 @@ export function BibleNav({ crumbs }: { crumbs: Crumb[] }) {
 /** The Bible opens from Home and from Resources; the arrow returns to whichever one opened it. */
 export function HeaderHome() {
   const router = useRouter();
+  const t = useT();
   const { from } = useLocalSearchParams<{ from?: string }>();
   const back = () => {
     if (from === 'resources') router.navigate('/(tabs)/resources');
@@ -39,7 +41,7 @@ export function HeaderHome() {
     else goBackOr(router, '/(tabs)');
   };
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={10} style={{ paddingHorizontal: 8 }}>
+    <Pressable accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={back} hitSlop={10} style={{ paddingHorizontal: 8 }}>
       <Chevron size={24} color={colors.ink} />
     </Pressable>
   );

@@ -9,16 +9,9 @@ import { useLanguage, type TranslationKey } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { Button, Card, Input, Screen, Text } from '@/ui';
 
-function shareMessage(m: AddedMember): string {
-  return [
-    `Hi ${m.displayName}, you've been added to Prayer Warriors.`,
-    '',
-    `Sign in with:`,
-    `Email: ${m.email}`,
-    `Password: ${m.startingPassword}`,
-    '',
-    'You can change the password any time with "Forgot password".',
-  ].join('\n');
+/** The WhatsApp message with the new member's sign-in details, in the admin's app language. */
+function shareMessage(m: AddedMember, t: (key: TranslationKey, vars?: Record<string, string | number>) => string): string {
+  return t('members.added.message', { name: m.displayName, email: m.email, password: m.startingPassword });
 }
 
 function AddedView({ member, onDone }: { member: AddedMember; onDone: () => void }) {
@@ -61,7 +54,7 @@ function AddedView({ member, onDone }: { member: AddedMember; onDone: () => void
       <View className="gap-3">
         <Button
           title={t('members.added.share')}
-          onPress={() => Share.share({ message: shareMessage(member) })}
+          onPress={() => Share.share({ message: shareMessage(member, t) })}
         />
         <Button
           title={copied ? t('members.added.copied') : t('members.added.copy')}

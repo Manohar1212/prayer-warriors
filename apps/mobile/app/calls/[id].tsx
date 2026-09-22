@@ -4,7 +4,7 @@ import { View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { CallRoom } from '@/features/calls/CallRoom';
-import { isJoinable, useCalls, type CallCredentials } from '@/features/calls';
+import { callTitle, isJoinable, useCalls, type CallCredentials } from '@/features/calls';
 import { useMembers } from '@/features/members';
 import { goBackOr } from '@/lib/navigation';
 import { useLanguage } from '@/i18n';
@@ -80,7 +80,7 @@ export default function CallScreen() {
       <Screen edges={['bottom']} className="pt-4">
         {header}
         <Text variant="title" className="mb-3">
-          {call.title}
+          {callTitle(call.title, t)}
         </Text>
         <CallRoom credentials={credentials} displayName={user?.displayName ?? t('common.member')} canEnd={isAdmin} onLeave={leave} onEnd={end} />
       </Screen>
@@ -95,7 +95,7 @@ export default function CallScreen() {
       {header}
       <View className="gap-1">
         <Text variant="display" className="text-[22px] leading-[28px]">
-          {call.title}
+          {callTitle(call.title, t)}
         </Text>
         <Text variant="muted">{when(call.scheduledAt, locale)}</Text>
       </View>

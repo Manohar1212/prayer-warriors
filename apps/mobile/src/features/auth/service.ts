@@ -33,8 +33,16 @@ export function createParseAuthService(parse: ParseLike): AuthService {
       guarded(async () => {
         const user = await parse.User.currentAsync();
         if (!user) return null;
-        // Picks up flags set on the server since this phone signed in; offline, the stored copy will do.
-        await user.fetch?.().catch(() => undefined);
+        // Picks up flags set on the server since this phone signed in; offline, the stored copy will
+        // do. An expired session is different: forget it and start from sign-in.
+        let expired = false;
+        await user.fetch?.().catch((err: unknown) => {
+          expired = (err as { code?: unknown } | null)?.code === 209;
+        });
+        if (expired) {
+          await parse.User.logOut().catch(() => undefined);
+          return null;
+        }
         return toAuthUser(user);
       }),
 

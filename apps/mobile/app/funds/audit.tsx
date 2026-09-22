@@ -12,16 +12,31 @@ function when(iso: string, locale: string): string {
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(locale, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 }
 
-function describe(entry: AuditEntry): string {
+type T = (key: TranslationKey, vars?: Record<string, string | number>) => string;
+
+/** "Recorded expense ₹3,500 to Hall", in the app language. */
+function describe(entry: AuditEntry, t: T): string {
   const values = entry.action === 'delete' ? entry.oldValues : entry.newValues;
   const amount = typeof values?.amountPaise === 'number' ? formatRupees(values.amountPaise) : '';
   const who = typeof values?.paidTo === 'string' ? values.paidTo : '';
-  const noun = entry.entityType === 'expense' ? 'expense' : 'contribution';
-  const verb = entry.action === 'create' ? 'Recorded' : entry.action === 'update' ? 'Changed' : 'Deleted';
-  return [verb, noun, amount, who ? `to ${who}` : ''].filter(Boolean).join(' ');
+  const line = t(`funds.audit.line.${entry.entityType === 'expense' ? 'expense' : 'contribution'}.${entry.action}` as TranslationKey, { amount });
+  return who ? `${line} · ${who}` : line;
 }
 
-function changedFields(entry: AuditEntry): string[] {
+/** Field names people recognise, instead of the stored ones like amountPaise. */
+const FIELD_LABEL: Record<string, TranslationKey> = {
+  amountPaise: 'common.amount',
+  transactionDate: 'common.date',
+  paymentMethod: 'funds.contribution.method',
+  reference: 'funds.contribution.reference',
+  note: 'funds.contribution.note',
+  category: 'common.category',
+  paidTo: 'funds.expense.paidTo',
+  description: 'funds.expense.description',
+  memberId: 'common.member',
+};
+
+function changedFields(entry: AuditEntry, t: T): string[] {
   if (entry.action !== 'update' || !entry.oldValues || !entry.newValues) return [];
   return Object.keys(entry.newValues)
     .filter((k) => JSON.stringify(entry.oldValues?.[k]) !== JSON.stringify(entry.newValues?.[k]))
@@ -29,7 +44,7 @@ function changedFields(entry: AuditEntry): string[] {
       const a = entry.oldValues?.[k];
       const b = entry.newValues?.[k];
       const fmt = (v: unknown) => (k === 'amountPaise' && typeof v === 'number' ? formatRupees(v) : String(v ?? '—').slice(0, 40));
-      return `${k}: ${fmt(a)} → ${fmt(b)}`;
+      return `${FIELD_LABEL[k] ? t(FIELD_LABEL[k]) : k}: ${fmt(a)} → ${fmt(b)}`;
     });
 }
 
@@ -69,9 +84,9 @@ export default function AuditScreen() {
               </Text>
             </View>
             <Text variant="label" className="text-[16px]">
-              {describe(entry)}
+              {describe(entry, t)}
             </Text>
-            {changedFields(entry).map((line) => (
+            {changedFields(entry, t).map((line) => (
               <Text key={line} variant="muted" className="text-[13px]">
                 {line}
               </Text>

@@ -1,6 +1,8 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { reportIfSessionExpired } from './session';
+
 /**
  * Data that a screen fetches when it comes into view, remembered across visits so the second
  * time a screen opens it shows the last result at once and quietly refreshes behind it.
@@ -11,10 +13,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  */
 
 const cache = new Map<string, unknown>();
+/** Bumped on sign-out, so an answer still on its way for the last account is thrown away. */
+let generation = 0;
 
 /** Forget everything, e.g. when a member signs out. */
 export function clearQueryCache(): void {
   cache.clear();
+  generation += 1;
 }
 
 export type CachedQuery<T> = {
@@ -51,8 +56,10 @@ export function useCachedQuery<T>(key: string, fetcher: () => Promise<T>, option
   }, [key]);
 
   const refresh = useCallback(async () => {
+    const startedIn = generation;
     try {
       const next = await fetcherRef.current();
+      if (startedIn !== generation) return;
       cache.set(key, next);
       if (keyRef.current === key) {
         setState(next);
@@ -60,6 +67,7 @@ export function useCachedQuery<T>(key: string, fetcher: () => Promise<T>, option
       }
       onLoadedRef.current?.(next);
     } catch (err) {
+      reportIfSessionExpired(err);
       if (keyRef.current === key) setError(err instanceof Error ? err.message : fallback);
     } finally {
       if (keyRef.current === key) setLoading(false);

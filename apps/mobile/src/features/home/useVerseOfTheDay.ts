@@ -12,6 +12,8 @@ export function useVerseOfTheDay(lang: BibleLanguage | PromiseLanguage): VerseOf
   const [verse, setVerse] = useState<VerseOfTheDay | null>(null);
   useEffect(() => {
     let cancelled = false;
+    // A new language starts blank rather than leaving the last language's verse on screen.
+    setVerse(null);
     const pick = pickDailyVerse(new Date());
     (async () => {
       const books = await bibleService.books();
