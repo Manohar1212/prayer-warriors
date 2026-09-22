@@ -48,6 +48,13 @@
           "backgroundColor": "#1E2D42"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c5febd4a-02d3-4c8e-a85a-ad9974a9a083"
+      }
+    },
+    "owner": "manohar12"
   }
 }
