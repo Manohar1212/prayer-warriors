@@ -26,6 +26,7 @@
       "bundler": "metro"
     },
     "plugins": [
+      "./plugins/withSceneLifecycle",
       "expo-router",
       "expo-font",
       "expo-sharing",
@@ -45,7 +46,10 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 240,
           "resizeMode": "contain",
-          "backgroundColor": "#1E2D42"
+          "backgroundColor": "#1E2D42",
+          "android": {
+            "imageWidth": 118
+          }
         }
       ]
     ],
