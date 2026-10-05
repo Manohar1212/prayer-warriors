@@ -5,10 +5,16 @@ type Deps = {
   fetchCalls: () => Promise<RawCall[]>;
   fetchParticipants: (callId?: string) => Promise<RawParticipant[]>;
   cloud: { run(name: string, params?: Record<string, unknown>): Promise<unknown> };
+  now?: () => Date;
 };
 
-function toCall(row: RawCall, participantCount: number): GroupCall {
-  const status: CallStatus = row.status === 'live' || row.status === 'ended' || row.status === 'cancelled' ? row.status : 'scheduled';
+// Matches the server: a call nobody ended is over 12 hours after its scheduled start.
+const CALL_OPEN_MS = 12 * 60 * 60 * 1000;
+
+function toCall(row: RawCall, participantCount: number, now: Date): GroupCall {
+  let status: CallStatus = row.status === 'live' || row.status === 'ended' || row.status === 'cancelled' ? row.status : 'scheduled';
+  const stale = now.getTime() >= new Date(row.scheduledAt).getTime() + CALL_OPEN_MS;
+  if (stale && (status === 'live' || status === 'scheduled')) status = 'ended';
   return {
     id: row.id,
     title: row.title,
@@ -29,14 +35,15 @@ async function guarded<T>(work: () => Promise<T>): Promise<T> {
   }
 }
 
-export function createCallsService({ fetchCalls, fetchParticipants, cloud }: Deps): CallsService {
+export function createCallsService({ fetchCalls, fetchParticipants, cloud, now = () => new Date() }: Deps): CallsService {
   return {
     list: () =>
       guarded(async () => {
         const [rows, parts] = await Promise.all([fetchCalls(), fetchParticipants()]);
         const counts = new Map<string, number>();
         parts.forEach((p) => counts.set(p.callId, (counts.get(p.callId) ?? 0) + 1));
-        const calls = rows.map((r) => toCall(r, counts.get(r.id) ?? 0));
+        const current = now();
+        const calls = rows.map((r) => toCall(r, counts.get(r.id) ?? 0, current));
         const upcoming = calls
           .filter((c) => c.status === 'scheduled' || c.status === 'live')
           .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
@@ -55,7 +62,7 @@ export function createCallsService({ fetchCalls, fetchParticipants, cloud }: Dep
     schedule: (title, scheduledAt) =>
       guarded(async () => {
         const dto = (await cloud.run('scheduleCall', { title, scheduledAt: scheduledAt.toISOString() })) as RawCall & { createdById: string | null };
-        return toCall({ ...dto, createdBy: dto.createdById ? { id: dto.createdById } : null }, 0);
+        return toCall({ ...dto, createdBy: dto.createdById ? { id: dto.createdById } : null }, 0, now());
       }),
 
     cancel: (callId) =>

@@ -76,6 +76,26 @@ describe('joinCall', () => {
   it('explains when LiveKit is not configured', async () => {
     await expect(createCallHandlers(deps({ configured: false })).joinCall({ callId: 'c1' }, member)).rejects.toThrow(MESSAGES.notConfigured);
   });
+  it('closes a live call 12 hours after its scheduled start instead of letting anyone join', async () => {
+    const d = deps({ existing: call({ status: 'live', scheduledAt: '2026-09-08T22:00:00.000Z', startedAt: '2026-09-08T22:00:00.000Z' }) });
+    await expect(createCallHandlers(d).joinCall({ callId: 'c1' }, member)).rejects.toThrow(MESSAGES.notJoinable);
+    expect(d.calls.update).toHaveBeenCalledWith('c1', { status: 'ended', endedAt: NOW });
+    expect(d.participants.upsertJoined).not.toHaveBeenCalled();
+  });
+  it('does not open a scheduled call that is long past', async () => {
+    const d = deps({ existing: call({ scheduledAt: '2026-09-08T09:00:00.000Z' }) });
+    await expect(createCallHandlers(d).joinCall({ callId: 'c1' }, member)).rejects.toThrow(MESSAGES.notJoinable);
+    expect(d.calls.update).toHaveBeenCalledWith('c1', { status: 'ended', endedAt: NOW });
+  });
+  it('leaves a long-past cancelled call cancelled', async () => {
+    const d = deps({ existing: call({ status: 'cancelled', scheduledAt: '2026-09-01T09:00:00.000Z' }) });
+    await expect(createCallHandlers(d).joinCall({ callId: 'c1' }, member)).rejects.toThrow(MESSAGES.notJoinable);
+    expect(d.calls.update).not.toHaveBeenCalled();
+  });
+  it('still lets members into an all-night call hours after it began', async () => {
+    const d = deps({ existing: call({ status: 'live', scheduledAt: '2026-09-09T00:00:00.000Z' }) });
+    await expect(createCallHandlers(d).joinCall({ callId: 'c1' }, member)).resolves.toMatchObject({ token: 'jwt' });
+  });
 });
 
 describe('leave / end / cancel', () => {

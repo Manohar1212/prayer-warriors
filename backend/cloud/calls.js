@@ -2,6 +2,8 @@
 
 const JOIN_WINDOW_BEFORE_MS = 15 * 60 * 1000;
 const SCHEDULE_GRACE_MS = 60 * 60 * 1000;
+// Long enough for an all-night prayer; after this a call that nobody ended is closed.
+const CALL_OPEN_MS = 12 * 60 * 60 * 1000;
 const TOKEN_TTL_SECONDS = 7200;
 
 const MESSAGES = {
@@ -74,7 +76,13 @@ function createCallHandlers({ memberships, calls, participants, users, tokens, n
       if (!tokens) throw fail(MESSAGES.notConfigured);
       const call = await requireCall(callId, groupId);
       const current = now();
-      const opensAt = new Date(call.scheduledAt).getTime() - JOIN_WINDOW_BEFORE_MS;
+      const startsAt = new Date(call.scheduledAt).getTime();
+      const open = call.status === 'scheduled' || call.status === 'live';
+      if (open && current.getTime() >= startsAt + CALL_OPEN_MS) {
+        await calls.update(call.id, { status: 'ended', endedAt: current });
+        throw fail(MESSAGES.notJoinable);
+      }
+      const opensAt = startsAt - JOIN_WINDOW_BEFORE_MS;
       const joinable = (call.status === 'scheduled' && current.getTime() >= opensAt) || call.status === 'live';
       if (!joinable) throw fail(MESSAGES.notJoinable);
       if (call.status === 'scheduled') await calls.update(call.id, { status: 'live', startedAt: current });
@@ -93,4 +101,4 @@ function createCallHandlers({ memberships, calls, participants, users, tokens, n
   };
 }
 
-module.exports = { createCallHandlers, MESSAGES };
+module.exports = { createCallHandlers, MESSAGES, CALL_OPEN_MS };

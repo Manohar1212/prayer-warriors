@@ -18,6 +18,7 @@ function svc(cloudResult: unknown = {}) {
     fetchCalls: async () => rows,
     fetchParticipants: async (id?: string) => (id ? parts.filter((p) => p.callId === id) : parts),
     cloud,
+    now: () => new Date('2026-09-09T10:00:00.000Z'),
   });
   return { service, cloud };
 }
@@ -50,6 +51,21 @@ describe('callsService', () => {
     const { service, cloud } = svc();
     cloud.run.mockRejectedValueOnce(Object.assign(new Error("This call isn't open right now."), { code: 141 }));
     await expect(service.join('c1')).rejects.toThrow("This call isn't open right now.");
+  });
+});
+
+describe('callsService stale calls', () => {
+  it('moves a call nobody ended into past 12 hours after its scheduled start', async () => {
+    const stuck = { id: 'c9', title: 'All-night prayer', scheduledAt: '2026-09-08T17:00:00.000Z', status: 'live', startedAt: '2026-09-08T17:00:00.000Z', endedAt: null, createdBy: { id: 'a' } };
+    const service = createCallsService({
+      fetchCalls: async () => [stuck],
+      fetchParticipants: async () => [],
+      cloud: { run: jest.fn() },
+      now: () => new Date('2026-09-09T05:00:00.000Z'),
+    });
+    const { upcoming, past } = await service.list();
+    expect(upcoming).toEqual([]);
+    expect(past.map((c) => [c.id, c.status])).toEqual([['c9', 'ended']]);
   });
 });
 
