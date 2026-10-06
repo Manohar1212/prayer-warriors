@@ -124,7 +124,6 @@ export const en = {
   'home.dailyPromise': 'Daily Promise',
   'home.monthlyPrayer': 'All-night prayer',
   'home.monthlyPrayerBody': 'Pray the points together, one at a time',
-  'home.prayerRequest': 'Prayer Request',
   'promise.today': "Today's promise",
   'promise.viewAll': 'Open the Bible',
   'home.dailyBreadPrayer': 'Give us this day our daily bread.',

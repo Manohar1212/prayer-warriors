@@ -34,7 +34,7 @@ const tiles: { label: TranslationKey; icon: IconName | 'pray'; bg: string; fg: s
   { label: 'home.action.leaderboard', icon: 'trophy', bg: 'bg-lavender', fg: colors.violet, href: '/quiz/leaderboard' },
 ];
 
-type RowIcon = IconName | 'pray' | 'prayNight' | 'quiz';
+type RowIcon = IconName | 'prayNight' | 'quiz';
 
 /** A small second glyph at the disc's lower right, so one icon can say two things. */
 function Corner({ name, color }: { name: IconName; color: string }) {
@@ -46,7 +46,6 @@ function Corner({ name, color }: { name: IconName; color: string }) {
 }
 
 function RowGlyph({ icon, fg }: { icon: RowIcon; fg: string }) {
-  if (icon === 'pray') return <PrayIcon size={20} color={fg} />;
   // Prayer, at night: praying hands with a crescent.
   if (icon === 'prayNight') {
     return (
@@ -174,10 +173,8 @@ export default function HomeScreen() {
         </View>
       </Pressable>
 
-      {/* The day in one block: ask for prayer, the month's prayer, today's quiz. */}
+      {/* The day in one block: the month's prayer and today's quiz. */}
       <Card className="gap-0 p-0">
-        <ActionRow icon="pray" bg="bg-sky" fg={colors.skyDeep} title={t('home.prayerRequest')} onPress={() => router.push('/prayer/new')} />
-        <View className="ml-[66px] h-px bg-border" />
         <ActionRow
           icon="prayNight"
           bg="bg-lavender"

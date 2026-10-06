@@ -204,7 +204,6 @@ export const te: Partial<Record<TranslationKey, string>> = {
   'home.dailyPromise': 'అనుదిన వాగ్దానం',
   'home.monthlyPrayer': 'సంపూర్ణ రాత్రి ప్రార్థన',
   'home.monthlyPrayerBody': 'అంశాలను ఒక్కొక్కటిగా కలిసి ప్రార్థించండి',
-  'home.prayerRequest': 'ప్రార్థన విన్నపం',
   'promise.today': 'ఈ రోజు వాగ్దానం',
   'promise.viewAll': 'బైబిల్ తెరవండి',
   'home.dailyBreadPrayer': 'మా అనుదినాహారము నేడు మాకు దయచేయుము.',
