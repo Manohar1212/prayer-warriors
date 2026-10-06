@@ -12,7 +12,9 @@ export type NotificationType =
   | 'callCancelled'
   | 'resource'
   | 'contribution'
-  | 'expense';
+  | 'expense'
+  | 'midnightReminder'
+  | 'midnightNudge';
 
 export type AppNotification = {
   id: string;

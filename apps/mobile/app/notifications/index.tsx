@@ -26,6 +26,8 @@ const icons: Record<NotificationType, { name: IconName; bg: string; fg: string }
   resource: { name: 'musical-notes', bg: 'bg-sky', fg: colors.skyDeep },
   contribution: { name: 'wallet', bg: 'bg-sage', fg: colors.leaf },
   expense: { name: 'receipt', bg: 'bg-honey', fg: colors.gold },
+  midnightReminder: { name: 'moon', bg: 'bg-lavender', fg: colors.violet },
+  midnightNudge: { name: 'moon', bg: 'bg-lavender', fg: colors.violet },
 };
 
 function Row({ item, onPress }: { item: AppNotification; onPress: () => void }) {

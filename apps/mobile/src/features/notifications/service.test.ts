@@ -26,6 +26,18 @@ describe('notificationsService', () => {
     expect(list.map((n) => n.id)).toEqual(['n1', 'n3', 'n2', 'n4']);
     expect(list[1].type).toBe('prayerRequest');
   });
+  it('keeps the midnight prayer types', async () => {
+    const service = createNotificationsService({
+      fetchNotifications: async () => [
+        { ...rows[0], id: 'm1', type: 'midnightReminder' },
+        { ...rows[0], id: 'm2', type: 'midnightNudge' },
+      ],
+      countUnread: async () => 0,
+      fetchPrefs: async () => null,
+      cloud: { run: jest.fn(async () => ({})) },
+    });
+    expect((await service.list()).map((n) => n.type)).toEqual(['midnightReminder', 'midnightNudge']);
+  });
   it('counts unread', async () => {
     await expect(svc().service.unreadCount()).resolves.toBe(2);
   });
