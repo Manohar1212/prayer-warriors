@@ -78,6 +78,8 @@ function planMonth({ month, rotation, lastPersonBefore = null, random }) {
 const MAX_ROTATION = 20;
 const NEXT_MONTH_FROM = 20;
 const PRAYED_FROM_HOUR = 23;
+const REMIND_FROM_HOUR = 21;
+const NUDGE_FROM_HOUR = 12;
 const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/;
 
 const MESSAGES = {
@@ -246,6 +248,30 @@ function createMidnightPrayerHandlers({ memberships, rotations, nights, users, n
       else if (orphaned.length) await redistribute(groupId, orphaned, ids, today);
       const name = await namesFor(ids);
       return { rotation: ids.map((userId) => ({ userId, name: name(userId) })) };
+    },
+
+    /** Hourly job: tonight's reminder from 9 PM, last night's nudge from noon. Each goes once. */
+    async sendMidnightReminders() {
+      const { day: today, hour } = istNow(now());
+      let reminded = 0;
+      let nudged = 0;
+      if (hour >= REMIND_FROM_HOUR) {
+        for (const row of await nights.listDay(today)) {
+          if (row.remindedAt) continue;
+          await nights.update(row.id, { remindedAt: now() });
+          await notify({ type: 'midnightReminder', groupId: row.groupId, actorId: null, userId: row.userId, day: row.day });
+          reminded += 1;
+        }
+      }
+      if (hour >= NUDGE_FROM_HOUR) {
+        for (const row of await nights.listDay(addDays(today, -1))) {
+          if (row.prayedAt || row.nudgedAt) continue;
+          await nights.update(row.id, { nudgedAt: now() });
+          await notify({ type: 'midnightNudge', groupId: row.groupId, actorId: null, userId: row.userId, day: row.day });
+          nudged += 1;
+        }
+      }
+      return { reminded, nudged };
     },
   };
 }

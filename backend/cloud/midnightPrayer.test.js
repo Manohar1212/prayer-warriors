@@ -220,3 +220,42 @@ describe('setMidnightRotation', () => {
     await expect(h.setMidnightRotation({ userIds: ['a'] }, { callerId: 'b' })).rejects.toThrow(MESSAGES.adminOnly);
   });
 });
+
+describe('sendMidnightReminders', () => {
+  async function at(iso) {
+    const w = world({ at: '2026-10-06T10:00:00.000Z' });
+    await w.h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    // Earlier nights are confirmed, so only the nights under test can be nudged.
+    w.rows.filter((r) => r.day < '2026-10-06').forEach((r) => (r.prayedAt = new Date()));
+    w.clock.at = new Date(iso);
+    return w;
+  }
+  it('reminds tonight’s person once from 9 PM', async () => {
+    let w = await at('2026-10-06T15:29:00.000Z'); // 8:59 PM IST
+    expect(await w.h.sendMidnightReminders()).toEqual({ reminded: 0, nudged: 0 });
+    w = await at('2026-10-06T15:30:00.000Z'); // 9:00 PM IST
+    const person = w.rows.find((r) => r.day === '2026-10-06').userId;
+    expect(await w.h.sendMidnightReminders()).toEqual({ reminded: 1, nudged: 0 });
+    expect(w.notify).toHaveBeenCalledWith({ type: 'midnightReminder', groupId: 'g1', actorId: null, userId: person, day: '2026-10-06' });
+    expect(await w.h.sendMidnightReminders()).toEqual({ reminded: 0, nudged: 0 });
+  });
+  it('reminds the new person when the admin reassigns after 9 PM', async () => {
+    const w = await at('2026-10-06T15:30:00.000Z');
+    await w.h.sendMidnightReminders();
+    await w.h.reassignMidnightNight({ day: '2026-10-06', userId: 'x' }, { callerId: 'a' });
+    expect(await w.h.sendMidnightReminders()).toEqual({ reminded: 1, nudged: 0 });
+    expect(w.notify).toHaveBeenLastCalledWith(expect.objectContaining({ userId: 'x' }));
+  });
+  it('nudges last night’s person from noon if they have not marked it', async () => {
+    const w = await at('2026-10-07T06:30:00.000Z'); // 12:00 PM IST on D+1
+    const row = w.rows.find((r) => r.day === '2026-10-06');
+    expect(await w.h.sendMidnightReminders()).toEqual({ reminded: 0, nudged: 1 });
+    expect(w.notify).toHaveBeenCalledWith({ type: 'midnightNudge', groupId: 'g1', actorId: null, userId: row.userId, day: '2026-10-06' });
+    expect(await w.h.sendMidnightReminders()).toEqual({ reminded: 0, nudged: 0 });
+  });
+  it('does not nudge someone who prayed', async () => {
+    const w = await at('2026-10-07T06:30:00.000Z');
+    w.rows.find((r) => r.day === '2026-10-06').prayedAt = new Date();
+    expect(await w.h.sendMidnightReminders()).toEqual({ reminded: 0, nudged: 0 });
+  });
+});

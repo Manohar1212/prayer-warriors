@@ -223,3 +223,26 @@ describe('handlers', () => {
     await expect(createNotificationHandlers(d).updateNotificationPrefs(prefs, me)).rejects.toThrow(MESSAGES.invalidPrefs);
   });
 });
+
+describe('midnight prayer notifications', () => {
+  it('builds the reminder and the nudge with the midnight pref', () => {
+    expect(buildMessage({ type: 'midnightReminder', day: '2026-10-06' })).toEqual({ title: 'Your midnight prayer', body: 'Tonight at 12:00 AM is your night to pray for the group.', route: '/prayer/midnight', pref: 'midnight' });
+    expect(buildMessage({ type: 'midnightNudge', day: '2026-10-06' })).toEqual({ title: 'Did you pray last night?', body: 'Tap to mark your midnight prayer.', route: '/prayer/midnight', pref: 'midnight' });
+    expect(DEFAULT_PREFS.midnight).toBe(true);
+  });
+  it('sends only to the person, respecting their preference', async () => {
+    const inbox = { createMany: jest.fn(async () => undefined) };
+    const deps = (prefs) => ({
+      members: { listActiveUserIds: jest.fn(async () => ['u1', 'u2']) },
+      users: { findMany: jest.fn(async (ids) => ids.map((id) => ({ id, displayName: id, notificationPrefs: prefs }))) },
+      inbox,
+      tokens: { forUsers: jest.fn(async () => []), remove: jest.fn() },
+      push: { send: jest.fn(async () => []) },
+    });
+    await createNotifier(deps(null)).notify({ type: 'midnightReminder', groupId: 'g1', actorId: null, userId: 'u2', day: '2026-10-06' });
+    expect(inbox.createMany).toHaveBeenCalledWith([expect.objectContaining({ recipientId: 'u2', type: 'midnightReminder' })]);
+    inbox.createMany.mockClear();
+    await createNotifier(deps({ midnight: false })).notify({ type: 'midnightNudge', groupId: 'g1', actorId: null, userId: 'u2', day: '2026-10-06' });
+    expect(inbox.createMany).not.toHaveBeenCalled();
+  });
+});

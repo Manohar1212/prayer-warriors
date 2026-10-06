@@ -6,7 +6,7 @@ const MESSAGES = {
   invalidPrefs: 'Choose on or off for each notification type.',
 };
 
-const PREF_KEYS = ['prayer', 'praying', 'answered', 'calls', 'resources', 'funds'];
+const PREF_KEYS = ['prayer', 'praying', 'answered', 'calls', 'resources', 'funds', 'midnight'];
 const DEFAULT_PREFS = Object.freeze(Object.fromEntries(PREF_KEYS.map((k) => [k, true])));
 const PUSH_BATCH = 100;
 const EXPO_TOKEN = /^ExponentPushToken\[[^\]\s]+\]$/;
@@ -104,6 +104,10 @@ function buildMessage(event, actorName) {
       return { title: 'Contribution recorded', body: `${rupees(event.amountPaise)} on ${shortDate(event.transactionDate)}`, route: '/(tabs)/funds', pref: 'funds' };
     case 'expense':
       return { title: 'Expense recorded', body: `${capitalise(event.category)}: ${rupees(event.amountPaise)}`, route: '/(tabs)/funds', pref: 'funds' };
+    case 'midnightReminder':
+      return { title: 'Your midnight prayer', body: 'Tonight at 12:00 AM is your night to pray for the group.', route: '/prayer/midnight', pref: 'midnight' };
+    case 'midnightNudge':
+      return { title: 'Did you pray last night?', body: 'Tap to mark your midnight prayer.', route: '/prayer/midnight', pref: 'midnight' };
     default:
       throw new Error(`Unknown notification event: ${event.type}`);
   }
@@ -127,6 +131,7 @@ function createNotifier({ members, users, inbox, tokens, push, log = (m) => cons
   async function targets(event) {
     if (event.type === 'praying' || event.type === 'comment') return [event.authorId];
     if (event.type === 'contribution') return [event.memberId];
+    if (event.type === 'midnightReminder' || event.type === 'midnightNudge') return [event.userId];
     return members.listActiveUserIds(event.groupId);
   }
 
