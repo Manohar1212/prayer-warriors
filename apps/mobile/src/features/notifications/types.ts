@@ -34,11 +34,11 @@ export type RawNotification = {
   readAt: string | null;
 };
 
-export const PREF_KEYS = ['prayer', 'praying', 'answered', 'calls', 'resources', 'funds'] as const;
+export const PREF_KEYS = ['prayer', 'praying', 'answered', 'calls', 'resources', 'funds', 'midnight'] as const;
 export type PrefKey = (typeof PREF_KEYS)[number];
 export type NotificationPrefs = Record<PrefKey, boolean>;
 
-export const DEFAULT_PREFS: NotificationPrefs = { prayer: true, praying: true, answered: true, calls: true, resources: true, funds: true };
+export const DEFAULT_PREFS: NotificationPrefs = { prayer: true, praying: true, answered: true, calls: true, resources: true, funds: true, midnight: true };
 
 export const PREF_LABELS: Record<PrefKey, { title: string; description: string }> = {
   prayer: { title: 'New prayer requests', description: 'When someone shares a request with the group.' },
@@ -47,6 +47,7 @@ export const PREF_LABELS: Record<PrefKey, { title: string; description: string }
   calls: { title: 'Group calls', description: 'When a call is scheduled, starts, or is cancelled.' },
   resources: { title: 'Songs, scripture and prayers', description: 'When something new is shared in Resources.' },
   funds: { title: 'Funds', description: 'Contributions recorded for you and group expenses.' },
+  midnight: { title: 'Midnight prayer', description: 'A reminder on your night to pray at 12:00 AM.' },
 };
 
 export type PushPlatform = 'ios' | 'android';

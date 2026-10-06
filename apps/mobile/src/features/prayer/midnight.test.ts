@@ -1,0 +1,50 @@
+import { createMidnightService, dayLabel, midnightCard, type MidnightTonight } from './midnight';
+
+const base: MidnightTonight = { today: '2026-10-07', hour: 15, tonight: { day: '2026-10-07', userId: 'c', name: 'Ratna Kumari', prayed: false }, yesterday: { day: '2026-10-06', userId: 'b', name: 'Alekhya', prayed: false }, myNext: null, inRotation: false };
+
+describe('createMidnightService', () => {
+  it('calls the cloud functions', async () => {
+    const cloud = { run: jest.fn(async () => ({})) };
+    const s = createMidnightService({ cloud });
+    await s.tonight();
+    await s.month('2026-10');
+    await s.markPrayed('2026-10-06');
+    await s.reassign('2026-10-08', 'u1');
+    await s.setRotation(['u1', 'u2']);
+    expect(cloud.run.mock.calls).toEqual([
+      ['getMidnightTonight'],
+      ['getMidnightMonth', { month: '2026-10' }],
+      ['markMidnightPrayed', { day: '2026-10-06' }],
+      ['reassignMidnightNight', { day: '2026-10-08', userId: 'u1' }],
+      ['setMidnightRotation', { userIds: ['u1', 'u2'] }],
+    ]);
+  });
+});
+
+describe('midnightCard', () => {
+  it('shows who prays tonight, and my next night', () => {
+    expect(midnightCard({ ...base, myNext: '2026-10-10', inRotation: true }, 'e')).toEqual({ kind: 'other', name: 'Ratna Kumari', myNext: '2026-10-10' });
+    expect(midnightCard(base, 'x')).toEqual({ kind: 'other', name: 'Ratna Kumari', myNext: null });
+  });
+  it('tells me tonight is mine, then asks me to confirm from 11 PM', () => {
+    expect(midnightCard({ ...base, myNext: '2026-10-07' }, 'c')).toEqual({ kind: 'yours' });
+    expect(midnightCard({ ...base, hour: 23 }, 'c')).toEqual({ kind: 'confirm', day: '2026-10-07' });
+    expect(midnightCard({ ...base, hour: 23, tonight: { ...base.tonight!, prayed: true } }, 'c')).toEqual({ kind: 'prayed', day: '2026-10-07' });
+  });
+  it('just after midnight, lets last night’s person confirm while showing the next person to others', () => {
+    const after = { ...base, hour: 0 };
+    expect(midnightCard(after, 'b')).toEqual({ kind: 'confirm', day: '2026-10-06' });
+    expect(midnightCard({ ...after, yesterday: { ...base.yesterday!, prayed: true } }, 'b')).toEqual({ kind: 'prayed', day: '2026-10-06' });
+    expect(midnightCard(after, 'e')).toEqual({ kind: 'other', name: 'Ratna Kumari', myNext: null });
+  });
+  it('hides when nobody is on the calendar tonight', () => {
+    expect(midnightCard({ ...base, tonight: null, yesterday: null }, 'b')).toEqual({ kind: 'hidden' });
+  });
+});
+
+describe('dayLabel', () => {
+  it('formats a day key without shifting the date', () => {
+    expect(dayLabel('2026-10-10', 'en-IN')).toMatch(/10/);
+    expect(dayLabel('2026-10-10', 'en-IN')).toMatch(/Oct/);
+  });
+});

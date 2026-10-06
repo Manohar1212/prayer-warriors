@@ -17,3 +17,5 @@ export type { PrayerNight, PrayerNightService, ScheduledPrayerNight } from './ni
 export { PrayerNightCard, nightCallOpen, nightWhen } from './PrayerNightCard';
 export { NightOrderCard } from './NightOrderCard';
 export { PointTitle } from './PointTitle';
+export { createMidnightService, dayLabel, midnightCard, useMidnightMonth, useMidnightTonight } from './midnight';
+export type { MidnightCard, MidnightMonth, MidnightNight, MidnightService, MidnightTonight } from './midnight';
