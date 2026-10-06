@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { AppState, Pressable, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import { useLanguage } from '@/i18n';
@@ -19,11 +19,14 @@ export function MidnightPrayerCard() {
   const { data, refresh } = useMidnightTonight(midnightService);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh]),
-  );
+  // Focus already refetches (useCachedQuery); coming back to the app does not, and tonight's
+  // card moves on at 11 PM and at midnight.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') refresh();
+    });
+    return () => sub.remove();
+  }, [refresh]);
   if (!data || !user) return null;
   const card = midnightCard(data, user.id);
   if (card.kind === 'hidden') return null;

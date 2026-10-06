@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
@@ -35,12 +35,7 @@ function MonthList({ thisMonth, today, showNext, onShowNext }: { thisMonth: stri
   const { t, locale } = useLanguage();
   const { user } = useAuth();
   const { isAdmin } = useMembers();
-  const { data: current, error, refresh } = useMidnightMonth(midnightService, thisMonth);
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh]),
-  );
+  const { data: current, error } = useMidnightMonth(midnightService, thisMonth);
   const nextMonth = current?.nextMonth ?? null;
 
   return (
