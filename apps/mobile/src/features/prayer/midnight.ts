@@ -67,9 +67,9 @@ export function midnightCard(state: MidnightTonight, me: string): MidnightCard {
   return { kind: 'other', name: tonight.name, myNext: state.myNext };
 }
 
-/** "Sat, 10 Oct" for a day key, read at noon India time so no time zone moves it to another date. */
+/** "Sat, 10 Oct" for a day key. Day keys are Indian calendar days, so it is read and formatted in India time whatever the device's time zone. */
 export function dayLabel(day: string, locale: string): string {
-  return new Date(`${day}T12:00:00+05:30`).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
+  return new Date(`${day}T12:00:00+05:30`).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' });
 }
 
 export function useMidnightTonight(service: MidnightService) {

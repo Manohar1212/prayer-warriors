@@ -47,4 +47,14 @@ describe('dayLabel', () => {
     expect(dayLabel('2026-10-10', 'en-IN')).toMatch(/10/);
     expect(dayLabel('2026-10-10', 'en-IN')).toMatch(/Oct/);
   });
+  it('formats in Indian time so a device far west of India still shows the same date', () => {
+    // Jest cannot change the process time zone at runtime, so assert the formatter is pinned to India.
+    const spy = jest.spyOn(Date.prototype, 'toLocaleDateString');
+    try {
+      dayLabel('2026-10-10', 'en-IN');
+      expect(spy).toHaveBeenCalledWith('en-IN', expect.objectContaining({ timeZone: 'Asia/Kolkata' }));
+    } finally {
+      spy.mockRestore();
+    }
+  });
 });
