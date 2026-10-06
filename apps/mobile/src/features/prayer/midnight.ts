@@ -72,6 +72,14 @@ export function dayLabel(day: string, locale: string): string {
   return new Date(`${day}T12:00:00+05:30`).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' });
 }
 
+/**
+ * The rotation to send: a saved rotation can still hold someone who has since left the group,
+ * and the server refuses the whole list if any id is not an active member.
+ */
+export function rotationToSave(selected: string[], members: { userId: string; status: string }[]): string[] {
+  return selected.filter((id) => members.some((m) => m.userId === id && m.status === 'active'));
+}
+
 export function useMidnightTonight(service: MidnightService) {
   return useCachedQuery<MidnightTonight>('prayer:midnightTonight', () => service.tonight(), { fallback: 'Could not load the midnight prayer.' });
 }

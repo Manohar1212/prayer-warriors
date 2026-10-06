@@ -1,4 +1,4 @@
-import { createMidnightService, dayLabel, midnightCard, type MidnightTonight } from './midnight';
+import { createMidnightService, dayLabel, midnightCard, rotationToSave, type MidnightTonight } from './midnight';
 
 const base: MidnightTonight = { today: '2026-10-07', hour: 15, tonight: { day: '2026-10-07', userId: 'c', name: 'Ratna Kumari', prayed: false }, yesterday: { day: '2026-10-06', userId: 'b', name: 'Alekhya', prayed: false }, myNext: null, inRotation: false };
 
@@ -56,5 +56,16 @@ describe('dayLabel', () => {
     } finally {
       spy.mockRestore();
     }
+  });
+});
+
+describe('rotationToSave', () => {
+  it('keeps only listed, active members, in the chosen order', () => {
+    const members = [
+      { userId: 'u1', status: 'active' },
+      { userId: 'u2', status: 'inactive' },
+      { userId: 'u3', status: 'active' },
+    ];
+    expect(rotationToSave(['u3', 'u2', 'gone', 'u1'], members)).toEqual(['u3', 'u1']);
   });
 });

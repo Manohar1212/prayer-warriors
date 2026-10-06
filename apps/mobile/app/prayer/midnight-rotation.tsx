@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Pressable } from 'react-native';
 
 import { useMembers } from '@/features/members';
-import { useMidnightMonth, useMidnightTonight } from '@/features/prayer';
+import { rotationToSave, useMidnightMonth, useMidnightTonight } from '@/features/prayer';
 import { useLanguage } from '@/i18n';
 import { goBackOr } from '@/lib/navigation';
 import { midnightService } from '@/lib/parse';
@@ -36,7 +36,7 @@ function RotationForm({ month, onSaved }: { month: string; onSaved: () => Promis
     setBusy(true);
     setError(null);
     try {
-      await midnightService.setRotation(selected);
+      await midnightService.setRotation(rotationToSave(selected, members));
       await Promise.all([refresh(), onSaved()]);
       goBackOr(router, '/prayer/midnight');
     } catch (err) {
