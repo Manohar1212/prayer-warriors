@@ -101,9 +101,10 @@ function createMemberHandlers({ memberships, users, roles, sessions, pushTokens,
       await roles.removeUser(groupId, 'member', id);
       await roles.removeUser(groupId, 'admin', id);
       await prayerPoints.releaseClaims({ groupId, userId: id });
-      if (midnight) await midnight.dropMember(groupId, id);
       await sessions.revokeAll(id);
       await pushTokens.removeAllForUser(id);
+      // The removal is done; a failed rotation update is repaired by the next rotation save.
+      if (midnight) await midnight.dropMember(groupId, id).catch((err) => console.error(`midnight dropMember failed: ${err && err.message}`));
       return { userId: id };
     },
   };

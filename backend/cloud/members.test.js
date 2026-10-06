@@ -169,7 +169,19 @@ describe('removeMember', () => {
     await createMemberHandlers({ ...d, midnight }).removeMember({ userId: 'u2' }, caller);
     expect(midnight.dropMember).toHaveBeenCalledWith('g1', 'u2');
     expect(d.memberships.deactivate.mock.invocationCallOrder[0]).toBeLessThan(midnight.dropMember.mock.invocationCallOrder[0]);
+    expect(d.pushTokens.removeAllForUser.mock.invocationCallOrder[0]).toBeLessThan(midnight.dropMember.mock.invocationCallOrder[0]);
     await expect(createMemberHandlers(deps()).removeMember({ userId: 'u2' }, caller)).resolves.toEqual({ userId: 'u2' });
+  });
+
+  it('still finishes removing when the midnight rotation update fails', async () => {
+    const midnight = { dropMember: jest.fn(async () => { throw new Error('boom'); }) };
+    const d = deps();
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    await expect(createMemberHandlers({ ...d, midnight }).removeMember({ userId: 'u2' }, caller)).resolves.toEqual({ userId: 'u2' });
+    expect(d.sessions.revokeAll).toHaveBeenCalledWith('u2');
+    expect(d.pushTokens.removeAllForUser).toHaveBeenCalledWith('u2');
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
   });
 
   it('needs a user id', async () => {
