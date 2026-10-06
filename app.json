@@ -1,5 +1,8 @@
 {
   "ios": {
     "bundleIdentifier": "com.manohar12.prayer-warriors"
+  },
+  "android": {
+    "package": "com.manohar12.prayerwarriors"
   }
 }
