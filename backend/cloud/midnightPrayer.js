@@ -138,15 +138,26 @@ function createMidnightPrayerHandlers({ memberships, rotations, nights, users, n
     return { current, next };
   }
 
-  /** The month's nights, planned and saved the first time anyone asks. */
+  /** The rotation without anyone who has since left the group. */
+  async function activeRotation(groupId) {
+    const rotation = await rotations.get(groupId);
+    const active = await Promise.all(rotation.map((id) => memberships.isActiveMember(id, groupId)));
+    return rotation.filter((_id, i) => active[i]);
+  }
+
+  /**
+   * The month's nights, planned and saved the first time anyone asks. A month left part-saved
+   * (a create that failed half way) is completed from the same plan, keeping the rows it has.
+   */
   async function ensureMonth(groupId, month) {
     const existing = await dedupe(await nights.listMonth(groupId, month));
-    if (existing.length) return existing;
-    const rotation = await rotations.get(groupId);
-    if (!rotation.length) return [];
+    if (existing.length >= daysOfMonth(month).length) return existing;
+    const rotation = await activeRotation(groupId);
+    if (!rotation.length) return existing;
     const before = await nights.findLastBefore(groupId, `${month}-01`);
     const plan = planMonth({ month, rotation, lastPersonBefore: before ? before.userId : null, random: seededRandom(`${groupId}:${month}`) });
-    await nights.createMany(plan.map((p) => ({ groupId, month, ...p })));
+    const have = new Set(existing.map((r) => r.day));
+    await nights.createMany(plan.filter((p) => !have.has(p.day)).map((p) => ({ groupId, month, ...p })));
     return dedupe(await nights.listMonth(groupId, month));
   }
 
@@ -165,6 +176,15 @@ function createMidnightPrayerHandlers({ memberships, rotations, nights, users, n
       byDay.set(row.day, { ...row, userId: pick });
       load.set(pick, load.get(pick) + 1);
     }
+  }
+
+  /** Hands every coming night that `belongs` says is orphaned to `rotation`; with no rotation, removes the coming nights. */
+  async function handOver(groupId, rotation, today, belongs) {
+    const upcoming = await nights.listFrom(groupId, today);
+    const orphaned = upcoming.filter(belongs);
+    if (!orphaned.length) return;
+    if (!rotation.length) await nights.remove(upcoming.map((r) => r.id));
+    else await redistribute(groupId, orphaned, rotation, today);
   }
 
   return {
@@ -224,6 +244,8 @@ function createMidnightPrayerHandlers({ memberships, rotations, nights, users, n
       if (!row) throw fail(MESSAGES.notFound);
       if (day < istNow(now()).day) throw fail(MESSAGES.pastNight);
       if (typeof userId !== 'string' || !(await memberships.isActiveMember(userId, groupId))) throw fail(MESSAGES.badMember);
+      // Same person: nothing changes, so their prayed mark and reminders stay.
+      if (row.userId === userId) return nightView(row, await namesFor([userId]));
       await nights.update(row.id, { userId, prayedAt: null, remindedAt: null, nudgedAt: null });
       const name = await namesFor([userId]);
       return nightView({ ...row, userId, prayedAt: null }, name);
@@ -241,13 +263,31 @@ function createMidnightPrayerHandlers({ memberships, rotations, nights, users, n
       if (!valid) throw fail(MESSAGES.badRotation);
       const before = await rotations.get(groupId);
       await rotations.set(groupId, ids);
-      const removed = before.filter((id) => !ids.includes(id));
       const today = istNow(now()).day;
-      const orphaned = removed.length ? (await nights.listFrom(groupId, today)).filter((r) => removed.includes(r.userId)) : [];
-      if (orphaned.length && !ids.length) await nights.remove((await nights.listFrom(groupId, today)).map((r) => r.id));
-      else if (orphaned.length) await redistribute(groupId, orphaned, ids, today);
+      const changed = before.length !== ids.length || ids.some((id) => !before.includes(id));
+      // Next month may be planned already (from the 20th) but has not begun, so plan it afresh
+      // with the new list; getMidnightMonth/getMidnightTonight do that when it is next opened.
+      const upcomingMonth = nextMonth(today.slice(0, 7));
+      if (changed && `${upcomingMonth}-01` > today) {
+        const planned = await nights.listMonth(groupId, upcomingMonth);
+        if (planned.length) await nights.remove(planned.map((r) => r.id));
+      }
+      // Every coming night of someone outside the list, so saving again repairs a half-done change.
+      await handOver(groupId, ids, today, (r) => !ids.includes(r.userId));
       const name = await namesFor(ids);
       return { rotation: ids.map((userId) => ({ userId, name: name(userId) })) };
+    },
+
+    /**
+     * A member left the group (called by removeMember, not a Cloud function): out of the
+     * rotation, and their coming nights - including any given to them by hand - go to the rest.
+     */
+    async dropMember(groupId, userId) {
+      const before = await rotations.get(groupId);
+      const rotation = before.filter((id) => id !== userId);
+      const emptied = before.length > 0 && rotation.length === 0;
+      if (rotation.length !== before.length) await rotations.set(groupId, rotation);
+      await handOver(groupId, rotation, istNow(now()).day, (r) => emptied || r.userId === userId);
     },
 
     /** Hourly job: tonight's reminder from 9 PM, last night's nudge from noon. Each goes once. */

@@ -633,7 +633,13 @@ const midnightNights = {
 
 const midnightRotations = {
   async get(groupId) {
-    const group = await new Parse.Query('Group').get(groupId, { useMasterKey: true }).catch(() => null);
+    // Only a missing group means "no rotation"; any other failure must not look like an empty list.
+    const group = await new Parse.Query('Group')
+      .get(groupId, { useMasterKey: true })
+      .catch((err) => {
+        if (err && err.code === Parse.Error.OBJECT_NOT_FOUND) return null;
+        throw err;
+      });
     const ids = group ? group.get('midnightRotation') : null;
     return Array.isArray(ids) ? ids.filter((id) => typeof id === 'string') : [];
   },
@@ -1164,7 +1170,17 @@ function withNotify(handler, after) {
 
 // ---------- cloud functions ----------
 
-const memberHandlers = createMemberHandlers({ memberships, users, roles, sessions, pushTokens, prayerPoints: prayerPointClaims, generatePassword });
+const memberHandlers = createMemberHandlers({
+  memberships,
+  users,
+  roles,
+  sessions,
+  pushTokens,
+  prayerPoints: prayerPointClaims,
+  generatePassword,
+  // A lookup at call time: midnightHandlers is defined further down.
+  midnight: { dropMember: (g, u) => midnightHandlers.dropMember(g, u) },
+});
 const prayerHandlers = createPrayerHandlers({ memberships, requests, responses, comments: prayerComments, points: prayerPoints, notifications: inbox });
 const prayerPointHandlers = createPrayerPointHandlers({ memberships, points: prayerPoints, claims: prayerPointClaims, requests, nights: prayerNights });
 const resourceHandlers = createResourceHandlers({ memberships, resources });

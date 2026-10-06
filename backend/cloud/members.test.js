@@ -163,6 +163,15 @@ describe('removeMember', () => {
     await expect(createMemberHandlers(other).removeMember({ userId: 'u9' }, caller)).rejects.toThrow(MESSAGES.notAMember);
   });
 
+  it('takes them out of the midnight prayer when that is wired in', async () => {
+    const midnight = { dropMember: jest.fn(async () => undefined) };
+    const d = deps();
+    await createMemberHandlers({ ...d, midnight }).removeMember({ userId: 'u2' }, caller);
+    expect(midnight.dropMember).toHaveBeenCalledWith('g1', 'u2');
+    expect(d.memberships.deactivate.mock.invocationCallOrder[0]).toBeLessThan(midnight.dropMember.mock.invocationCallOrder[0]);
+    await expect(createMemberHandlers(deps()).removeMember({ userId: 'u2' }, caller)).resolves.toEqual({ userId: 'u2' });
+  });
+
   it('needs a user id', async () => {
     await expect(createMemberHandlers(deps()).removeMember({}, caller)).rejects.toThrow(MESSAGES.notAMember);
   });

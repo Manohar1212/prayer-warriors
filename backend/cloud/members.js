@@ -20,7 +20,7 @@ function fail(message) {
   return new Error(message);
 }
 
-function createMemberHandlers({ memberships, users, roles, sessions, pushTokens, prayerPoints, generatePassword, now = () => new Date() }) {
+function createMemberHandlers({ memberships, users, roles, sessions, pushTokens, prayerPoints, generatePassword, midnight = null, now = () => new Date() }) {
   return {
     /**
      * The mobile numbers of the caller's own group, for the call and WhatsApp buttons. Phone
@@ -80,7 +80,8 @@ function createMemberHandlers({ memberships, users, roles, sessions, pushTokens,
     /**
      * Takes a member out of the group: the membership goes inactive, both group roles lose
      * them (so nothing in the group is readable any more), their sessions and push tokens go,
-     * and any monthly prayer point they were carrying is freed for someone else. What they
+     * any monthly prayer point they were carrying is freed for someone else, and they leave
+     * the midnight prayer rotation with their coming nights handed on. What they
      * wrote - requests, comments, contributions, quiz results - stays as it is, with their name.
      */
     async removeMember({ userId } = {}, { callerId } = {}) {
@@ -100,6 +101,7 @@ function createMemberHandlers({ memberships, users, roles, sessions, pushTokens,
       await roles.removeUser(groupId, 'member', id);
       await roles.removeUser(groupId, 'admin', id);
       await prayerPoints.releaseClaims({ groupId, userId: id });
+      if (midnight) await midnight.dropMember(groupId, id);
       await sessions.revokeAll(id);
       await pushTokens.removeAllForUser(id);
       return { userId: id };

@@ -259,3 +259,99 @@ describe('sendMidnightReminders', () => {
     expect(await w.h.sendMidnightReminders()).toEqual({ reminded: 0, nudged: 0 });
   });
 });
+
+describe('ensureMonth gaps and inactive members', () => {
+  it('plans only from rotation members who are still active', async () => {
+    const { h } = world({ members: ['a', 'b', 'c', 'd', 'x'] });
+    const res = await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    expect(res.nights).toHaveLength(31);
+    expect(res.nights.some((n) => n.userId === 'e')).toBe(false);
+  });
+  it('fills the missing days of a partly saved month and leaves the rest alone', async () => {
+    const { h, rows } = world();
+    await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    const kept = rows.filter((r) => !['2026-10-03', '2026-10-17', '2026-10-31'].includes(r.day)).map((r) => ({ ...r }));
+    ['2026-10-03', '2026-10-17', '2026-10-31'].forEach((d) => rows.splice(rows.findIndex((r) => r.day === d), 1));
+    const again = await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    expect(again.nights.map((n) => n.day)).toEqual(daysOfMonth('2026-10'));
+    expect(rows).toHaveLength(31);
+    kept.forEach((k) => expect(rows.find((r) => r.id === k.id)).toEqual(k));
+  });
+  it('returns the rows it has when the rotation is empty', async () => {
+    const w = world();
+    await w.h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    w.rows.splice(0, 5);
+    w.state.rotation = [];
+    expect((await w.h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' })).nights).toHaveLength(26);
+  });
+});
+
+describe('dropMember', () => {
+  it('takes a removed member out of the rotation and hands over their coming nights', async () => {
+    const { h, rows, state } = world();
+    await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    const pastE = rows.filter((r) => r.userId === 'e' && r.day < '2026-10-06').map((r) => r.id);
+    await h.dropMember('g1', 'e');
+    expect(state.rotation).toEqual(['a', 'b', 'c', 'd']);
+    const future = rows.filter((r) => r.day >= '2026-10-06');
+    expect(future).toHaveLength(26);
+    expect(future.some((r) => r.userId === 'e')).toBe(false);
+    expect(rows.filter((r) => r.userId === 'e').map((r) => r.id)).toEqual(pastE);
+  });
+  it('hands over a hand-given night of someone outside the rotation', async () => {
+    const { h, rows, state } = world();
+    await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    await h.reassignMidnightNight({ day: '2026-10-09', userId: 'x' }, { callerId: 'a' });
+    await h.dropMember('g1', 'x');
+    expect(state.rotation).toEqual(FIVE);
+    expect(FIVE).toContain(rows.find((r) => r.day === '2026-10-09').userId);
+  });
+  it('removes the coming nights when the rotation becomes empty', async () => {
+    const { h, rows, state } = world({ rotation: ['e'] });
+    await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    await h.dropMember('g1', 'e');
+    expect(state.rotation).toEqual([]);
+    expect(rows.every((r) => r.day < '2026-10-06')).toBe(true);
+  });
+});
+
+describe('setMidnightRotation repairs and next month', () => {
+  it('hands over nights left on a non-rotation member when the same list is saved again', async () => {
+    const { h, rows, state } = world();
+    await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    // A change that saved the list but stopped before handing over e's nights.
+    state.rotation = ['a', 'b', 'c', 'd'];
+    await h.setMidnightRotation({ userIds: ['a', 'b', 'c', 'd'] }, { callerId: 'a' });
+    expect(rows.filter((r) => r.day >= '2026-10-06').some((r) => r.userId === 'e')).toBe(false);
+  });
+  it('re-plans an opened next month so an added member starts there', async () => {
+    const { h } = world({ rotation: ['a', 'b', 'c', 'd'], at: '2026-10-21T10:00:00.000Z' });
+    expect((await h.getMidnightMonth({ month: '2026-11' }, { callerId: 'b' })).nights.some((n) => n.userId === 'x')).toBe(false);
+    await h.setMidnightRotation({ userIds: ['a', 'b', 'c', 'd', 'x'] }, { callerId: 'a' });
+    const nov = await h.getMidnightMonth({ month: '2026-11' }, { callerId: 'b' });
+    expect(nov.nights).toHaveLength(30);
+    expect(nov.nights.some((n) => n.userId === 'x')).toBe(true);
+  });
+  it('leaves next month alone when the list is unchanged', async () => {
+    const { h, rows } = world({ at: '2026-10-21T10:00:00.000Z' });
+    await h.getMidnightMonth({ month: '2026-11' }, { callerId: 'b' });
+    const ids = rows.filter((r) => r.month === '2026-11').map((r) => r.id);
+    await h.setMidnightRotation({ userIds: FIVE }, { callerId: 'a' });
+    expect(rows.filter((r) => r.month === '2026-11').map((r) => r.id)).toEqual(ids);
+  });
+});
+
+describe('reassignMidnightNight to the same person', () => {
+  it('changes nothing', async () => {
+    const { h, rows } = world();
+    await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    const row = rows.find((r) => r.day === '2026-10-06');
+    const prayedAt = new Date();
+    const remindedAt = new Date();
+    Object.assign(row, { prayedAt, remindedAt });
+    const res = await h.reassignMidnightNight({ day: '2026-10-06', userId: row.userId }, { callerId: 'a' });
+    expect(res).toEqual({ day: '2026-10-06', userId: row.userId, name: NAMES[row.userId], prayed: true });
+    expect(row.prayedAt).toBe(prayedAt);
+    expect(row.remindedAt).toBe(remindedAt);
+  });
+});
