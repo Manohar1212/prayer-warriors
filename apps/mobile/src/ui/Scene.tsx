@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Image, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 /** Seven photographs (Pexels, free licence), each a different place and light. */
-export type SceneVariant = 'cross' | 'mountains' | 'night' | 'sea' | 'hills' | 'rays' | 'glass';
+export type SceneVariant = 'cross' | 'mountains' | 'night' | 'sea' | 'hills' | 'rays';
 
 /** Each photo is bundled twice, cropped around its subject: wide (2:1) for cards, tall (4:5) for full screens. */
 const photos: Record<SceneVariant, { wide: number; tall: number }> = {
@@ -12,7 +12,6 @@ const photos: Record<SceneVariant, { wide: number; tall: number }> = {
   sea: { wide: require('../../assets/promise/sea.jpg'), tall: require('../../assets/promise/sea-tall.jpg') },
   hills: { wide: require('../../assets/promise/hills.jpg'), tall: require('../../assets/promise/hills-tall.jpg') },
   rays: { wide: require('../../assets/promise/rays.jpg'), tall: require('../../assets/promise/rays-tall.jpg') },
-  glass: { wide: require('../../assets/promise/glass.jpg'), tall: require('../../assets/promise/glass-tall.jpg') },
 };
 
 const ALL = Object.keys(photos) as SceneVariant[];
