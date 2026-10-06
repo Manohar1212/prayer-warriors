@@ -49,8 +49,10 @@ export function createBibleService(open: () => Promise<BibleDb>): BibleService {
       if (cachedBooks) return cachedBooks;
       const db = await open();
       const rows = await db.getAllAsync<BookRow>('SELECT * FROM books ORDER BY id');
-      cachedBooks = rows.map(toBook);
-      return cachedBooks;
+      const list = rows.map(toBook);
+      // An empty list means the database was not ready; keep nothing so the next call reads it again.
+      if (list.length) cachedBooks = list;
+      return list;
     },
 
     async chapter(bookId, chapter, lang) {

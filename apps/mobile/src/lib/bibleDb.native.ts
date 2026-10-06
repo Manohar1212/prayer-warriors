@@ -17,7 +17,8 @@ async function ensureCopied(): Promise<void> {
   await asset.downloadAsync();
   if (!asset.localUri) throw new Error('Bible data is not available.');
   if (target.exists) target.delete();
-  new File(asset.localUri).copy(target);
+  // copy() is asynchronous: opening before it finishes would create an empty database in its place.
+  await new File(asset.localUri).copy(target);
 }
 
 function adapt(db: SQLiteDatabase): BibleDb {

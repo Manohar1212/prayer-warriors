@@ -80,3 +80,17 @@ describe('bibleService', () => {
     await expect(createBibleService(async () => db).attribution('te')).resolves.toBe('attr-attribution_te');
   });
 });
+
+describe('books', () => {
+  it('does not keep an empty list, so a database that was not ready yet is read again', async () => {
+    let ready = false;
+    const db: BibleDb = {
+      getAllAsync: async () => (ready ? books : []) as never[],
+      getFirstAsync: async () => null as never,
+    };
+    const service = createBibleService(async () => db);
+    await expect(service.books()).resolves.toEqual([]);
+    ready = true;
+    await expect(service.books()).resolves.toHaveLength(2);
+  });
+});
