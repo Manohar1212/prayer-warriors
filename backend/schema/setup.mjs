@@ -68,6 +68,7 @@ const groupSchema = {
     description: { type: 'String' },
     createdBy: { type: 'Pointer', targetClass: '_User' },
     nightOrder: { type: 'Array' }, // the steps of the monthly all-night prayer, in order
+    midnightRotation: { type: 'Array' }, // user ids taking turns at the midnight prayer, in the admin's order
   },
   classLevelPermissions: {
     find: authenticated,
@@ -345,6 +346,23 @@ const prayerNightSchema = {
   },
 };
 
+const midnightNightSchema = {
+  className: 'MidnightNight',
+  fields: {
+    group: { type: 'Pointer', targetClass: 'Group', required: true },
+    month: { type: 'String', required: true },
+    day: { type: 'String', required: true },
+    user: { type: 'Pointer', targetClass: '_User', required: true },
+    prayedAt: { type: 'Date' },
+    remindedAt: { type: 'Date' },
+    nudgedAt: { type: 'Date' },
+  },
+  classLevelPermissions: {
+    find: authenticated, get: authenticated, count: authenticated,
+    create: masterOnly, update: masterOnly, delete: masterOnly, addField: masterOnly, protectedFields: {},
+  },
+};
+
 const quizResultSchema = {
   className: 'QuizResult',
   fields: {
@@ -499,6 +517,7 @@ await upsertSchema(prayerPointClaimSchema);
 await upsertSchema(quizResultSchema);
 await upsertSchema(quizStartSchema);
 await upsertSchema(prayerNightSchema);
+await upsertSchema(midnightNightSchema);
 await upsertSchema(journalSchema);
 await upsertSchema(resourceSchema);
 await upsertSchema(contributionSchema);

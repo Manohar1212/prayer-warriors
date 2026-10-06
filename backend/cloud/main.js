@@ -5,6 +5,7 @@ const { createMemberHandlers } = require('./members');
 const { createPrayerHandlers } = require('./prayer');
 const { createPrayerPointHandlers } = require('./prayerPoints');
 const { createPrayerNightHandlers } = require('./prayerNight');
+const { createMidnightPrayerHandlers } = require('./midnightPrayer');
 const { createQuizHandlers } = require('./quiz');
 const { QUESTIONS } = require('./quizQuestions');
 const { createResourceHandlers } = require('./resources');
@@ -552,6 +553,97 @@ const prayerNights = {
   },
 };
 
+// ---------- midnight prayer ----------
+
+function midnightNightDto(obj) {
+  const at = (key) => (obj.get(key) ? obj.get(key).toISOString() : null);
+  return {
+    id: obj.id,
+    groupId: refId(obj.get('group')),
+    month: obj.get('month'),
+    day: obj.get('day'),
+    userId: refId(obj.get('user')),
+    prayedAt: at('prayedAt'),
+    remindedAt: at('remindedAt'),
+    nudgedAt: at('nudgedAt'),
+    createdAt: obj.createdAt ? obj.createdAt.toISOString() : null,
+  };
+}
+
+/** Oldest row first within a day, so "the oldest row wins" holds when duplicates are deduped. */
+function midnightQuery(groupId) {
+  const q = new Parse.Query('MidnightNight');
+  if (groupId) q.equalTo('group', pointer('Group', groupId));
+  return q.ascending('day').addAscending('createdAt');
+}
+
+const midnightNights = {
+  async listMonth(groupId, month) {
+    return (await midnightQuery(groupId).equalTo('month', month).limit(200).find({ useMasterKey: true })).map(midnightNightDto);
+  },
+  async listFrom(groupId, day) {
+    return (await midnightQuery(groupId).greaterThanOrEqualTo('day', day).limit(500).find({ useMasterKey: true })).map(midnightNightDto);
+  },
+  async findDay(groupId, day) {
+    const obj = await midnightQuery(groupId).equalTo('day', day).first({ useMasterKey: true });
+    return obj ? midnightNightDto(obj) : null;
+  },
+  async findLastBefore(groupId, day) {
+    const obj = await new Parse.Query('MidnightNight').equalTo('group', pointer('Group', groupId)).lessThan('day', day).descending('day').first({ useMasterKey: true });
+    return obj ? midnightNightDto(obj) : null;
+  },
+  async listDay(day) {
+    return (await midnightQuery(null).equalTo('day', day).limit(500).find({ useMasterKey: true })).map(midnightNightDto);
+  },
+  async createMany(rows) {
+    const objs = rows.map(({ groupId, month, day, userId }) => {
+      const obj = new Parse.Object('MidnightNight');
+      obj.set('group', pointer('Group', groupId));
+      obj.set('month', month);
+      obj.set('day', day);
+      obj.set('user', pointer('_User', userId));
+      obj.setACL(groupReadAcl(groupId));
+      return obj;
+    });
+    await Parse.Object.saveAll(objs, { useMasterKey: true });
+  },
+  async update(id, patch) {
+    const obj = await new Parse.Query('MidnightNight').get(id, { useMasterKey: true });
+    Object.entries(patch).forEach(([key, value]) => {
+      if (key === 'userId') obj.set('user', pointer('_User', value));
+      else if (value === null) obj.unset(key);
+      else obj.set(key, value);
+    });
+    await obj.save(null, { useMasterKey: true });
+  },
+  /** Deletes the rows that still exist; ids another request already removed are not an error. */
+  async remove(ids) {
+    const objs = await new Parse.Query('MidnightNight').containedIn('objectId', ids).limit(500).find({ useMasterKey: true });
+    if (objs.length === 0) return;
+    try {
+      await Parse.Object.destroyAll(objs, { useMasterKey: true });
+    } catch (error) {
+      // A row deleted between the query and the destroy: only "object not found" failures are tolerated.
+      const inner = error && Array.isArray(error.errors) ? error.errors : [error];
+      const onlyMissing = inner.length > 0 && inner.every((e) => e && e.code === Parse.Error.OBJECT_NOT_FOUND);
+      if (!onlyMissing) throw error;
+    }
+  },
+};
+
+const midnightRotations = {
+  async get(groupId) {
+    const group = await new Parse.Query('Group').get(groupId, { useMasterKey: true }).catch(() => null);
+    const ids = group ? group.get('midnightRotation') : null;
+    return Array.isArray(ids) ? ids.filter((id) => typeof id === 'string') : [];
+  },
+  async set(groupId, ids) {
+    const group = await new Parse.Query('Group').get(groupId, { useMasterKey: true });
+    group.set('midnightRotation', ids);
+    await group.save(null, { useMasterKey: true });
+  },
+};
+
 // ---------- daily quiz ----------
 
 function quizResultDto(obj) {
@@ -1092,6 +1184,7 @@ const groupSettings = {
 };
 
 const prayerNightHandlers = createPrayerNightHandlers({ memberships, nights: prayerNights, groups: groupSettings, calls: callsRepo, notify: (event) => notifier.notify(event) });
+const midnightHandlers = createMidnightPrayerHandlers({ memberships, rotations: midnightRotations, nights: midnightNights, users, notify: (event) => notifier.notify(event) });
 const financeHandlers = createFinanceHandlers({ memberships, ledger, audit });
 
 Parse.Cloud.define('deletePrayerRequest', (request) =>
@@ -1200,6 +1293,10 @@ Parse.Cloud.define('joinCall', async (request) => {
 );
 // Schedule daily (e.g. 08:00 IST) in the Back4App dashboard; members opening the app also trigger the day's reminder.
 Parse.Cloud.job('prayerNightReminders', () => prayerNightHandlers.sendDueReminders());
+['getMidnightMonth', 'getMidnightTonight', 'markMidnightPrayed', 'reassignMidnightNight', 'setMidnightRotation'].forEach((name) =>
+  Parse.Cloud.define(name, (request) => midnightHandlers[name](request.params, { callerId: callerId(request) })),
+);
+Parse.Cloud.job('midnightPrayerReminders', () => midnightHandlers.sendMidnightReminders());
 ['getDailyQuiz', 'startQuiz', 'submitQuiz', 'getQuizLeaderboard'].forEach((name) =>
   Parse.Cloud.define(name, (request) => quizHandlers[name](request.params, { callerId: callerId(request) })),
 );
