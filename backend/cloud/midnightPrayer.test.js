@@ -316,13 +316,32 @@ describe('dropMember', () => {
 });
 
 describe('setMidnightRotation repairs and next month', () => {
-  it('hands over nights left on a non-rotation member when the same list is saved again', async () => {
-    const { h, rows, state } = world();
+  it('hands over the nights of a removed member who is no longer active when the list is saved again', async () => {
+    const members = [...FIVE, 'x'];
+    const { h, rows, state } = world({ members });
     await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
-    // A change that saved the list but stopped before handing over e's nights.
+    // A removal that left the rotation and e's nights behind, then e stopped being a member.
     state.rotation = ['a', 'b', 'c', 'd'];
+    members.splice(members.indexOf('e'), 1);
     await h.setMidnightRotation({ userIds: ['a', 'b', 'c', 'd'] }, { callerId: 'a' });
     expect(rows.filter((r) => r.day >= '2026-10-06').some((r) => r.userId === 'e')).toBe(false);
+  });
+  it('keeps a night the admin gave by hand to an active member outside the rotation', async () => {
+    const { h, rows } = world();
+    await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    await h.reassignMidnightNight({ day: '2026-10-09', userId: 'x' }, { callerId: 'a' });
+    await h.setMidnightRotation({ userIds: ['a', 'b', 'c', 'd'] }, { callerId: 'a' });
+    expect(rows.find((r) => r.day === '2026-10-09').userId).toBe('x');
+    expect(rows.filter((r) => r.day >= '2026-10-06').some((r) => r.userId === 'e')).toBe(false);
+  });
+  it('hands over a night held by someone who is no longer an active member', async () => {
+    const members = [...FIVE, 'x'];
+    const { h, rows } = world({ members });
+    await h.getMidnightMonth({ month: '2026-10' }, { callerId: 'b' });
+    await h.reassignMidnightNight({ day: '2026-10-09', userId: 'x' }, { callerId: 'a' });
+    members.splice(members.indexOf('x'), 1);
+    await h.setMidnightRotation({ userIds: FIVE }, { callerId: 'a' });
+    expect(FIVE).toContain(rows.find((r) => r.day === '2026-10-09').userId);
   });
   it('re-plans an opened next month so an added member starts there', async () => {
     const { h } = world({ rotation: ['a', 'b', 'c', 'd'], at: '2026-10-21T10:00:00.000Z' });

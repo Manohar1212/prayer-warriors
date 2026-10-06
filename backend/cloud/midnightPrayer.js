@@ -272,8 +272,19 @@ function createMidnightPrayerHandlers({ memberships, rotations, nights, users, n
         const planned = await nights.listMonth(groupId, upcomingMonth);
         if (planned.length) await nights.remove(planned.map((r) => r.id));
       }
-      // Every coming night of someone outside the list, so saving again repairs a half-done change.
-      await handOver(groupId, ids, today, (r) => !ids.includes(r.userId));
+      // Coming nights of someone taken off the list, or of someone no longer in the group, so saving
+      // again repairs a half-done change. Nights given by hand to an active member stay put.
+      const upcoming = await nights.listFrom(groupId, today);
+      const gone = new Set();
+      for (const userId of new Set(upcoming.map((r) => r.userId))) {
+        if (!ids.includes(userId) && !before.includes(userId) && !(await memberships.isActiveMember(userId, groupId))) gone.add(userId);
+      }
+      await handOver(
+        groupId,
+        ids,
+        today,
+        (r) => !ids.length || (!ids.includes(r.userId) && (before.includes(r.userId) || gone.has(r.userId))),
+      );
       const name = await namesFor(ids);
       return { rotation: ids.map((userId) => ({ userId, name: name(userId) })) };
     },
