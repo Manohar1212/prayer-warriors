@@ -75,6 +75,9 @@ function GatedStack({ fontsLoaded }: { fontsLoaded: boolean }) {
         <Stack.Screen name="prayer/point" options={{ ...modalOptions, title: t('prayer.points.editTitle') }} />
         <Stack.Screen name="prayer/night" options={{ ...modalOptions, title: t('prayer.night.form.title') }} />
         <Stack.Screen name="prayer/order" options={{ ...modalOptions, title: t('prayer.order.title') }} />
+        <Stack.Screen name="prayer/midnight" options={{ ...cardOptions, title: t('midnight.title') }} />
+        <Stack.Screen name="prayer/midnight-assign" options={{ ...modalOptions, title: t('midnight.assignTitle') }} />
+        <Stack.Screen name="prayer/midnight-rotation" options={{ ...modalOptions, title: t('midnight.rotation') }} />
         <Stack.Screen name="prayer/answered" options={{ ...modalOptions, title: t('prayer.points.markAnswered') }} />
         <Stack.Screen name="prayer/[id]" options={{ ...cardOptions, title: t('prayer.detail.title') }} />
         <Stack.Screen name="journal/index" options={{ ...cardOptions, title: t('journal.title') }} />
