@@ -6,7 +6,7 @@ import { Pressable, View } from 'react-native';
 import { useAuth } from '@/features/auth';
 import { callTitle, isJoinable, useCalls } from '@/features/calls';
 import { useVerseOfTheDay } from '@/features/home/useVerseOfTheDay';
-import { nightCallOpen, nightWhen, usePrayerNight, type PrayerNight } from '@/features/prayer';
+import { MidnightPrayerCard, nightCallOpen, nightWhen, usePrayerNight, type PrayerNight } from '@/features/prayer';
 import { syncPrayerNightReminders } from '@/features/notifications';
 import { useDailyQuiz } from '@/features/quiz';
 import { HeaderActions } from '@/features/notifications/HeaderActions';
@@ -145,6 +145,8 @@ export default function HomeScreen() {
         </View>
         <HeaderActions />
       </View>
+
+      <MidnightPrayerCard />
 
       {/* Today's promise on the sunrise. */}
       <Pressable accessibilityRole="button" accessibilityLabel={t('home.dailyPromise')} onPress={() => router.push('/promise')} className="overflow-hidden rounded-[16px] active:opacity-90" style={{ height: 176 }}>

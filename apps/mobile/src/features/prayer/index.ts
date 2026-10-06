@@ -19,3 +19,4 @@ export { NightOrderCard } from './NightOrderCard';
 export { PointTitle } from './PointTitle';
 export { createMidnightService, dayLabel, midnightCard, useMidnightMonth, useMidnightTonight } from './midnight';
 export type { MidnightCard, MidnightMonth, MidnightNight, MidnightService, MidnightTonight } from './midnight';
+export { MidnightPrayerCard } from './MidnightPrayerCard';
