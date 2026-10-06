@@ -226,8 +226,8 @@ describe('handlers', () => {
 
 describe('midnight prayer notifications', () => {
   it('builds the reminder and the nudge with the midnight pref', () => {
-    expect(buildMessage({ type: 'midnightReminder', day: '2026-10-06' })).toEqual({ title: 'Your midnight prayer', body: 'Tonight at 12:00 AM is your night to pray for the group.', route: '/prayer/midnight', pref: 'midnight' });
-    expect(buildMessage({ type: 'midnightNudge', day: '2026-10-06' })).toEqual({ title: 'Did you pray last night?', body: 'Tap to mark your midnight prayer.', route: '/prayer/midnight', pref: 'midnight' });
+    expect(buildMessage({ type: 'midnightReminder', day: '2026-10-06' })).toEqual({ title: 'Your midnight prayer', body: 'Tonight at 12:00 AM is your night to pray for the group.', route: '/(tabs)', pref: 'midnight' });
+    expect(buildMessage({ type: 'midnightNudge', day: '2026-10-06' })).toEqual({ title: 'Did you pray last night?', body: 'Tap to mark your midnight prayer.', route: '/(tabs)', pref: 'midnight' });
     expect(DEFAULT_PREFS.midnight).toBe(true);
   });
   it('sends only to the person, respecting their preference', async () => {

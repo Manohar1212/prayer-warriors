@@ -105,9 +105,9 @@ function buildMessage(event, actorName) {
     case 'expense':
       return { title: 'Expense recorded', body: `${capitalise(event.category)}: ${rupees(event.amountPaise)}`, route: '/(tabs)/funds', pref: 'funds' };
     case 'midnightReminder':
-      return { title: 'Your midnight prayer', body: 'Tonight at 12:00 AM is your night to pray for the group.', route: '/prayer/midnight', pref: 'midnight' };
+      return { title: 'Your midnight prayer', body: 'Tonight at 12:00 AM is your night to pray for the group.', route: '/(tabs)', pref: 'midnight' };
     case 'midnightNudge':
-      return { title: 'Did you pray last night?', body: 'Tap to mark your midnight prayer.', route: '/prayer/midnight', pref: 'midnight' };
+      return { title: 'Did you pray last night?', body: 'Tap to mark your midnight prayer.', route: '/(tabs)', pref: 'midnight' };
     default:
       throw new Error(`Unknown notification event: ${event.type}`);
   }
